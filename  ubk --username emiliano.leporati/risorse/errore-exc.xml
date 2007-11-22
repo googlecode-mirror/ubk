@@ -1,0 +1,18 @@
+<html xmlns:ubk="http://dev.mele.eu/ubk/" xmlns:gfx="http://dev.mele.eu/ubk/TAG_XSL.xsd">
+	<head>
+		<title>Errore</title>
+	</head>
+	<body>
+		<ubk:if test="$this->parametri['ERRORE'] instanceof DbException">
+			<ubk:then>
+				<ubk:iter array="LAST_SQL">
+					<ubk:var>$parametri['ITER-CURRENT']</ubk:var><br/>
+				</ubk:iter>
+			</ubk:then>
+		</ubk:if>
+
+		<ubk:var>get_class($this->parametri['EXC'])</ubk:var>:<br/>
+		<ubk:var>$this->parametri['EXC']->getMessage()</ubk:var><br/>
+		<ubk:var>nl2br($this->parametri['EXC']->getTraceAsString())</ubk:var>
+	</body>
+</html>

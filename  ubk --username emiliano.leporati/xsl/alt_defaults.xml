@@ -1,0 +1,50 @@
+<alt-defaults>
+	<alt image="New" alt="Crea nuovo"/>
+	<alt image="Add" alt="Aggiungi"/>
+	<alt image="Save" alt="Aggiorna"/>
+	<alt image="Del" alt="Elimina"/>
+	<alt image="Copy" alt="Copia"/>
+	<alt image="Copia" alt="Copia"/>
+	<alt image="Incolla" alt="Incolla"/>
+	<alt image="Details" alt="Dettaglio"/>
+	<alt image="Filter" alt="Filtra"/>
+	<alt image="Search" alt="Trova"/>
+	<alt image="Fore" alt="Avanti"/>
+	<alt image="FFore" alt="Ultimo"/>
+	<alt image="Back" alt="Indietro"/>
+	<alt image="BBack" alt="Primo"/>
+	<alt image="Download" alt="Scarica il documento"/>
+	<alt image="NoFilter" alt="Annulla il filtro"/>
+	<alt image="List" alt="Elenco"/>
+	<alt image="Refresh" alt="Aggiorna"/>
+
+	<!-- kimera -->
+	<alt image="small/Add" alt="Aggiungi"/>
+	<alt image="small/Address" alt="Invia mail"/>
+	<alt image="small/Copy" alt="Copia"/>
+	<alt image="small/Copia" alt="Copia"/>
+	<alt image="small/Del" alt="Elimina"/>
+	<alt image="small/Details" alt="Dettaglio"/>
+	<alt image="small/Edit" alt="Modifica"/>
+	<alt image="small/Filter" alt="Cerca"/>
+	<alt image="small/giu" alt="Sposta in basso"/>
+	<alt image="small/Lotti" alt="Lotti"/>
+	<alt image="small/NoFilter" alt="Nuova ricerca"/>
+	<alt image="small/Save" alt="Salva"/>
+	<alt image="small/Search" alt="Cerca"/>
+	<alt image="small/Sernum" alt="Serial number"/>
+	<alt image="small/sposta" alt="Sposta"/>
+	<alt image="small/Stampa" alt="Stampa"/>
+	<alt image="small/su" alt="Sposta in alto"/>
+	<alt image="small/Undo" alt="Annulla"/>
+	<alt image="small/Redo" alt="Ripristina"/>
+
+	<alt image="big/Add" alt="Aggiungi"/>
+	<alt image="big/Del" alt="Elimina"/>
+	<alt image="big/Filter" alt="Cerca"/>
+	<alt image="big/NoFilter" alt="Nuova ricerca"/>
+	<alt image="big/Rull" alt="Elabora"/>
+	<alt image="big/Save" alt="Salva"/>
+
+
+</alt-defaults>
