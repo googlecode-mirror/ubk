@@ -35,3 +35,12 @@ Parameters used by the framework, usually defined in params.ini
   * *PHDIR*: the phisical directory where the application lies
   * *VDIR*: the virtual directory under which the application is web-accessible
   * *MATCH*: if present in a section of the .ini file, all parameters under this section are parsed only if the value of *MATCH* matches with the <host>:<port> from where the http request comes - so you can set different parameters according from the provenience, i.e. the virtual host configuration of the http server
+
+Other parameters defines the database connections: we can manage multiple database connections in an applications, even if usually we will use just one.
+Every database connection lies in a *[DB_something]* section of the ini files, defining these parameters:
+  * *DB_TYPE*: the ubk-type of the database; valid values are FBIRD, MSSQL, ODBC, MYSQL
+  * *DB_SERVER*: the host where the dbms runs
+  * *DB_NAME*: the name of the database
+  * *DB_USERNAME*
+  * *DB_PASSWORD*
+If not specified else, the framework always tries to use the connection defined in section *[DB_DEFAULT]*
