@@ -1,0 +1,3 @@
+<!ENTITY % lat SYSTEM "http://pan/public_xsd/ent/xhtml-lat1.ent"> %lat;
+<!ENTITY % special SYSTEM "http://pan/public_xsd/ent/xhtml-special.ent"> %special;
+<!ENTITY % symbol SYSTEM "http://pan/public_xsd/ent/xhtml-symbol.ent"> %symbol;

@@ -1,0 +1,25 @@
+<html xmlns:ubk="http://dev.mele.eu/ubk/" xmlns:gfx="http://dev.mele.eu/ubk/TAG_XSL.xsd">
+	<head>
+		<title>Errore</title>
+		<style>
+			TABLE {
+				height: 100%;
+				width: 100%;
+			}
+			TD {
+				vertical-align: middle;
+				text-align: center;
+				font-size: 10px;
+				color: red;
+			}
+	</head>
+	<body>
+		<table>
+			<td>
+				<ubk:var>$parametri['ERRORE']</ubk:var>
+				<br/>
+				<a href="javascript:history.go(-1)">Torna indietro</a>
+			</td>
+		</table>
+	</body>
+</html>
