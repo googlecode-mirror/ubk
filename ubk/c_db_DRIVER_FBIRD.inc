@@ -237,7 +237,7 @@ class DB_DRIVER_FBIRD extends DB_DRIVER
 
 		$_gen = constant_def('GEN_PREFIX', 'g_').(defined('TAB_STRIP') ? substr($table, TAB_STRIP) : $table);
 
-		$_res_rs = @ibase_query($conn_id, "SELECT FIRST 1 GEN_ID($_gen, 0) AS i_numero FROM $table");
+		$_res_rs = @ibase_query($conn_id, 'SELECT GEN_ID('.$_gen.', 0) AS i_numero FROM RDB$DATABASE');
 		if (!$_res_rs)
 			throw new DbException(__CLASS__.'::'.__METHOD__, ibase_errmsg());
 

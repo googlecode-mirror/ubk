@@ -23,37 +23,27 @@ require_once("c_parser.inc");
  */
 function log_get_file_name()
 {
-	// disabilita la scrittura dei log se PHDIR non � settato
+	// disabilita la scrittura dei log se PHDIR non e' settato
 	if (!defined('LOG_FILE')){
-		if (defined('PHDIR')){
-			define('LOG_FILE','_default_log_file_'.PHDIR);
-			define('LOG_DIR',path(PHDIR,BASE_LOG_DIR));
-		} else {
-			return false;
-		}	
+		define('LOG_FILE','_default_log_file_'.PHDIR);
+		define('LOG_DIR',path(PHDIR,BASE_LOG_DIR));
 	}
+
 	if (!isset($_SESSION[LOG_FILE])) {
-		if (constant_true('SINGLE_LOG')){
+		if (constant_true('LOG_SINGLE')) {
 			$log_file_name = 'log_file_'.date("Ymd").'.log';
 		} elseif (isset($_SERVER['REMOTE_HOST'])) {
 			$log_file_name = $_SERVER['REMOTE_HOST'];
 		} else {
-			// troppo tempo
-			//$log_file_name = gethostbyaddr($_SERVER['REMOTE_ADDR']);
 			$log_file_name = array_get_default('REMOTE_ADDR', $_SERVER, '127.0.0.1');
 			$log_file_name = str_replace('.','_',$log_file_name);
 		}
 
-		if (defined('PHDIR')) {
-			if (!file_exists(LOG_DIR)) {
-				genera_path(LOG_DIR);
-			}
-			
-			$_SESSION[LOG_FILE]= path(LOG_DIR,"$log_file_name.log");
-		} else {// per ora non pi� usato in quanto in determinati casi genera errori
-			$_SESSION[LOG_FILE] = "log/$log_file_name.log";
-			//throw new CodeException("Definire PHDIR nei parametri prima di utilizzare le funzioni di log");
+		if (!file_exists(LOG_DIR)) {
+			genera_path(LOG_DIR);
 		}
+		
+		$_SESSION[LOG_FILE]= path(LOG_DIR, "$log_file_name.log");
 	}
 	//return false;
 	return $_SESSION[LOG_FILE] ;
@@ -61,32 +51,27 @@ function log_get_file_name()
 
 /**
  * Logga un valore dentro il file di log corrente.
- * Il valore pu� essere una stringa, un numero, un array o un oggetto; tipi di dato speciali
+ * Il valore puo' essere una stringa, un numero, un array o un oggetto; tipi di dato speciali
  * (array e oggetti) sono stampati usando print_r. Il file di log viene ottenuto dalla funzione {@link log_get_file_name}
  *
  * @param mixed $val Il valore da stampare sul file di log
  */
 function log_value($val)
 {
-	$log_file_name = log_get_file_name();
-	if ($log_file_name == false){
+	if (($log_file_name = log_get_file_name()) == FALSE) {
 		return;	
 	}
-	// Extract info with print_r if is a special value
+
 	if (is_array($val) || is_object($val)) {
-		ob_start();
-		print_r($val);
-		$val = ob_get_contents();
-		ob_end_clean();
+		$val = print_r($val, TRUE);
 	}
 	
 	$msg =  date("d/m/Y H:i:s"). ": $val\n";
-	if (constant_true('SINGLE_LOG')){
-		$msg =  $_SERVER['REMOTE_ADDR'] . " - $msg";
+	if (constant_true('LOG_SINGLE')) {
+		$msg =  str_pad($_SERVER['REMOTE_ADDR'], 15) . " - $msg";
 	} 
-	if(!file_exists($log_file_name)){
-		$fp = fopen($log_file_name,'w+');
-		fclose($fp);
+	if (!file_exists($log_file_name)) {
+		fclose(fopen($log_file_name,'w+'));
 	}
 	error_log($msg, 3, $log_file_name);
 }
@@ -96,21 +81,18 @@ function log_value($val)
  */
 function log_clear()
 {
-	$log_file_name = log_get_file_name();
-	if ($log_file_name == false){
+	if (($log_file_name = log_get_file_name()) == FALSE) {
 		return;	
 	}
-	if ($handle = fopen ($log_file_name, "w")){
-		fclose($handle);
-	}
+	fclose(fopen($log_file_name, "w"));
 }
 
 /**
  * Error handler di default
  * @param int $errtype Tipo errore (compile, parse, notice, etc.)
  * @param string $errstr Messaggio di errore
- * @param string $errfile Nome del file in cui si � verificato l'errore
- * @param integer $errline Linea di $errfile in cui si � verificato l'errore
+ * @param string $errfile Nome del file in cui si e' verificato l'errore
+ * @param integer $errline Linea di $errfile in cui si e' verificato l'errore
  */
 
 function ubk_err_handler($errtype, $errstr, $errfile, $errline)
@@ -216,7 +198,7 @@ function log_timing()
 function log_performance(&$params)
 {
 	if (!file_exists(PERFORMANCE_LOG)) {
-		$header = array('PHP','XML','AZIONE','MODE','TOTALE','SQL','STAMPA HTML','PARSING','COMPILAZIONE','CACHE','MEM','IP','TIMESTAMP');
+		$header = array('PHP','XML','AZIONE','MODE','T[TOTALE]','T[STAMPA]', 'T[PARSING]', 'T[SQL]','T[CACHE]','MEMORIA (kB)','IP','TIMESTAMP');
 		$header = implode(CSV_SEP, $header) . "\n";
 		scrivi_file(PERFORMANCE_LOG, $header);
 	}
@@ -232,15 +214,14 @@ function log_performance(&$params)
 	$data[] = CACHE::$time['CACHE'];
 
 	if (function_exists('memory_get_usage')){
-		$data[] = memory_get_usage();
+		$data[] = number_format(memory_get_usage(TRUE) / 1024, 2, '.', '');
 	} else {
-		$data[] = 0;
+		$data[] = '?';
 	}
 	$data[] = $_SERVER['REMOTE_ADDR'];
 	$data[] = date("Ymdhis");
 	
 	error_log(implode(CSV_SEP,$data)."\n", 3, PERFORMANCE_LOG);
-	
 }
 
 ?>

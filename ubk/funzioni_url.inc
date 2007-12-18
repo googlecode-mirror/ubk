@@ -1,6 +1,6 @@
 <?php
 /**
- * Funzioni di utilit�per la codifica degli url ai fini di protezione delle operazioni
+ * Funzioni di utilita' per la codifica degli url ai fini di protezione delle operazioni
  * @author Ubik <emiliano.leporati@gmail.com>
  * @package general
  */
@@ -53,6 +53,21 @@ function pathl()
 	}
 
 	return $res;
+}
+
+# per ajax
+function correct_get_post()
+{
+	foreach($_POST as $key => $value) {
+		if (inizia_per($key, 'amp;')) {
+			unset($_POST[$key]);
+			$key = substr($key, 4);
+			$_GET[$key] = $value;
+			$_POST[$key] = $value;
+		} else {
+			$_GET[$key] = $value;
+		}
+	}
 }
 
 /**
@@ -125,7 +140,7 @@ function url_codifica($location, $replace_amp = URL_AMP_DEFAULT)
 }
 
 /**
- * Controlla se la url passata �coerente con il checksum previsto
+ * Controlla se la url passata e' coerente con il checksum previsto
  * @param string $location la stringa contenente la url da verificare (se null, viene presa l'ultima pagina richiesta)
  * @return boolean
  */
@@ -135,7 +150,7 @@ function url_valida($location = NULL)
 	if (!constant_true('CHECKSUM_LINK'))
 		return TRUE;
 
-	// se location �null, faccio la validazione sulla pagina corrente
+	// se location e' null, faccio la validazione sulla pagina corrente
 	if (strlen($location) == 0)
 		$location = PROTO.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 
