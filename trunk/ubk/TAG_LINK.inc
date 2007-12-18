@@ -58,7 +58,7 @@ class LINK_GENERICO extends TAG
 		$nodo =& $this->figlio_richiesto("AZIONE");
 		$nodo -> parametri = $parametri;
 
-		// il gateway è: il mio, o quello dei parametri, o quello di partenza
+		// il gateway e': il mio, o quello dei parametri, o quello di partenza
 		$gateway = gateway($nodo->attributo(
 								"GATEWAY", 
 								array_get_default(
@@ -95,7 +95,7 @@ class LINK_GENERICO extends TAG
 	/**
 	 * Genera la parte di url relativa alla reazione - ossia il redirect che viene effettuato dopo l'azione. Se il nodo manca e l'azione necessita di un post di dati, allora i parametri vengono interamente copiati dal nodo di azione.
 	 * @param array $parametri I parametri della {@link stampa_html}
-	 * @param bool $post Flag che dice se il link deve scatenare un post di dati (ed è quindi inserito in un form) o meno
+	 * @param bool $post Flag che dice se il link deve scatenare un post di dati (ed e' quindi inserito in un form) o meno
 	 * @return string
 	 */
 	function parametri_reazione(&$parametri, $post)
@@ -123,7 +123,7 @@ class LINK_GENERICO extends TAG
 			}
 			$nodo_reazione -> parametri = $parametri;
 
-			// il gateway è: il mio, o quello dei parametri, o quello del nodo azione, o quello di partenza
+			// il gateway e': il mio, o quello dei parametri, o quello del nodo azione, o quello di partenza
 			$gateway     = gateway($nodo_reazione->attributo("GATEWAY", 
 											array_get_default(
 												"GATEWAY", 
@@ -593,7 +593,7 @@ class LINK_ORDINA extends TAG
 	function stampa_html(&$parametri)
 	{
 		$rs =& $parametri["GESTORE"];
-		// il gateway è: il mio, o quello dei parametri, o quello di partenza
+		// il gateway e': il mio, o quello dei parametri, o quello di partenza
 		$gateway    = gateway($this->attributo("GATEWAY", 
 										array_get_default(
 											"GATEWAY", 
@@ -639,7 +639,7 @@ class LINK_ORDINA extends TAG
 class LINK_SPOSTAMENTO extends TAG
 {
 	/**
-	 * Imposta il contenuto del sotto-tag CONTENUTO, se questo non è già impostato
+	 * Imposta il contenuto del sotto-tag CONTENUTO, se questo non e' gia' impostato
 	 * @param mixed $default
 	 */
 	function imposta_contenuto($default)
@@ -803,7 +803,7 @@ class PAGINATORE extends TAG
 		$dim_pagina      = array_get_default("PAGE-SIZE", $parametri, 0);
 		$last_page       = ($dim_pagina == 0) ? 0 : ceil($rs->count_reale / $dim_pagina) - 1;
 
-		// non deve apparire  null se c'è solo un'unica pagina
+		// non deve apparire  null se c'e' solo un'unica pagina
 		if ($last_page == 0) {
 			return;	
 		}

@@ -12,8 +12,8 @@
 class AJAX_FORM extends CONTENITORE
 {
 	/**
-	 * Dice se la modalit�del campo �W o RW, e quindi �necessario generare il javascript di controllo
-	 * @param string $nome Il nome del campo o combo o picker di cui verificare la modalit�nel formato 'NOMETAG-NOMECAMPO'.
+	 * Dice se la modalita' del campo e' W o RW, e quindi e' necessario generare il javascript di controllo
+	 * @param string $nome Il nome del campo o combo o picker di cui verificare la modalita' nel formato 'NOMETAG-NOMECAMPO'.
 	 * 
 	 */
 	protected function modalita_ok($nome, &$parametri) 
@@ -127,7 +127,7 @@ class AJAX_FORM extends CONTENITORE
 		unset($atts['CAMPI-CONSIGLIATI']);
 		unset($atts['NUMERO']);
 		// informazione sui campi CHECKBOX
-		// devo sapere quali check ci sono sulla pagina, cos�quando le posto sceccate (?) posso
+		// devo sapere quali check ci sono sulla pagina, cosi' quando le posto sceccate (?) posso
 		// sapere che c'erano e scrivere 0 sul db
 		$checks   = array_merge($this->figli_profondita("CHECKBOX"), $this->figli_profondita("CHECKBOX_IMG"));
 		if ($c = $this->attributo('CHECKBOXES')) {
@@ -270,7 +270,7 @@ class LINK_AJAX_GENERICO extends TAG
 			throw new CodeException(__CLASS__."::AZIONE non inserito in un FORM");
 		}
 
-		// il gateway � il mio, o quello dei parametri, o quello di partenza
+		// il gateway e'  il mio, o quello dei parametri, o quello di partenza
 		$gateway = gateway($nodo->attributo(
 								"GATEWAY", 
 								array_get_default(
@@ -356,7 +356,7 @@ class LINK_AJAX_GENERICO extends TAG
 	/**
 	 * Genera la parte di url relativa alla reazione - ossia il redirect che viene effettuato dopo l'azione. Se il nodo manca e l'azione necessita di un post di dati, allora i parametri vengono interamente copiati dal nodo di azione.
 	 * @param array $parametri I parametri della {@link stampa_html}
-	 * @param bool $post Flag che dice se il link deve scatenare un post di dati (ed �quindi inserito in un form) o meno
+	 * @param bool $post Flag che dice se il link deve scatenare un post di dati (ed e' quindi inserito in un form) o meno
 	 * @return string
 	 */
 	protected function parametri_reazione(&$parametri)
@@ -389,7 +389,7 @@ class LINK_AJAX_GENERICO extends TAG
 			throw new CodeException(__CLASS__."::REAZIONE non inserito in un FORM");
 		}
 
-		// il gateway � il mio, o quello dei parametri, o quello del nodo azione, o quello di partenza
+		// il gateway e' il mio, o quello dei parametri, o quello del nodo azione, o quello di partenza
 		$gateway     = gateway($nodo_reazione->attributo("GATEWAY", 
 										array_get_default(
 											"GATEWAY", 
@@ -957,7 +957,7 @@ class PAGINATORE_AJAX extends TAG
 		$extra           = $this->attributo('EXTRA-GET', '');
 		$last_page       = ($dim_pagina == 0) ? 0 : ceil($rs->count_reale / $dim_pagina) - 1;
 
-		// non deve apparire  null se c'�solo un'unica pagina
+		// non deve apparire  null se c'e' solo un'unica pagina
 		if ($last_page == 0) {
 			return;	
 		}

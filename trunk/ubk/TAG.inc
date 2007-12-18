@@ -13,7 +13,7 @@ require_once("funzioni_log.inc");
 
 
 /**
- * Classe base della tag-library, fornisce tutte le utilit�di accesso agli attributi e ai nodi figlio, la stampa della struttura e la conversione bufferizzata
+ * Classe base della tag-library, fornisce tutte le utilitï¿½di accesso agli attributi e ai nodi figlio, la stampa della struttura e la conversione bufferizzata
  * @package tag
  */
 class TAG 
@@ -37,7 +37,7 @@ class TAG
 	public $figli = array();
 
 	/** 
-	 * Contenuto testuale del tag (quando il tag non �un contenitore)
+	 * Contenuto testuale del tag (quando il tag non ï¿½un contenitore)
 	 * @var string
 	 */
 	public $contenuto = "";
@@ -61,7 +61,7 @@ class TAG
 	public $livello_in_sorgente;
 
 	/** 
-	 * Posizione del figlio rispetto al padre, -1 se {@link padre} �NULL
+	 * Posizione del figlio rispetto al padre, -1 se {@link padre} ï¿½NULL
 	 * @var int
 	 */
 	public $numero_figlio = -1;
@@ -76,7 +76,7 @@ class TAG
 	}
 
 	/** 
-	 * Dice se per l'attributo passato �stato specificato un valore
+	 * Dice se per l'attributo passato ï¿½stato specificato un valore
 	 * @param string $nome nome dell'attributo
 	 * @return bool
 	 */
@@ -86,7 +86,7 @@ class TAG
 	}
 
 	/** 
-	 * Dice se l'attributo �calcolato o meno
+	 * Dice se l'attributo ï¿½calcolato o meno
 	 * @param string $nome nome dell'attributo
 	 * @return bool
 	 */
@@ -100,9 +100,9 @@ class TAG
 	}
 
 	/** 
-	 * Lettura attributo opzionale in modalit�originale (il valore viene ritornato come �nel sorgente)
+	 * Lettura attributo opzionale in modalitï¿½originale (il valore viene ritornato come ï¿½nel sorgente)
 	 * @param string $nome nome dell'attributo
-	 * @param mixed $se_manca valore di default, viene ritornato se l'attributo non �stato specificato nel sorgente
+	 * @param mixed $se_manca valore di default, viene ritornato se l'attributo non ï¿½stato specificato nel sorgente
 	 * @return mixed
 	 */
 	public function attributo_originale($nome, $se_manca = "")
@@ -112,7 +112,7 @@ class TAG
 	
 
 	/** 
-	 * Lettura attributo richiesto in modalit�originale (il valore viene ritornato come �nel sorgente); se l'attributo non �stato specificato nel sorgente, viene sollevato un errore
+	 * Lettura attributo richiesto in modalitï¿½originale (il valore viene ritornato come ï¿½nel sorgente); se l'attributo non ï¿½stato specificato nel sorgente, viene sollevato un errore
 	 * @param string $nome nome dell'attributo
 	 * @return mixed
 	 */
@@ -126,9 +126,9 @@ class TAG
 	}
 
 	/** 
-	 * Lettura attributo opzionale in modalit�avanzata (se il valore comincia per '$', viene ritornato il contenuto della variabile specificata, anzich�il suo nome; se il valore comincia per '%' viene considerata un'espressione e viene ritornato il risultato della sua valutazione)
+	 * Lettura attributo opzionale in modalitï¿½avanzata (se il valore comincia per '$', viene ritornato il contenuto della variabile specificata, anzichï¿½il suo nome; se il valore comincia per '%' viene considerata un'espressione e viene ritornato il risultato della sua valutazione)
 	 * @param string $nome nome dell'attributo
-	 * @param mixed $se_manca valore di default, viene ritornato se l'attributo non �stato specificato nel sorgente
+	 * @param mixed $se_manca valore di default, viene ritornato se l'attributo non ï¿½stato specificato nel sorgente
 	 * @return mixed
 	 */
 	public function attributo($nome, $se_manca = "")
@@ -145,7 +145,7 @@ class TAG
 	}
 
 	/** 
-	 * Lettura attributo richiesto in modalit�avanzata (se il valore comincia per '$', viene ritornato il contenuto della variabile specificata, anzich�il suo nome; se il valore comincia per '%' viene considerata un'espressione e viene ritornato il risultato della sua valutazione); se l'attributo non �stato specificato nel sorgente, viene sollevato un errore
+	 * Lettura attributo richiesto in modalitï¿½avanzata (se il valore comincia per '$', viene ritornato il contenuto della variabile specificata, anzichï¿½il suo nome; se il valore comincia per '%' viene considerata un'espressione e viene ritornato il risultato della sua valutazione); se l'attributo non ï¿½stato specificato nel sorgente, viene sollevato un errore
 	 * @param string $nome nome dell'attributo
 	 * @return mixed
 	 */
@@ -301,7 +301,7 @@ class TAG
 	}
 
 	/**
-	 * Esegue la trasformazione del nodo corrente in HTML - qui il metodo �ancora vuoto, da implementare nelle classi figlio
+	 * Esegue la trasformazione del nodo corrente in HTML - qui il metodo ï¿½ancora vuoto, da implementare nelle classi figlio
 	 * @param array &$parametri parametri di "ambiente" impostati da altri nodi o dai gateway
 	 */
 	public function stampa_html(&$parametri)
@@ -557,6 +557,10 @@ require_once("TAG_SEZ.inc");
 /** 
  * Inclusione di tutti gli altri tag della libreria (TABELLE)
  */ 
-require_once("TAG_TABELLE.inc");
+#require_once("TAG_TABELLE.inc");
+/** 
+ * Inclusione di tutti gli altri tag della libreria (AJAX)
+ */ 
+require_once("TAG_LINK_AJAX.inc");
 
 ?>
