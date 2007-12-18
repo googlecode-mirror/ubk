@@ -1,9 +1,8 @@
 <?php
 /**
  * Classe base per l'esecuzione delle azioni comandate dai link delle pagine generate
- *
+ * @author Ubik <leporati@immaginazioneelavoro.it>
  * @package db
- * @author Ubik <emiliano.leporati@gmail.com>
  */
 
 /** 
@@ -30,7 +29,7 @@ class AZIONI_FORM
 	protected $parametri = array();
 
 	/**
-	 * Indica se bisogna o meno invocare il metodo carica alla fine dell'esecuzione dell'azione. Pu�essere disabilitata via codice nei metodi riscritti
+	 * Indica se bisogna o meno invocare il metodo carica alla fine dell'esecuzione dell'azione. Puo' essere disabilitata via codice nei metodi riscritti
 	 * @var bool
 	 */
 	protected $esegui_carica = TRUE;
@@ -481,7 +480,7 @@ class AZIONI_FORM
 	}
 
 	/**
-	 * Ritorna il filtro in sessione per il file presente nei parametri, risultato della combinazione fra il filtro di default e il filtro della maschera, NULL se non �presente alcun filtro
+	 * Ritorna il filtro in sessione per il file presente nei parametri, risultato della combinazione fra il filtro di default e il filtro della maschera, NULL se non e' presente alcun filtro
 	 * @return string
 	 */
 	public function filtro_pagina($_file = NULL)
@@ -583,7 +582,7 @@ class AZIONI_FORM
 					$_url = $this->parametri["R-GATEWAY"];
 				}
 
-				// aggiungo un parametro per indicare che �una reazione cos�la funzione di decodifica
+				// aggiungo un parametro per indicare che e' una reazione cosi' la funzione di decodifica
 				// non va a male
 				$_url .= "&IS-REAZIONE=1";
 

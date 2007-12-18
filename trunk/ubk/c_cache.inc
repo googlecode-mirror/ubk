@@ -8,7 +8,6 @@
 
 class CACHE 
 {
-
 	// TIMINGS
 	public static $time = array('CACHE' => 0);
 

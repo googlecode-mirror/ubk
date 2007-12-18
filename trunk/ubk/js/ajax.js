@@ -1,7 +1,17 @@
 /**
  * CORE: chiamate del framework
  */
-var Ubk = {
+var CUbk = Class.create({
+	initialize: function() {
+
+		this.historyManager = null;
+
+		Ajax.Responders.register({
+			onFailure: this.failure.bind(this)
+		});
+
+//		Ajax.isFailure = this.isFailure.bind(this);
+	},
 
 	followLink: function(l)
 	{
@@ -11,19 +21,30 @@ var Ubk = {
 	// fallimento chiamata AJAX
 	failure: function(request)
 	{
-		Ubk.working(false);
-		Ubk.error(request.responseText);
+		this.working(false);
+		this.error(request.responseText);
+	},
+
+	isFailure: function(request)
+	{
+		var ko = request.responseText.indexOf('+KO');
+		if (ko != -1) {
+			this.error(request.responseText.substr(ko + 3));
+			return true;
+		} else {
+			return false;
+		}
 	},
 
 	// verifica successo chiamata AJAX senza chiamata in cascata (reazione)
 	success: function(request, target)
 	{
-		Ubk.working(false);
+		this.working(false);
 
 		if ((ko = request.responseText.indexOf('+KO')) != -1) {
 
 			if (target) Element.setStyle(target, {display: 'none'});
-			Ubk.error(request.responseText.substr(ko + 3));
+			this.error(request.responseText.substr(ko + 3));
 		
 		} else if (request.responseText.indexOf('+OK') == 0) {	// ok e oks ..
 
@@ -31,12 +52,13 @@ var Ubk = {
 			if (ok_msg.indexOf('javascript:') == 0)
 				eval(ok_msg.substr(11));
 			else if (ok_msg.length > 0)
-				Ubk.ok(ok_msg);
+				this.ok(ok_msg);
 
 		} else {
+
 			if (target) Element.update(target, request.responseText);
-			if (target && !Ubk.isVisible(target) && !$(target).hasAttribute('hide')) {
-				Ubk.show(target);
+			if (target && !this.isVisible(target)) {
+				this.show(target);
 			}
 		}
 	},
@@ -46,9 +68,9 @@ var Ubk = {
 	{
 		if ((ko = request.responseText.indexOf('+KO')) != -1) {
 
-			Ubk.working(false);
+			this.working(false);
 			if (target) Element.setStyle(target, {display: 'none'});
-			Ubk.error(request.responseText.substr(ko + 3));
+			this.error(request.responseText.substr(ko + 3));
 		
 		} else if (request.responseText.indexOf('+OK') == 0) {	// ok e oks ..
 
@@ -56,48 +78,50 @@ var Ubk = {
 			if (ok_msg.indexOf('javascript:') == 0)
 				eval(ok_msg.substr(11));
 			else if (ok_msg.length > 0)
-				Ubk.ok(ok_msg);
+				this.ok(ok_msg);
 
 			if (onComplete) onComplete(request, target);
 
 		} else {
 			
-			Ubk.working(false);
+			this.working(false);
 			if (target) Element.update(target, request.responseText);
 			if (onComplete) onComplete(request, target);
-			if (target && !Ubk.isVisible(target) && !$(target).hasAttribute('hide')) {
-				Ubk.show(target);
+			if (target && !this.isVisible(target)) {
+				this.show(target);
 			}
 		}
 	},
 
-	getRequest: function(o) {
+	getRequest: function(opt) {
+		var onComplete = (!opt.onComplete ? 
+					function(request) { this.success(request, opt.target); } :
+					function(request) { this.transit(request, opt.target, opt.onComplete); });
 		new Ajax.Request(
-			o.options.follow.url,
+			opt.url,
 			{
 				method: 'get'
-				, parameters: o.options.follow.pars
-				, evalScripts: o.options.follow.replace
-				, onFailure: Ubk.failure
-				, onComplete: (!o.options.follow.onComplete ? 
-							function(request) { Ubk.success(request, o.options.follow.target); } :
-							function(request) { Ubk.transit(request, o.options.follow.target, o.options.follow.onComplete); })
-				, asynchronous: o.options.follow.async
+				, parameters: opt.pars
+				, evalScripts: opt.replace
+				, onFailure: this.failure.bind(this)
+				, onComplete: onComplete.bind(this)
+				, asynchronous: opt.async
 			});
 	},
 
-	postRequest: function(o) {
+	postRequest: function(opt) {
+		var onComplete = (!opt.onComplete ? 
+					function(request) { this.success(request, opt.target); } : 
+					function(request) { this.transit(request, opt.target, opt.onComplete); });
 		new Ajax.Request(
-			o.options.follow.url,
+			opt.url,
 			{
 				method: 'post'
-				,evalScripts: o.options.follow.replace
-				,parameters: o.options.follow.pars + '&' + Form.serialize(document.forms[o.options.follow.form]) + '&FORM-NAME=' + o.options.follow.form
-				,onFailure: Ubk.failure
-				,onComplete: (!o.options.follow.onComplete ? 
-							function(request) { Ubk.success(request, o.options.follow.target); } : 
-							function(request) { Ubk.transit(request, o.options.follow.target, o.options.follow.onComplete); })
-				,asynchronous: o.options.follow.async
+				,evalScripts: opt.replace
+				,parameters: opt.pars + '&' + $(document.forms[opt.form]).serialize() + '&FORM-NAME=' + opt.form
+				,onFailure: this.failure.bind(this)
+				,onComplete: onComplete.bind(this)
+				,asynchronous: opt.async
 			});
 	},
 
@@ -114,7 +138,7 @@ var Ubk = {
 
 		if (onsubmit.call()) {
 
-			Ubk.working(true, 
+			this.working(true, 
 				{ 
 					form: form.name
 					, target: target
@@ -123,7 +147,7 @@ var Ubk = {
 					, replace: replace
 					, async: async
 					, type: 'post'
-					, request: Ubk.postRequest
+					, request: this.postRequest
 					, onComplete: onComplete
 				});
 
@@ -135,13 +159,13 @@ var Ubk = {
 
 	silentPost: function(form, id, target, url, pars, replace, async, onComplete) 
 	{
-		Ubk.post(form, id, target, url, pars, replace, async, onComplete);
+		this.post(form, id, target, url, pars, replace, async, onComplete);
 	},
 
 	// get di dati
 	follow: function(target, url, pars, replace, async, onComplete)
 	{
-		Ubk.working(true, 
+		this.working(true, 
 			{ 
 				target: target
 				, url: url
@@ -149,7 +173,7 @@ var Ubk = {
 				, replace: replace
 				, async: async
 				, type: 'get'
-				, request: Ubk.getRequest
+				, request: this.getRequest
 				, onComplete: onComplete
 			});
 	},
@@ -157,28 +181,15 @@ var Ubk = {
 	// stiamo lavorando ....
 	working: function (state, options)
 	{
-		opt = { duration: 0.1 }
+		opt = { duration: 0.1 };
 		if (state) {
 			if (options.target && options.pars.indexOf('&TARGET=') == -1)
 				options.pars += '&TARGET=' + options.target;
-			opt.follow = options;
+			//opt.ubk = options;
 
-			History.add(options.url+'?'+options.pars, options);
+			if (this.historyManager) this.historyManager.add(options.url+'?'+options.pars, options);
 
-			options.request({options: opt});
-/*
-			if (true || options.async) {
-				opt.afterFinish = options.afterFinish;
-				new Effect.Appear('progress', opt);
-			} else {
-				new Effect.Appear('progress', opt);
-				opt.afterFinish = options.afterFinish;
-				opt.to = 0.35;
-				new Effect.Appear('working', opt);
-			}
-		} else {
-			if (Ubk.isVisible(target)) new Effect.Fade('progress', opt);
-			new Effect.Fade('working', opt);*/
+			options.request.call(this, options);
 		}
 	},
 
@@ -213,10 +224,10 @@ var Ubk = {
 		Element.hide(target);
 	}
 
-};
+});
 
 // per le CHECKBOX-IMG
-var Check = {
+var CUbkCheck = Class.create({
 
 	imageToggle: function (chk, lock)
 	{
@@ -249,34 +260,50 @@ var Check = {
 		}
 	},
 
+	// toggle su barra spaziatrice
 	keyToggle: function(event, lock)
 	{
 		if (lock) return;
 		if (event.keyCode == 32)
-			Check.checkToggle(Event.element(event), lock);
+			this.checkToggle(Event.element(event), lock);
 	}
 
-};
+});
 
-History = {
-	// se sto tornando indietro, non devo storicizzare
-	backing: false,
-	// mi dice se la chiamata è alla root o è un refresh
+var CUbkHistory = Class.create({
+	initialize: function() {
+		// se sto tornando indietro, non devo storicizzare
+		this.backing = false;
+		// link con Ubk
+		Ubk.historyManager = this;
+		// init dhtmlHistory
+		dhtmlHistory.create({
+			toJSON: function(o) {
+					return Object.toJSON(o);
+			}
+			, fromJSON: function(s) {
+					return s.evalJSON();
+			}
+		});
+
+	},
+
+	// mi dice se la chiamata Ã¨ alla root o Ã¨ un refresh
 	isRoot: function()
 	{
 		return dhtmlHistory.getCurrentLocation() == '';
 	},
+	
 	// afterfinish viene impostata in xp.xml dove avviene
 	// questa chiamata: contiene la home predefinita dell'utente
 	// o la pagina richiesta tramite virtu-link
-	init: function(afterFinish)
+	start: function(firstHistoryCall)
 	{
-		dhtmlHistory.initialize();
-		dhtmlHistory.addListener(History.show);
-		// se questa è una chiamata alla root, non un refresh,
+		dhtmlHistory.addListener(this.show.bind(this));
+		// se questa Ã¨ una chiamata alla root, non un refresh,
 		// carico quanto devo caricare
-		if (History.isRoot()) {
-			Try.these(afterFinish);
+		if (this.isRoot()) {
+			Try.these(firstHistoryCall);
 		}
 	},
 	
@@ -290,8 +317,8 @@ History = {
 	add: function(location, options)
 	{
 		// se sono arrivato qua mentre tornavo indietro, non aggiorno la history
-		if (History.backing) return;
-		// se ci sono opzioni, è una mia chiamata ...
+		if (this.backing) return;
+		// se ci sono opzioni, Ã¨ una mia chiamata ...
 		// verifico che si voglia cambiare il contenuto centrale, nel caso aggiungo
 		// la location in history
 		if (options) {
@@ -308,14 +335,14 @@ History = {
 	// handler per il caricamento della location dato back, fore, refresh
 	show: function(location, options)
 	{
-		History.backing = true;
-		// se ho opzioni, è una mia chiamata fatta durante una working
+		this.backing = true;
+		// se ho opzioni, Ã¨ una mia chiamata fatta durante una working
 		// la rieseguo, tutti i parametri sono nelle opzioni
 		if (options) {
-			options.afterFinish = options.request = (options.type == 'get' ? Ubk.getRequest : Ubk.postRequest);
+			options.afterFinish = options.request = (options.type == 'get' ? Ubk.getRequest : Ubk.postRequest).bind(Ubk);
 			Ubk.working(true, options);
 		}
 		// altrimenti sono tornato alla root, non faccio nulla
-		History.backing = false;
+		this.backing = false;
 	}
-};
+});

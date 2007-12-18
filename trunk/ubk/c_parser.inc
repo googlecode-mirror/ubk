@@ -20,7 +20,7 @@ $TAG_SINGOLI = array("BR", "LINK", "META", "BASE", "HR", "PARAM", "SPACER", "ARE
 $TAG_HTML    = array('ACRONYM', 'TD', 'TH', 'TR', 'DIV', 'INPUT', 'IMG', 'SCRIPT', 'STYLE', 'SELECT', 'OPTION');
 
 /** 
- * Definisce, per tutti quei TAG che hanno nome della classe di definizione differente dal nome del tag, o pi� classi associabili a seconda del contesto {@link CONTESTI_CLASSE}, i nomi della o delle classi che il tag pu� diventare
+ * Definisce, per tutti quei TAG che hanno nome della classe di definizione differente dal nome del tag, o piu' classi associabili a seconda del contesto {@link CONTESTI_CLASSE}, i nomi della o delle classi che il tag puo' diventare
  * @global array $CLASSI_TAG 
  */
 $CLASSI_TAG = array(
@@ -88,7 +88,7 @@ require_once("TAG.inc");
  */
 class PARSER 
 {
-	public static $time = array('TIME' => 0, 'NUM' => 0);
+	public static $time = array('PARSE' => 0, 'NUM' => 0);
 
 
 	/**
@@ -168,9 +168,9 @@ class PARSER
 
 
 	/**
-	 * E' fondamentale capire se il tag e' istanziabile nel contesto attuale ({@link $contesto}). Se la classe non ha contesti di validit� particolari, allora � istanziabile in qualunque contesto. Se � attivabile in un solo contesto, il controllo � puntuale e diretto. Se � attivabile in pi� contesti, bisogna cercare fra tutti.
+	 * E' fondamentale capire se il tag e' istanziabile nel contesto attuale ({@link $contesto}). Se la classe non ha contesti di validitïa' particolari, allora e' istanziabile in qualunque contesto. Se e' attivabile in un solo contesto, il controllo e' puntuale e diretto. Se e' attivabile in piu' contesti, bisogna cercare fra tutti.
 	 * @access protected
-	 * @param string $classe classe di cui verificare l'istanziabilit�
+	 * @param string $classe classe di cui verificare l'istanziabilita'
 	 * @return bool
 	 */
 	private function _contesto_corretto($classe)
@@ -195,7 +195,7 @@ class PARSER
 	}
 
 	/**
-	 * Dice se, nel contesto attuale, esiste una classe associata ad un certo tag, e se esiste, qual �. Ad un tag corrisponde una classe se esiste una classe chiamata come il tag, oppure al tag � associata una classe specifica, e se ci troviamo nel contesto corretto ({@link _contesto_corretto}). Ritorna false o il nome della classe.
+	 * Dice se, nel contesto attuale, esiste una classe associata ad un certo tag, e se esiste, qual e'. Ad un tag corrisponde una classe se esiste una classe chiamata come il tag, oppure al tag e' associata una classe specifica, e se ci troviamo nel contesto corretto ({@link _contesto_corretto}). Ritorna false o il nome della classe.
 	 * @access protected
 	 * @param string $tag tag aperto dal parser
 	 * @return mixed
@@ -205,7 +205,7 @@ class PARSER
 		global $CLASSI_TAG;
 		global $CONTESTI_CLASSE;
 		
-		// prendo tutte le classi che quel tag pu� avere:
+		// prendo tutte le classi che quel tag puo' avere:
 		// quelle specificate, se esistono, o quella chiamata come il tag
 		if (array_key_exists($tag, $CLASSI_TAG)) {
 			$_classi = $CLASSI_TAG[$tag];
@@ -213,14 +213,14 @@ class PARSER
 			$_classi = $tag;
 		}
 
-		// se pu� avere solo una classe, controllo puntuale
-		// altrimenti ciclo per ogni possibilit�
+		// se puo' avere solo una classe, controllo puntuale
+		// altrimenti ciclo per ogni possibilita'
 
 		// la classe associata al tag esiste se la classe PHP stessa esiste
 		// e se sono nel contesto corretto
 		if (is_string($_classi)) {
-			// il contesto pu� essere definito indipendentemente sulla classe o sul tag, se l'associazione
-			// � univoca - questo non vale se l'associazione � molteplice
+			// il contesto puo' essere definito indipendentemente sulla classe o sul tag, se l'associazione
+			// e' univoca - questo non vale se l'associazione e' molteplice
 			if (class_exists($_classi) && 
 					(
 						(array_key_exists($_classi, $CONTESTI_CLASSE) && $this->_contesto_corretto($_classi))
@@ -233,7 +233,7 @@ class PARSER
 				return $_classi;
 			}
 		} else {
-			// qui la classe deve esistere PER FORZA, perch� la ho specificata io a mano,
+			// qui la classe deve esistere PER FORZA, perche' la ho specificata io a mano,
 			// quindi evito un controllo inutile
 			// quindi esiste una classe associata al tag solo se mi trovo nel contesto corretto
 			// come detto sopra, qui il contesto deve essere pfz definito sulla classe, non sul tag
@@ -250,7 +250,7 @@ class PARSER
 	}
 
 	/**
-	 * Dice se il nodo in cima alla {@link $pila} � un contenitore.
+	 * Dice se il nodo in cima alla {@link $pila} e' un contenitore.
 	 * @access protected
 	 * @return bool
 	 */
@@ -342,7 +342,7 @@ class PARSER
 
 		// se ho chiuso il tag in cima alla pila, lo tolgo
 		// altrimenti, aggiungo dell'html di chiusura al contenitore corrente,
-		// se il tag non � uno di quelli da chiudere necessariamente inline
+		// se il tag non e' uno di quelli da chiudere necessariamente inline
 		if ($this->pila[0]->livello_in_sorgente == $this->livello) {
 
 			array_shift($this->pila);
