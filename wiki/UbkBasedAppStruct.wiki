@@ -12,12 +12,12 @@ Here we give an overview about the directory structure and the base files of a u
     * *params.ini*: contains definitions of base parameters used by the app to connect to the database
     * *errore.xml*: the file used to display an error (those manageable by _set_error_handler_), parsed by the default error handler (a default file will be used if missing)
     * *errore-exc.xml*: the file used to display an unhandled exception, parsed by the default exception handler (a default file will be used if missing)
-  * /*xsl*: contains app-specific xslt templates files, used to pre-transform the xml page definitions
-    * *transform.xsl*: the file searched by the framework, used to include all app-specific xslt files; path here are relative to the framework's root, you can use the keyword *OWN* as a placemarker for the phisical directory of the app
-  * /*log*: here the framework stores error, notices, exceptions, and so on, divided by client IP; this happens 'cos of the default error and exception handlers. The directory is created automatically if it doesn't exists
-  * /*cache*: 
-    * /*metadata*: here are stored the metadata informations about tables, views, stored procedures
-    * /*xml*: here lies the parsed, objectized version of the xml page definitions
+    * /*xsl*: contains app-specific xslt templates files, used to pre-transform the xml page definitions
+      * *transform.xsl*: the file searched by the framework, used to include all app-specific xslt files; path here are relative to the framework's root, you can use the keyword *OWN* as a placemarker for the phisical directory of the app
+    * /*log*: here the framework stores error, notices, exceptions, and so on, divided by client IP; this happens 'cos of the default error and exception handlers. The directory is created automatically if it doesn't exists
+    * /*cache*: 
+      * /*metadata*: here are stored the metadata informations about tables, views, stored procedures
+      * /*xml*: here lies the parsed, objectized version of the xml page definitions
 
 = Parameters =
 Parameters used by the framework, usually defined in params.ini
@@ -37,10 +37,10 @@ Parameters used by the framework, usually defined in params.ini
   * *MATCH*: if present in a section of the .ini file, all parameters under this section are parsed only if the value of *MATCH* matches with the <host>:<port> from where the http request comes - so you can set different parameters according from the provenience, i.e. the virtual host configuration of the http server
 
 Other parameters defines the database connections: we can manage multiple database connections in an applications, even if usually we will use just one.
-Every database connection lies in a *[DB_something]* section of the ini files, defining these parameters:
+Every database connection lies in a *[ DB_something ]* section of the ini files, defining these parameters:
   * *DB_TYPE*: the ubk-type of the database; valid values are FBIRD, MSSQL, ODBC, MYSQL
   * *DB_SERVER*: the host where the dbms runs
   * *DB_NAME*: the name of the database
   * *DB_USERNAME*
   * *DB_PASSWORD*
-If not specified else, the framework always tries to use the connection defined in section *[DB_DEFAULT]*
+If not specified else, the framework always tries to use the connection defined in section *[ DB_DEFAULT ]*
