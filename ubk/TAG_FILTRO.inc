@@ -10,7 +10,7 @@
  * @param string $file Nome del file in cui risiede il campo di filtro
  * @param string $campo Nome del campo di filtro
  * @param string $op Operatore di filtro
- * @param string $default Valore di default che viene ritornato se nessun filtro per quel campo con quell'operatore �impostato sulla pagina
+ * @param string $default Valore di default che viene ritornato se nessun filtro per quel campo con quell'operatore e' impostato sulla pagina
  * @return mixed
  */
 function filtro_def($file, $campo, $op, $default)
@@ -97,7 +97,7 @@ class CAMPO_FILTRO extends CAMPO
 
 
 /**
- * Checkbox. Sempre in modalit�W e con valore di default automatico (resettato in {@link db::AZIONI_FORM::mostra}). 
+ * Checkbox. Sempre in modalita' W e con valore di default automatico (resettato in {@link db::AZIONI_FORM::mostra}). 
  * @package tag
  */
 class CHECKBOX_FILTRO extends CHECKBOX
@@ -170,7 +170,7 @@ class PICKER_FILTRO extends PICKER
 }
 
 /**
- * Cod-desc. Sempre in modalit�W e con valore di default automatico (resettato in {@link db::AZIONI_FORM::mostra}). 
+ * Cod-desc. Sempre in modalita' W e con valore di default automatico (resettato in {@link db::AZIONI_FORM::mostra}). 
  * @package tag
  */
 class COD_DESC_FILTRO extends COD_DESC
@@ -194,7 +194,7 @@ class COD_DESC_FILTRO extends COD_DESC
 }
 
 /**
- * Genera un filtro utilizzando l'operatore virtuale {@link op_tp}: il valore immesso nella casella di testo viene usato per filtrare una tabella esterna. Esempio tipico: una ricerca per comune. Il comune �su tabella esterna. Devo selezionare tutti i fornitori che stanno in un comune che comincia per TO. In casi simili, usare questo campo (o la combo), che genera una clausola IN basata su una subquery: SELECT * FROM tabella WHERE ...... AND i_comune_id IN (SELECT i_comune_id FROM coumne WHERE t_descrizione LIKE 'TO%')
+ * Genera un filtro utilizzando l'operatore virtuale {@link op_tp}: il valore immesso nella casella di testo viene usato per filtrare una tabella esterna. Esempio tipico: una ricerca per comune. Il comune e' su tabella esterna. Devo selezionare tutti i fornitori che stanno in un comune che comincia per TO. In casi simili, usare questo campo (o la combo), che genera una clausola IN basata su una subquery: SELECT * FROM tabella WHERE ...... AND i_comune_id IN (SELECT i_comune_id FROM coumne WHERE t_descrizione LIKE 'TO%')
  * @package tag
  */
 class CAMPO_FILTRO_TP extends CAMPO_FILTRO

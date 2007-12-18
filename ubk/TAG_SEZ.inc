@@ -12,7 +12,7 @@
 class XML_IF extends TAG
 {
 	/**
-	 * Ritorna il risultato del test, che pu�trovarsi sia come nodo che come attributo
+	 * Ritorna il risultato del test, che puo' trovarsi sia come nodo che come attributo
 	 * @param array $parametri
 	 * @return bool
 	 */
@@ -64,7 +64,7 @@ class WHEN extends TAG
 			$_figlio =& $this->figli[$i];
 			// se ho un test
 			if (!is_null($_figlio) && $_figlio->nome == "TEST") {
-				// se �vero, dopo deve esserci un THEN
+				// se e' vero, dopo deve esserci un THEN
 				if (eval(xml_2_php($_figlio->contenuto))) {
 					$_then =& $this->figli[++ $i];
 					if ($_then->nome != "THEN") {
@@ -74,7 +74,7 @@ class WHEN extends TAG
 						// se ne basta uno, esco
 						if (!$_tutti) break;
 					}
-				// se �falso, e il secondo figlio �un ELSE, allora mostro
+				// se e' falso, e il secondo figlio e' un ELSE, allora mostro
 				} else {
 					$_else =& $this->figli[$i + 2];
 					if (!is_null($_else) && $_else->nome == "ELSE") {
@@ -107,7 +107,7 @@ class XML_SWITCH extends TAG
 			$_figlio =& $this->figli[$i];
 			// se ho un caso
 			if ($_figlio->nome == "CASE") {
-				// se il caso �uguale al test
+				// se il caso e' uguale al test
 				if ($_test == eval(xml_2_php($_figlio->contenuto))) {
 					// cerco il primo THEN
 					for($j = $i + 1; !$_trovato && $j < count($this->figli); $j ++) {

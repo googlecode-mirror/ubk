@@ -143,7 +143,7 @@ class RIGHE_CORRELATE extends CONTENITORE
 
 		$parametri['GESTORE'] =& $rs_link;
 
-		// costruisco la where - di base è il legame sulle righe correlate
+		// costruisco la where - di base e' il legame sulle righe correlate
 		// se c'e' un filtro aggiuntivo, lo metto in and
 		$where = equ($campo_id_link, $rs->valore($campo_id));
 		if (array_key_exists('FILTRO', $this->attributi)) {

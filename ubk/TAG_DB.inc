@@ -12,7 +12,7 @@
 class FORM extends CONTENITORE
 {
 	/**
-	 * Dice se la modalita' del campo e' W o RW, e quindi �necessario generare il javascript di controllo
+	 * Dice se la modalita' del campo e' W o RW, e quindi e' necessario generare il javascript di controllo
 	 * @param string $nome Il nome del campo o combo o picker di cui verificare la modalita' nel formato 'NOMETAG-NOMECAMPO'.
 	 * 
 	 */
@@ -58,7 +58,7 @@ class FORM extends CONTENITORE
 		echo "<form".xml_att_crea($atts).">";
 		unset($atts);
 		// informazione sui campi CHECKBOX
-		// devo sapere quali check ci sono sulla pagina, cos�quando le posto sceccate (?) posso
+		// devo sapere quali check ci sono sulla pagina, cosi' quando le posto sceccate (?) posso
 		// sapere che c'erano e scrivere 0 sul db
 		$checks   = array_merge($this->figli_profondita("CHECKBOX"), $this->figli_profondita("CHECKBOX_IMG"));
 		$nomi_chk = array();
@@ -125,7 +125,7 @@ class FORM extends CONTENITORE
 
 		$campi_controllare = array_merge($rs->campi, $campi_rich);
 
-		// necessariet�campi
+		// necessarieta' campi
 		$js .= "function verifica_obbligatori_{$parametri['FORM-N']}(id) { if (!verifica_consigliati_{$parametri['FORM-N']}(id)) return false; ";
 		$tmp = array();
 		foreach($campi as $campo) {
@@ -147,7 +147,7 @@ class FORM extends CONTENITORE
 		}
 
 				
-		// necessariet�combo e picker
+		// necessarieta' combo e picker
 		$tmp = array();
 		foreach($combos as $combo) {
 			$nome_campo = $combo->nome();
@@ -193,7 +193,7 @@ class FORM extends CONTENITORE
 
 
 /**
- * Questa classe non �relazionata ad alcun tag; serve per mettere a disposizione dei suoi figli (i campi) un metodo comune di individuazione della modalit�corretta (e consentita in base ai diritti) di visualizzazione.
+ * Questa classe non e' relazionata ad alcun tag; serve per mettere a disposizione dei suoi figli (i campi) un metodo comune di individuazione della modalita' corretta (e consentita in base ai diritti) di visualizzazione.
  * @package tag
  */
 class CAMPO_ACCESSO extends TAG
@@ -256,7 +256,7 @@ class CAMPO_ACCESSO extends TAG
 	}
 
 	/**
-	 * Se non ci troviamo in alcuna sezione, o non vi sono diritti fra i parametri, la modalit�rimane immutata. Se invece ci sono entrambi, allora il risultato �computato in questo modo: se �richiesta la modalit�W, bisogna avere il diritto W. Se �richiesta la modalit�R, bisogna avere il diritto R. Se �richiesta la modalit�RW, o si ha il diritto RW, oppure la modalit�viene abbassata ad R se si ha il diritto R. Se nessuna di queste condizioni �vera, viene restituito NONE, e il campo o il suo valore non verranno visualizzati per niente. Per i campi filtro, basta avere il diritto R.
+	 * Se non ci troviamo in alcuna sezione, o non vi sono diritti fra i parametri, la modalita' rimane immutata. Se invece ci sono entrambi, allora il risultato e' computato in questo modo: se e' richiesta la modalita' W, bisogna avere il diritto W. Se e' richiesta la modalita' R, bisogna avere il diritto R. Se e' richiesta la modalita' RW, o si ha il diritto RW, oppure la modalita' viene abbassata ad R se si ha il diritto R. Se nessuna di queste condizioni e' vera, viene restituito NONE, e il campo o il suo valore non verranno visualizzati per niente. Per i campi filtro, basta avere il diritto R.
 	 * @param array $parametri I parametri della {@link stampa_html}
 	 * @return string
 	 */
@@ -267,25 +267,25 @@ class CAMPO_ACCESSO extends TAG
 		// prendo la sezione fra i parametri (vedi tag SEZIONE)
 		$sezione = array_get_default("SEZIONE", $parametri);
 
-		// se non c'e' nessuna sezione specificata, allora ritorno la modalit�originale
+		// se non c'e' nessuna sezione specificata, allora ritorno la modalita' originale
 		if (strlen($sezione) == 0) {
 			$_mod = $modalita;
 		// altrimenti guardo se ci sono dei diritti specificati nei parametri
 		} else {
 			$diritti = array_get("DIRITTI", $parametri, array());
-			// se non ci sono, ritorno la modalit�originale
+			// se non ci sono, ritorno la modalita' originale
 			if (count($diritti) == 0) {
 				$_mod = $modalita;
 			// altrimenti dipende dal diritto specificato
 			} else {
 				$diritto = $this->attributo("DIRITTO", $modalita);
-				// se la classe �uno dei filtri, mi basta avere il diritto R
+				// se la classe e' uno dei filtri, mi basta avere il diritto R
 				if (finisce_per(get_class($this), "FILTRO") || finisce_per(get_class($this), "FILTRO_TP")) {
 					$_mod = ($diritti[$sezione]["R"] ? $modalita : "NONE");
-				// se ho il diritto, la modalit�va bene
+				// se ho il diritto, la modalita' va bene
 				} elseif ($diritti[$sezione][$diritto]) {
 					$_mod = $modalita;
-				// se non ho il diritto (RW), la modalit��RW e ho il diritto R, allora ritorno R
+				// se non ho il diritto (RW), la modalita' e' RW e ho il diritto R, allora ritorno R
 				} elseif ($modalita == "RW" && $diritti[$sezione]["R"]) {
 					$_mod = "R";
 				// altrimenti niente
@@ -304,11 +304,11 @@ class CAMPO_ACCESSO extends TAG
 	}
 
 	/**
-	 * Dato campo e valore id, ritorna il nome e l'id javascript che avr�il campo sulla maschera in base agli attributi MULTIPLO, JS-NAME e JS-ID
+	 * Dato campo e valore id, ritorna il nome e l'id javascript che avra' il campo sulla maschera in base agli attributi MULTIPLO, JS-NAME e JS-ID
 	 * @param string $campo_id Nome del campo sul db
 	 * @param mixed $id Id della riga corrente
-	 * @param string &$nome Valore che dovr�avere l'attributo NAME del tag, INPUT o SELECT che sia
-	 * @param string &$js_id Valore che dovr�avere l'attributo ID del tag, INPUT o SELECT che sia
+	 * @param string &$nome Valore che dovra' avere l'attributo NAME del tag, INPUT o SELECT che sia
+	 * @param string &$js_id Valore che dovra' avere l'attributo ID del tag, INPUT o SELECT che sia
 	 */
 	public function componi_nome($campo, $id, &$nome, &$js_id)
 	{
@@ -839,7 +839,7 @@ class CAMPO_TABELLA_ESTERNA extends CAMPO_ACCESSO
 class COMBO extends CAMPO_TABELLA_ESTERNA
 {
 	/**
-	 * Ritorna il nome con cui sar�identificata la combo nel form - usata nella generazione dei controlli in {@link FORM::stampa_html}
+	 * Ritorna il nome con cui sara' identificata la combo nel form - usata nella generazione dei controlli in {@link FORM::stampa_html}
 	 * @return string
 	 */
 	public function nome()
@@ -1075,7 +1075,7 @@ class COMBO extends CAMPO_TABELLA_ESTERNA
 class PICKER extends CAMPO_TABELLA_ESTERNA
 {
 	/**
-	 * Ritorna il nome con cui sar�identificata la combo nel form - usata nella generazione dei controlli in {@link FORM::stampa_html}
+	 * Ritorna il nome con cui sara' identificata la combo nel form - usata nella generazione dei controlli in {@link FORM::stampa_html}
 	 * @return string
 	 */
 	public function nome()
@@ -1284,7 +1284,8 @@ class PICKER extends CAMPO_TABELLA_ESTERNA
 					$star = '<span class="star">'.$star.'</span>';
 			}
 
-			// 02/03/2004 -- boh, non era mai capitato ... non me ne capacito un granch�			// prima esisteva solo il ramo else
+			// 02/03/2004 -- boh, non era mai capitato ... non me ne capacito un granche' 
+			// prima esisteva solo il ramo else
 			if (strlen($valore_default) == 0) {
 				$risultato = "";
 			} else {
