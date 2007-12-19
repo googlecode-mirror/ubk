@@ -42,3 +42,7 @@ Javascript controls to ensure correct data format and length are automatically g
 || *js-onchange* || || || js || javascript code to be executed on field value change ||
 || *secolo* || || 20 || int || the century, used to check date soundness; used only on date fields ||
 || *richiesto* || || FALSE || TRUE, FALSE || if TRUE, forces the field to be required on data submit and displays an asterisk after the field; if the global parameter *STAR* is set, then the asterisk is entagged in a _span_ of class _star_ ||
+
+== UBK:CAMPO-MAIL ==
+
+A simple extension to *UBK:CAMPO*: when in R *mode*, if *tipo* is different from _hidden_ and _password_, it displays itself as a _mailto:_ link to its value; in W or RW *mode*, it checks correct e-mail format for its value.
