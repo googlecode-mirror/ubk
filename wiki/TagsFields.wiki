@@ -39,6 +39,7 @@ Javascript controls to ensure correct data format and length are automatically g
 || *align* || || _right_ for date, time and numeric fields, _left_ otherwise || right, left, center || alignment of field content ||
 || *bloccato* || || FALSE || TRUE, FALSE || if true, the field's html attribute _readonly_ is set, and a default class "bloccato" is added to base *class* ||
 || *js-onblur* || || || js || javascript code to be executed on focus loose, after default type-checks ||
+|| *js-onfocus* || || || js || javascript code to be executed on focus gain ||
 || *js-onchange* || || || js || javascript code to be executed on field value change ||
 || *secolo* || || 20 || int || the century, used to check date soundness; used only on date fields ||
 || *richiesto* || || FALSE || TRUE, FALSE || if TRUE, forces the field to be required on data submit and displays an asterisk after the field; if the global parameter *STAR* is set, then the asterisk is entagged in a _span_ of class _star_ ||
