@@ -6,10 +6,22 @@
  */
 
 
+/**
+ * Directory in cui vengono memorizzati i file di log
+ */
 define('BASE_LOG_DIR','system/log');
+/**
+ * File contenente i log delle performance
+ */
 define('PERFORMANCE_LOG','system/timings.csv');
+/**
+ * Separatore dei valori in {@PERFORMANCE_LOG}
+ */
 define('CSV_SEP',';');
 
+/**
+ * Impostazione della timezone
+ */
 date_default_timezone_set(defined('TIMEZONE') ? TIMEZONE : 'Europe/Rome');
 
 
@@ -31,7 +43,7 @@ function log_get_file_name()
 
 	if (!isset($_SESSION[LOG_FILE])) {
 		if (constant_true('LOG_SINGLE')) {
-			$log_file_name = 'log_file_'.date("Ymd").'.log';
+			$log_file_name = 'log_file_'.date("Ymd");
 		} elseif (isset($_SERVER['REMOTE_HOST'])) {
 			$log_file_name = $_SERVER['REMOTE_HOST'];
 		} else {
@@ -73,7 +85,7 @@ function log_value($val)
 	if (!file_exists($log_file_name)) {
 		fclose(fopen($log_file_name,'w+'));
 	}
-	error_log($msg, 3, $log_file_name);
+	@error_log($msg, 3, $log_file_name);
 }
 
 /**
@@ -94,7 +106,6 @@ function log_clear()
  * @param string $errfile Nome del file in cui si e' verificato l'errore
  * @param integer $errline Linea di $errfile in cui si e' verificato l'errore
  */
-
 function ubk_err_handler($errtype, $errstr, $errfile, $errline)
 {
 	switch($errtype) {
@@ -146,6 +157,10 @@ function ubk_err_handler($errtype, $errstr, $errfile, $errline)
 	}
 }
 
+/**
+ * Exception handler di default
+ * @param Exception $exc
+ */
 function ubk_exc_handler($exc)
 {
 	static $errfile;
@@ -171,6 +186,9 @@ function ubk_exc_handler($exc)
 	exit(1);
 }
 
+/**
+ * Log dei tempi di esecuzione dell'ultima richiesta
+ */
 function log_timing()
 {
 	$times = array(
@@ -195,6 +213,10 @@ function log_timing()
 	if ($txt) log_value($txt);
 }
 
+/**
+ * Log delle performance
+ * @param array $params Parametri di esecuzione dell'ultima richiesta
+ */
 function log_performance(&$params)
 {
 	if (!file_exists(PERFORMANCE_LOG)) {
@@ -221,7 +243,7 @@ function log_performance(&$params)
 	$data[] = $_SERVER['REMOTE_ADDR'];
 	$data[] = date("Ymdhis");
 	
-	error_log(implode(CSV_SEP,$data)."\n", 3, PERFORMANCE_LOG);
+	@error_log(implode(CSV_SEP,$data)."\n", 3, PERFORMANCE_LOG);
 }
 
 ?>

@@ -468,6 +468,7 @@ class CAMPO extends CAMPO_ACCESSO
 				$classe_css .= " bloccato";
 
 			// javascript
+			$js_onfocus = $this->attributo("JS-ONFOCUS");
 			$js_onblur = $this->attributo("JS-ONBLUR");
 			$js_onchange = $this->attributo("JS-ONCHANGE");
 			switch($campo[0]) {
@@ -513,17 +514,7 @@ class CAMPO extends CAMPO_ACCESSO
 			case "TEXT":
 			case "PASSWORD":
 				$tabindex = $this->get_tabindex();
-				echo "<input tabindex=\"$tabindex\" class=\"$classe_css\" type=\"$tipo\" id=\"$js_id\" name=\"$nome\" size=\"$size\" value=\"$valore_default\" style=\"text-align: $align\" maxlength=\"$maxsize\" $bloccato onkeyup=\"$js_onchange\" onblur=\"$js_onblur\"/>".$star;
-				if ($campo[0] == "d" && cbool($this->attributo("PICK", "FALSE"))) {
-					$cal_gateway = $this->attributo("PICK-GATEWAY", "calendario_pop.php");
-					$cal_file    = $this->attributo("PICK-FILE", "calendario_pop.xml");
-					$location = "$cal_gateway?FILE=$cal_file";
-
-					$location = url_codifica($location);					
-					echo "<A href=\"#\" onclick=\"o = window.open('$location', 'calendario', 'top=50,left=50,width=320,height=230'); o.focus(); window.calendarTarget = '$js_id';\" title=\"Scegli da calendario\" class=\"$classe_css\">";
-					echo CACHE_CLASS_FACTORY::get()->img_get('Search');
-					echo "</A>";					
-				}
+				echo "<input tabindex=\"$tabindex\" class=\"$classe_css\" type=\"$tipo\" id=\"$js_id\" name=\"$nome\" size=\"$size\" value=\"$valore_default\" style=\"text-align: $align\" maxlength=\"$maxsize\" $bloccato onkeyup=\"$js_onchange\" onblur=\"$js_onblur\" onfocus=\"$js_onfocus\"/>".$star;
 				break;
 			case "RADIO":
 				$tabindex = $this->get_tabindex();
@@ -536,7 +527,7 @@ class CAMPO extends CAMPO_ACCESSO
 			case "TEXTAREA":
 				$tabindex = $this->get_tabindex();
 				$size = explode(",",$size);
-				echo "<TEXTAREA tabindex=\"$tabindex\" onkeyup=\"$js_onchange\" onblur=\"if (this.value.length > $maxsize) { alert('Massimo $maxsize caratteri !'); this.focus(); return false; } $js_onblur\" class=\"$classe_css\" id=\"$js_id\" name=\"$nome\" rows=\"$size[0]\" cols=\"$size[1]\" style=\"text-align: $align\" $bloccato>$valore_default</TEXTAREA>".$star;
+				echo "<TEXTAREA tabindex=\"$tabindex\" onkeyup=\"$js_onchange\" onblur=\"if (this.value.length > $maxsize) { alert('Massimo $maxsize caratteri !'); this.focus(); return false; } $js_onblur\" onfocus=\"$js_onfocus\" class=\"$classe_css\" id=\"$js_id\" name=\"$nome\" rows=\"$size[0]\" cols=\"$size[1]\" style=\"text-align: $align\" $bloccato>$valore_default</TEXTAREA>".$star;
 				break;
 			}
 
@@ -570,12 +561,12 @@ class CAMPO_MAIL extends CAMPO
 				$campo = $this->attributo_richiesto("NOME");
 				$classe_css = $this->attributo("CLASS", array_get_default("CLASS", $parametri));
 				$mail  = $rs->valore($campo);
-				echo "<A href=\"mailto:$mail\" title=\"Invia mail\" class=\"$classe_css\">$mail</A>";
+				echo "<a href=\"mailto:$mail\" title=\"Invia mail\" class=\"$classe_css\">$mail</a>";
 				return;
 			}
 		default:
 			if (!$this->attributo_esiste("JS-ONBLUR")) $this->attributi["JS-ONBLUR"] = "";
-			$this->attributi["JS-ONBLUR"] = "if (!Fld.Check.mail(this)) { return false; }";
+			$this->attributi["JS-ONBLUR"] .= "if (!Fld.Check.mail(this)) { return false; }";
 			parent::stampa_html($parametri);
 		}
 	}
@@ -663,6 +654,10 @@ class CHECKBOX extends CAMPO_ACCESSO
 	
 }
 
+/**
+ * Checkbox nascosta e visualizzazione tramite immagine
+ * @package tag
+ */
 class CHECKBOX_IMG extends CAMPO_ACCESSO
 {
 
@@ -768,7 +763,7 @@ class CHECKBOX_FK extends CAMPO_ACCESSO
 		}
 
 		// verifico se esiste
-		$esiste = conta($tabella_fk, $filtro);
+		$esiste = esiste($tabella_fk, $filtro);
 
 		switch ($modalita) {
 		case "R":
@@ -1071,6 +1066,7 @@ class COMBO extends CAMPO_TABELLA_ESTERNA
 /**
  * Campo picker - permette di scegliere un valore da una tabella aprendo una pop-up; utilizzabile al posto di combo molto pesanti. 
  * @package tag
+ * @deprecated
  */
 class PICKER extends CAMPO_TABELLA_ESTERNA
 {
@@ -1330,6 +1326,11 @@ class PICKER extends CAMPO_TABELLA_ESTERNA
 }
 
 
+/**
+ * Doppio controllo con ricerca in linea via codice, o via pop-up
+ * @deprecated
+ * @package tag
+ */
 class COD_DESC extends PICKER
 {
 	public function link_bg_load(&$parametri, $js_id, $campi)

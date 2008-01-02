@@ -1,35 +1,31 @@
 <?php
 /**
- * Gestisce la cache dai dati a db
+ * Classe di gestione cache di metadati, pagine, xsl e dati
+ * Classe di generazione istanza unica (factory pattern)
  *  
  * @package general
  * @author Ubik <emiliano.leporati@gmail.com>
  */
 
+
+/**
+ * Gestisce le cache di metadati, pagine, xsl e dati su sdb
+ *  
+ * @package general
+ */
 class CACHE 
 {
-	// TIMINGS
+	/**
+	 * Conteggi per le statistiche di esecuzione
+	 * @var array
+	 * @static
+	 */
 	public static $time = array('CACHE' => 0);
 
-	// IMMAGINI
-	private $img_data = array();
 
-	public function img_get($name)
-	{
-		if (!isset($this->img_data[$name])) {
-			$this->img_data[$name] = xsl_transform("<gfx:img xmlns:gfx=\"".NS_GFX."\" nome=\"$name\"/>", true);
-		} 
-		return $this->img_data[$name];
-	}
-
-
-	// METADATI
-
-	private $mtd_cache = FALSE;
-	private $mtd_dir = '';
-	private $mtd_data = array();
-	private $sql = array();
-
+	/**
+	 * Imposta flag e directory
+	 */
 	public function __construct()
 	{
 		$this->mtd_cache = constant_true('CACHE_METADATI');
@@ -44,22 +40,81 @@ class CACHE
 		$this->xsl_cache = constant_true('CACHE_XSL');
 
 		$this->page_cache = constant_true('CACHE_XML');
-		$this->page_dir = path(PHDIR, 'cache/xml');
+		$this->page_dir = path(PHDIR, 'system/cache/xml');
 	}
 
+
+	/**
+	 * Array associativo con il codice trasformato di immagini con rollover (gfx:img)
+	 * @deprecated
+	 * @var array
+	 */
+	private $img_data = array();
+
+	/**
+	 * Ritorna il codice HTML rappresentante un'immagine con rollover dato il nome di base ($name => $name_dis.ext / $name.ext)
+	 * Si basa sul template XSL gfx:img, che usa a sua volta il parametro ini DEF_IMG_EXT
+	 * @deprecated
+	 * @param string $name nome dell'immagine
+	 * @return string
+	 */
+	public function img_get($name)
+	{
+		if (!isset($this->img_data[$name])) {
+			$this->img_data[$name] = xsl_transform("<gfx:img xmlns:gfx=\"".NS_GFX."\" nome=\"$name\"/>", true);
+		} 
+		return $this->img_data[$name];
+	}
+
+
+	/**
+	 * Cache metadati attiva / disattiva
+	 * Si basa sul parametro ini CACHE_METADATI
+	 * @var bool
+	 */
+	private $mtd_cache = FALSE;
+	/**
+	 * Directory in cui vengono memorizzati i file di cache delle meta-informazioni
+	 * Sotto PHDIR, system/cache/metadata
+	 * @var bool
+	 */
+	private $mtd_dir = '';
+	/**
+	 * Cache in memoria delle meta-informazioni 
+	 * @var array
+	 */
+	private $mtd_data = array();
+
+	/**
+	 * Fornisce il nome file contenente le meta-informazioni
+	 * @param string $signature Firma dell'oggetto di cui reperire le informazioni, fornita da {@link mtd_signature}
+	 * @return string
+	 */
 	public function mtd_fname($signature)
 	{
 		return path($this->mtd_dir, $signature.'.obj');
 	}
 
+	/**
+	 * Fornisce il nome file contenente le meta-informazioni
+	 * @param array $db_connection Informazioni di connessione al db contenente l'oggetto
+	 * @param string $sql Oggetto del db (tabella, vista, stored procedure)
+	 * @return string
+	 */
 	public function mtd_signature($db_connection, $sql)
 	{
 		if (($p = stripos($sql,' where ')) !== FALSE) {
 			$sql = substr($sql, 0, $p);
 		}
-		return md5($db_connection['DB_SERVER'].$db_connection['DB_NAME'].$sql);
+		return CRYPTER::hash($db_connection['DB_SERVER'].$db_connection['DB_NAME'].$sql);
 	}
 
+	/**
+	 * Registra le meta-informazioni su file
+	 * @param array $db_connection Informazioni di connessione al db contenente l'oggetto
+	 * @param string $sql Oggetto del db (tabella, vista, stored procedure)
+	 * @param array $info Meta-informazioni
+	 */
 	public function mtd_write($db_connection, $sql, $info)
 	{
 		$sig = $this->mtd_signature($db_connection, $sql);
@@ -71,6 +126,12 @@ class CACHE
 		}
 	}
 
+	/**
+	 * Ritorna le meta-informazioni associate all'oggetto, se esistono
+	 * @param array $db_connection Informazioni di connessione al db contenente l'oggetto
+	 * @param string $sql Oggetto del db (tabella, vista, stored procedure)
+	 * @return array|NULL
+	 */
 	public function mtd_get($db_connection, $sql)
 	{
 		$sig = $this->mtd_signature($db_connection, $sql);
@@ -89,22 +150,46 @@ class CACHE
 		}
 	}
 
-	// PAGINE
+	/**
+	 * Cache pagine attiva / disattiva
+	 * Si basa sul parametro ini CACHE_XML
+	 * @var bool
+	 */
 	private $page_cache = FALSE;
+	/**
+	 * Directory in cui vengono memorizzati i file di cache delle pagine
+	 * Sotto PHDIR, system/cache/xml
+	 * @var bool
+	 */
 	private $page_dir = '';
 
+	/**
+	 * Fornisce il nome file contenente la pagina pre-trasformata
+	 * @param string $filename Nome del file da reperire, completo di percorso (relativo alla PHDIR)
+	 * @return string
+	 */
 	public function page_name($filename)
 	{
 		return path($this->page_dir, str_replace('/','-',$filename).'.obj');
 	}
 
+	/**
+	 * Memorizza la pagina trasformata sul filesystem
+	 * @param string $filename Nome del file trasformato
+	 * @param TAG $DOM Trasformazione del file
+	 */
 	public function page_write($filename, &$DOM)
 	{
 		if ($this->page_cache) {
-			scrivi_file($this->page_name($filename), serialize($this->pila[0]));
+			scrivi_file($this->page_name($filename), serialize($DOM));
 		}
 	}
 
+	/**
+	 * Fornisce la trasformazione del file XML indicato
+	 * @param string $filename Nome del file da reperire, completo di percorso (relativo alla PHDIR)
+	 * @return TAG
+	 */
 	public function page_get($filename)
 	{
 		if ($this->page_cache && file_exists($cache = $this->page_name($filename))) {
@@ -115,32 +200,91 @@ class CACHE
 
 	}
 
-	// XSL
-	private $xsl_cache = FALSE;
+	/**
+	 * Cache trasformazioni XSL attiva / disattiva
+	 * Si basa sul parametro ini CACHE_XSL
+	 * @var bool
+	 */
+	 private $xsl_cache = FALSE;
 
+	/**
+	 * Restituisce il file XSL, tenuto in sessione
+	 * @return string
+	 */
 	public function xsl_get()
 	{
 		return array_get_default('CACHE_XSL', $_SESSION);
 	}
 
+	/**
+	 * Memorizza in sessione il file XSL
+	 * @param string $xsl
+	 */
 	public function xsl_write($xsl)
 	{
 		if ($this->xsl_cache && !isset($_SESSION['CACHE_XSL']))
 			$_SESSION['CACHE_XSL'] = $xsl;
 	}
 
-	// DB
-	private $registry_update = array();
-	private $registry_cache = array();
+
+	
+	/**
+	 * Array associativo nome_tabella => true / false, indica se la cache e' da aggiornare
+	 * @var array
+	 */
+	private $reg_update = array();
+	/**
+	 * Array associativo nome_tabella => ultimo aggiornamento cache
+	 * @var array
+	 */
+	private $reg_cache = array();
+	/**
+	 * File con le informazioni della cache
+	 * sotto PHDIR, system/cache/registry.ser
+	 * @var string
+	 */
 	private $reg_file = '';
+	/**
+	 * File di lock per accesso a {@link $reg_file}
+	 * sotto PHDIR, system/cache/cache.lock
+	 * @var string
+	 */
 	private $reg_lock = '';
+
+	/**
+	 * Indica se registrare la funzione di shutdown per la scrittura del registry
+	 * @var bool
+	 */
 	private $reg_shutdown = FALSE;
 
 	
+	/**
+	 * Cache query attiva / disattiva
+	 * Si basa sul parametro ini CACHE_DB
+	 * @var bool
+	 */
 	private $db_cache = FALSE;
+	/**
+	 * Cache dati query
+	 * @var array
+	 */
 	private $db_data = array();
+	/**
+	 * Directory salvataggio dati query
+	 * sotto PHDIR, system/cache/query
+	 * @var string
+	 */
 	private $db_dir = '';
+	/**
+	 * Numero record per ogni file di query
+	 * @var integer
+	 */
 	private $db_range = 30;
+	/**
+	 * Cache in memoria dei dati caricati via query
+	 * @var array
+	 */
+	private $db_sql = array();
 
 	/**
 	 * Invalida la cache di una tabella, normalmente viene chiamato dalle funzioni
@@ -165,14 +309,13 @@ class CACHE
 
 
 	/**
-	 * Carica i dati dalla cache di una tabella, se vecchia o non presente ricrea la
-	 * cache. 
+	 * Carica i dati dalla cache di una tabella, se vecchia o non presente ricrea la cache. 
 	 * 
 	 * @param string $nome_tabella nome della tabella
 	 * @param string $campo_id nome del campo su cui viene fatta la ricerca
 	 * @param string $valore_id valore cercato
 	 * 
-	 * @return array l'insieme dei record cercati, o null.
+	 * @return array|NULL l'insieme dei record cercati
 	 */
 	public function & carica_rs($nome_tabella, $campo_id, $valore_id)
 	{
@@ -275,17 +418,17 @@ class CACHE
 			//echo "caricamento registry\n";
 			$cache_reg_mtime = @filemtime($this->reg_file);
 			if (!$cache_reg_mtime){
-				unset($_SESSION['$this->reg_file_TIME']);
+				unset($_SESSION['REGISTRY_TIME']);
 				unset($this->reg_cache); 
 				return $registry;
 			}
 			//echo "Registry del ".date("h:i:s d/m/Y",$cache_reg_mtime)."\n";
-			if ($cache_reg_mtime && !empty($_SESSION['$this->reg_file_TIME'])){
-				if ($cache_reg_mtime > $_SESSION['$this->reg_file_TIME']){
+			if ($cache_reg_mtime && !empty($_SESSION['REGISTRY_TIME'])){
+				if ($cache_reg_mtime > $_SESSION['REGISTRY_TIME']){
 					// registro vecchio, ricaricare
 					unset($this->reg_cache); 	
 					log_value('CACHE: Registro cache da aggiornare '. $this->reg_file);
-					log_value('CACHE: Registro session: '.date('d/m/Y h:i:s',$_SESSION['$this->reg_file_TIME']).
+					log_value('CACHE: Registro session: '.date('d/m/Y h:i:s',$_SESSION['REGISTRY_TIME']).
 							' - ' . date('d/m/Y h:i:s',$cache_reg_mtime) .' mtime file');
 				}
 			}	
@@ -302,7 +445,7 @@ class CACHE
 						log_value('CACHE: Errore nel caricamento del registro cache '. $this->reg_file);
 					} else {
 						$this->reg_cache = &$registry;
-						$_SESSION['$this->reg_file_TIME'] = $cache_reg_mtime;
+						$_SESSION['REGISTRY_TIME'] = $cache_reg_mtime;
 						log_value('CACHE: Registro cache caricato '. $this->reg_file);
 					}
 				}
@@ -366,6 +509,15 @@ class CACHE
 	}
 
 
+	/**
+	 * Carica il recordset passato con i dati della cache locale
+	 * 
+	 * @param mixed $sql Query da effettuare
+	 * @param bool $carica_info Indica se impostare i meta-dati del recordset
+	 * @param RECORDSET $db_object Il {@link RECORDSET} / {@link GESTORE} da caricare
+	 * 
+	 * @return bool true se caricato, false se i dati non sono presenti
+	 */ 
 	public function carica_sql($sql, $carica_info, &$db_object)
 	{
 		if (!$this->db_cache) return false;
@@ -373,11 +525,11 @@ class CACHE
 		if (is_array($sql)){
 			$sql = $sql['SQL'] . $sql['PAGE'] . $sql['PAGE-SIZE'];
 		}	
-		if (!isset($this->sql[$sql])){
+		if (!isset($this->db_sql[$sql])){
 			return false;
 		}
 		
-		$cache_rs = & $this->sql[$sql];
+		$cache_rs = & $this->db_sql[$sql];
 		
 		$db_object->setRS($cache_rs->getRS());
 		
@@ -391,6 +543,16 @@ class CACHE
 	}
 
 
+	/**
+	 * Dice se la cache e' valida
+	 * 
+	 * @param bool $usa_cache
+	 * @param string $table
+	 * @param string $campo_id
+	 * @param string $condizione
+	 * 
+	 * @return array
+	 */ 
 	public function validate($usa_cache, $table, $campo_id, $condizione)
 	{
 		if (!$this->db_cache) return array(FALSE, NULL);
@@ -405,6 +567,13 @@ class CACHE
 	}
 
 
+	/**
+	 * Memorizza localmente la query effettuata
+	 * 
+	 * @param mixed $sql
+	 * @param RECORDSET $db_object
+	 * @return bool
+	 */ 
 	public function salva_sql($sql, &$db_object)
 	{
 		if (!$this->db_cache) return false;
@@ -413,7 +582,7 @@ class CACHE
 			$sql = $sql['SQL'] . $sql['PAGE'] . $sql['PAGE-SIZE'];
 		}	
 
-		$this->sql[$sql] =& $db_object;
+		$this->db_sql[$sql] =& $db_object;
 
 		return true;
 	}
@@ -421,6 +590,11 @@ class CACHE
 }
 
 
+/**
+ * Ritorna il gestore della cache, assicurandosi che non vi siano istanze multiple
+ *  
+ * @package general
+ */
 class CACHE_CLASS_FACTORY
 {
 	private static $instance = NULL;

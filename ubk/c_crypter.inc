@@ -1,17 +1,37 @@
 <?php
 /**
- * Crittazione e decrittazione
+ * Classe di encrypt / decrypt
  *  
  * @package general
  * @author Ubik <emiliano.leporati@gmail.com>
  */
 
+/**
+ * Crittazione e decrittazione di valori
+ *  
+ * @package general
+ */
 class CRYPTER 
 {
+	/**
+	 * Tabella di crittazione
+	 * @var resource
+	 */
 	private $td;
+	/**
+	 * Chiave di crittazione
+	 * @var string
+	 */
 	private $key;
+	/**
+	 * Vettore di inizializzazione
+	 * @var string
+	 */
 	private $iv;
 
+	/**
+	 * Inizializza le variabili private, solleva eccezione se manca il modulo Mcrypt
+	 */
 	public function __construct($key)
 	{
 		if (function_exists("mcrypt_module_open")) {
@@ -26,20 +46,19 @@ class CRYPTER
 	}
 
 
+	/**
+	 * Chiude il modulo di crittazione
+	 */
 	public function __destruct()
 	{
 		mcrypt_module_close($this->td);
 	}
 
-	public function decrypt($string)
-	{
-		mcrypt_generic_init($this->td, $this->key, $this->iv);
-		$result = rtrim(mdecrypt_generic($this->td, hex2bin($string)));
-		mcrypt_generic_deinit($this->td);
-
-		return $result;
-	}
-
+	/**
+	 * Esegue una codifica reversibile della stringa
+	 * @param string $string La stringa da crittare
+	 * @return string La stringa crittata
+	 */
 	public function encrypt($string)
 	{
 		mcrypt_generic_init($this->td, $this->key, $this->iv);
@@ -49,6 +68,26 @@ class CRYPTER
 		return $result;
 	}
 
+	/**
+	 * Decodifica una stringa crittata con {@link encrypt}
+	 * @param string $string La stringa crittata
+	 * @return string La stringa de-crittata
+	 */
+	public function decrypt($string)
+	{
+		mcrypt_generic_init($this->td, $this->key, $this->iv);
+		$result = rtrim(mdecrypt_generic($this->td, hex2bin($string)));
+		mcrypt_generic_deinit($this->td);
+
+		return $result;
+	}
+
+	/**
+	 * Esegue una codifica irreversibile di una stringa; solleva eccezione se manca il modulo Mcrypt
+	 * @static
+	 * @param string $string La stringa da crittare
+	 * @return string La stringa crittata
+	 */
 	public static function hash($string)
 	{
 		if (function_exists("mhash")) {

@@ -2,7 +2,7 @@
 /**
  * Classi di azione da estendere per la gestione di utenti, gruppi, diritti e legami di accesso
  * @author Ubik <emiliano.leporati@gmail.com>
- * @package utenza
+ * @package gateway
  */
 
 
@@ -14,7 +14,8 @@ require_once("c_azioni.inc");
 
 /** 
  * Azioni personalizzate di gestione dei gruppi di accesso
- * @package utenza
+ * @deprecated
+ * @package gateway
  */ 
 class AZIONI_GRUPPO extends AZIONI_FORM
 {
@@ -63,7 +64,8 @@ class AZIONI_GRUPPO extends AZIONI_FORM
 
 /**
  * Ridefinisce l'azione di elimina con un controllo parametrico preventivo di esistenza della chiave primaria in tabelle esterne
- * @package utenza
+ * @deprecated
+ * @package gateway
  */
 class AZIONI_ELIMINA_FK extends AZIONI_FORM
 {
@@ -106,7 +108,8 @@ class AZIONI_ELIMINA_FK extends AZIONI_FORM
 
 /**
  * Azioni personalizzate per la gestione della tabella degli utenti
- * @package utenza
+ * @deprecated
+ * @package gateway
  */
 class AZIONI_UTENTI extends AZIONI_ELIMINA_FK
 {
@@ -201,13 +204,15 @@ class AZIONI_UTENTI extends AZIONI_ELIMINA_FK
 
 /**
  * Contiene una clausola not_in di filtro dei gruppi o degli utenti gi� legati, in modo da non farli apparire nella combo di creazione
+ * @deprecated
  * @global string $non_miei
  */
 $non_miei = "";
 
 /**
  * Azioni personalizzate per la gestione dei legami utente - gruppo, in entrambe le direzioni
- * @package utenza
+ * @deprecated
+ * @package gateway
  */
 class AZIONI_ACC_UT_GRUPPO extends AZIONI_FORM
 {
@@ -273,7 +278,8 @@ class AZIONI_ACC_UT_GRUPPO extends AZIONI_FORM
 
 /**
  * Azioni personalizzate per la gestione del login
- * @package utenza
+ * @deprecated
+ * @package gateway
  */
 class AZIONI_LOGIN extends AZIONI_FORM
 {

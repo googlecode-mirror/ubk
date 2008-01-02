@@ -1,4 +1,11 @@
 <?php
+/**
+ * Definizione di entita' di uso comune
+ *  
+ * @package tag
+ * @author Ubik <emiliano.leporati@gmail.com>
+ */
+
 
 /**
  * Il BR di XHTML
@@ -7,10 +14,8 @@ define("BR","<br />");
 
 define("NBSP", "&#160;");
 define("EURO", "&#x20AC;");
+define("ELLIPSIS", "&#8230;");
 
-/**
- * Tutte le entita' HTML
- */
 define('IEXCL' ,  '');
 define('CENT'  ,  '');
 define('POUND' ,  '');

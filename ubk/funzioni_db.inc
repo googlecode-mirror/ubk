@@ -8,6 +8,7 @@
 
 /**
  * Verifica che l'array passato possa essere utilizzato come insieme di parametri di connessione a db
+ * Se non e' valida, solleva eccezione
  * @param array $db_connection
  */
 function check_db_connection($db_connection)
@@ -98,11 +99,24 @@ function conta($tabella, $condizione = NULL, $distinct = FALSE)
 	return $_res;
 }
 
+/**
+ * Dice se esistono righe rispondenti ai criteri specificati nella tabella
+ * @param string $tabella
+ * @param string $condizione
+ * @return bool
+ */
+function esiste($tabella, $condizione = NULL)
+{
+	$_rs = new GESTORE($tabella);
+	$_res = $_rs -> esiste($condizione);
+	unSet($_rs);
+	return $_res;
+}
 
 /**
- * Ritorna il valore del $campo_out sulla $tabella in cui il valore di $campo_in �uguale a $valore. 
- * Se $campo_in �omesso, viene usato il campo chiave della tabella.
- * Se non viene trovato nulla e $ret_on_eof �!== false, viene ritornato $ret_on_eof, altrimenti errore.
+ * Ritorna il valore del $campo_out sulla $tabella in cui il valore di $campo_in e' uguale a $valore. 
+ * Se $campo_in e' omesso, viene usato il campo chiave della tabella.
+ * Se non viene trovato nulla e $ret_on_eof e' !== false, viene ritornato $ret_on_eof, altrimenti errore.
  * @param string $tabella Tabella in cui eseguire la decodifica
  * @param mixed $valore Valore da decodificare
  * @param string $campo_out Campo di cui ritornare il valore
@@ -169,7 +183,7 @@ function decode_colonna($tabella, $valore, $campo_out, $campo_in = NULL)
 
 /**
  * Ritorna il valore del $campo_out sulla $tabella filtrata in base alla $condizione.
- * Se non viene trovato nulla e $ret_on_eof �!== false, viene ritornato $ret_on_eof, altrimenti errore.
+ * Se non viene trovato nulla e $ret_on_eof e' !== false, viene ritornato $ret_on_eof, altrimenti errore.
  * @param string $tabella Tabella in cui eseguire la ricerca
  * @param string $condizione Condizione di filtro
  * @param string $campo_out Campo di cui ritornare il valore

@@ -2,7 +2,7 @@
 /**
  * Classe di azione da estendere per la gestione del pick dei dati ({@link PICKER})
  * @author Ubik <emiliano.leporati@gmail.com>
- * @package tag
+ * @package gateway
  */
 
 
@@ -13,7 +13,8 @@ require_once("c_azioni.inc");
 
 /**
  * Classe di azione con implementata la pick
- * @package tag
+ * @package gateway
+ * @deprecated
  */
 class AZIONI_PICK extends AZIONI_FORM
 {

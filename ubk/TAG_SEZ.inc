@@ -328,7 +328,7 @@ class SEZIONE extends CONTENITORE
 
 			// errore: impossibile accedere
 			if ($fail) {
-				throw new AppException("Diritti insufficienti per vedere la sezione '$sezione'.");
+				throw new AppException("Diritti insufficienti per vedere la sezione '$sezione' in con diritto '$diritto'.");
 			} else {
 				$parametri['DIRITTI'] = $vecchi_diritti;
 			}
@@ -337,6 +337,10 @@ class SEZIONE extends CONTENITORE
 
 }
 
+/**
+ * Include un file esterno impostando eventuali parametri d'ambiente
+ * @package tag
+ */
 class XML_INCLUDE extends TAG
 {
 	private static $loadeds = array();
@@ -406,6 +410,10 @@ class XML_INCLUDE extends TAG
 	}
 }
 
+/**
+ * Genera qualunque tag HTML
+ * @package tag
+ */
 class HTML extends CONTENITORE
 {
 	public function stampa_html(&$parametri)
@@ -433,6 +441,10 @@ class HTML extends CONTENITORE
 	
 }
 
+/**
+ * Definisce e richiama snippets di codice XHTML, con parametri
+ * @package tag
+ */
 class SNIPPET extends CONTENITORE
 {
 	private static $loadeds = array();

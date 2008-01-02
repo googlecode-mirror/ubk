@@ -621,7 +621,10 @@ class LINK_AJAX_AGGIORNA extends LINK_AJAX_GENERICO
 
 }
  
-
+/**
+ * Link che scatena l'aggiornamento pagina, sulla quale devono essere presenti tutti gli id da aggiornare in un campo multiplo
+ * @package tag
+ */
 class LINK_AJAX_AGGIORNA_TUTTO extends LINK_AJAX_GENERICO
 {
 	private $setup_done = FALSE;
@@ -870,6 +873,10 @@ class LINK_AJAX_PRIMO extends LINK_AJAX_PRECEDENTE
 
 }
 
+/**
+ * Link di spostamento alla pagina successiva quella corrente
+ * @package tag
+ */
 class LINK_AJAX_SUCCESSIVO extends TAG
 {
 
@@ -1066,6 +1073,10 @@ class PAGINATORE_AJAX extends TAG
 	
 }
 
+/**
+ * Classe base per la generazione di qualunque tag html, basandosi sul nome classe
+ * @package tag
+ */
 class HTML_TAG extends HTML
 {
 	public function stampa_html(&$parametri)
@@ -1077,18 +1088,64 @@ class HTML_TAG extends HTML
 	}
 }
 
+/**
+ * Tag TR
+ * @package tag
+ */
 class TR extends HTML_TAG {}
+/**
+ * Tag TD
+ * @package tag
+ */
 class TD extends HTML_TAG {}
+/**
+ * Tag TH
+ * @package tag
+ */
 class TH extends HTML_TAG {}
+/**
+ * Tag DIV
+ * @package tag
+ */
 class DIV extends HTML_TAG {}
 
+/**
+ * Tag INPUT
+ * @package tag
+ */
 class INPUT extends HTML_TAG {}
+/**
+ * Tag TEXTAREA
+ * @package tag
+ */
 class TEXTAREA extends HTML_TAG {}
+/**
+ * Tag SELECT
+ * @package tag
+ */
 class SELECT extends HTML_TAG {}
+/**
+ * Tag OPTION
+ * @package tag
+ */
 class OPTION extends HTML_TAG {}
 
+/**
+ * Tag ACRONYM
+ * @package tag
+ */
 class ACRONYM extends HTML_TAG {}
+/**
+ * Tag IMG
+ * @package tag
+ */
 class IMG extends HTML_TAG {}
+
+
+/**
+ * Tag SCRIPT
+ * @package tag
+ */
 class SCRIPT extends HTML
 {
 	public function stampa_html(&$parametri)
@@ -1108,6 +1165,10 @@ class SCRIPT extends HTML
 	}
 }
 
+/**
+ * Tag STYLE
+ * @package tag
+ */
 class STYLE extends HTML
 {
 	public function stampa_html(&$parametri)
