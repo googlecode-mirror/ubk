@@ -373,7 +373,10 @@ class LINK_AGGIORNA extends LINK_GENERICO
 
 }
  
-
+/**
+ * Link che scatena l'aggiornamento pagina, sulla quale devono essere presenti tutti gli id da aggiornare in un campo multiplo
+ * @package tag
+ */
 class LINK_AGGIORNA_TUTTO extends LINK_GENERICO
 {
 	private $setup_done = FALSE;

@@ -1,9 +1,19 @@
 <?php
 /**
- * Interfaccia per la lettura dei metadati
+ * Definizione delle interfacce che ogni db-driver deve implementare
+ * Classe di generazione istanze uniche (factory pattern)
+ * @author Ubik <emiliano.leporati@gmail.com>
  *
  * @package db
+ */
+
+
+/**
+ * Interfaccia per la lettura dei metadati
  * @author Ubik <emiliano.leporati@gmail.com>
+ *
+ * @package db
+ * @abstract
  */
 abstract class DB_META
 {
@@ -95,6 +105,7 @@ abstract class DB_META
 /**
  * Interfaccia per i driver - nascondono le funzioni base di interazione coi DBMS
  * @package db
+ * @abstract
  */
 abstract class DB_DRIVER
 {
@@ -325,6 +336,7 @@ abstract class DB_DRIVER
 
 /**
  * Interfaccia per la trasformazione da dati-pagina a query e clausole per le condizioni where
+ * @abstract
  * @package db
  */
 abstract class DB_SQL
@@ -775,6 +787,22 @@ abstract class DB_SQL
 				') AS i_numero '.
 				"FROM $tabella".
 				(is_null($condizione) ? '' : ' WHERE '.$condizione);
+
+		return $_res;
+	}
+
+	/**
+	 * Genera una query EXISTS su una tabella
+	 * @param string $tabella Nome della tabella
+	 * @param string $condizione Eventuale clausola WHERE
+	 * @return string
+	 */ 
+	public static function genera_exists($tabella, $condizione = NULL)
+	{	
+		// di base facciamo una count
+		// poi se il db ha la clausola, fara' override di questa funzione
+		$_where = (is_null($condizione) ? '' : 'WHERE '.$condizione);
+		$_res = "SELECT COUNT(*) AS b_exists FROM $tabella $_where";
 
 		return $_res;
 	}

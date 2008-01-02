@@ -113,7 +113,7 @@ class DB_BASE
 	public $default = array();
 
 	/**
-	 * Array associativo di flag che mi dicono se il campo �nullable (non obbligatorio) o meno - solo per tabelle
+	 * Array associativo di flag che mi dicono se il campo e' nullable (non obbligatorio) o meno - solo per tabelle
 	 * @var array
 	 */
 	public $nullable = array();
@@ -131,7 +131,7 @@ class DB_BASE
 	public $count_reale = 0;
 
 	/**
-	 * Richiama {@link set_db_connection} e predispone l'oggetto di gestione cache. se il parametro �NULL, viene usata la connessione di default (DB_DEFAULT)
+	 * Richiama {@link set_db_connection} e predispone l'oggetto di gestione cache. se il parametro e' NULL, viene usata la connessione di default (DB_DEFAULT)
 	 * @param array $db_connection
 	 */
 	public function __construct($db_connection = NULL)
@@ -216,7 +216,7 @@ class DB_BASE
 	protected function carica_info_colonne($res_rs, $sql = null)
 	{
 		
-		// se �presente l'sql definisco un nome per la cache e serializzare i dati		
+		// se e' presente l'sql definisco un nome per la cache e serializzare i dati		
 		if (!is_null($sql)) {
 			$_table_info = $this->cache->mtd_get($this->db_connection, $sql);
 		} else {
@@ -291,7 +291,7 @@ class DB_BASE
 	}
 	
 	/**
-	 * Esegue la query di select passata come argomento, caricando le informazioni in {@link $rs}; imposta {@link $LAST_SQL}
+	 * Esegue la query di select passata come argomento, caricando le informazioni in {@link $rs}
 	 * @param mixed $sql Query SELECT da caricare
 	 * @param bool $carica_info Indica se caricare o meno le meta-informazioni sulla query da eseguire
 	 * @param string $campo_id specifica il campo id (che deve essere presente
@@ -343,7 +343,7 @@ class DB_BASE
 	}
 
 	/**
-	 * Ritorna il valore di default per il campo passato, o stringa vuota se non �memorizzato
+	 * Ritorna il valore di default per il campo passato, o stringa vuota se non e' memorizzato
 	 * @param string $nome_campo Nome del campo di cui ottenere il default
 	 * @return mixed
 	 */
@@ -355,7 +355,7 @@ class DB_BASE
 	/**
 	 * Conta tutte le righe della tabella che verificano la condizione passata
 	 * @param string $table Nome della tabella o vista da caricare
-	 * @param string $condizione Condizione WHERE generata usando le funzioni in {@link funzioni_db.inc}
+	 * @param string $condizione Condizione WHERE
 	 * @param mixed $distinct Indica se inserire la clausola DISTINCT nel conteggio; se FALSE o equivalente non la inserisce, else indica cosa contare in modo distinto (elenco colonne, *, etc.)
 	 * @return integer
 	 */
@@ -386,7 +386,39 @@ class DB_BASE
 	}
 
 	/**
-	 * Carica la variabile {@link $rs} con una query SELECT costruita in base ai parametri passati; incrementa {@link $SQL_TIME} e {@link $SQL_NUM}, e ritorna il numero di pagine effettivamente caricate (se la pagina specificata �maggiore del numero di pagine possibili, viene decrementato il suo valore)
+	 * Dice se esistono righe nella tabella che verificano la condizione passata
+	 * @param string $table Nome della tabella o vista da caricare
+	 * @param string $condizione Condizione WHERE 
+	 * @return bool
+	 */
+	protected function esistono_righe($table, $condizione = NULL)
+	{
+		if (constant_true('LOG_STATS')) $_start = get_microtime();
+
+		$_no_connection = is_null($this->conn_id);
+		if ($_no_connection) $this->apri_connessione();
+
+		$_sql    = $this->sql->genera_exists($table, $condizione);
+		$_res_rs = $this->driver->query($_sql, $this->conn_id);
+		$_riga   = $this->driver->fetch_assoc($_res_rs);
+		$_result = $_riga["b_exists"];
+
+		$this->driver->free_result($_res_rs);
+
+		if (constant_true('LOG_STATS')) {
+			$_end = get_microtime();
+			self::$time['SQL'] += ($_end - $_start);
+			self::$time['NUM'] ++;
+			self::$time['ALL'][$_sql] = ($_end - $_start);
+		}
+		
+		if ($_no_connection) $this->chiudi_connessione();
+
+		return (bool)$_result;
+	}
+
+	/**
+	 * Carica la variabile {@link $rs} con una query SELECT costruita in base ai parametri passati; ritorna il numero di pagine effettivamente caricate (se la pagina specificata e' maggiore del numero di pagine possibili, viene decrementato il suo valore)
 	 * @param string $table Nome della tabella o vista da caricare
 	 * @param mixed $colonne Opzionale, dice quali colonne devono essere caricate, tutte se omesso o NULL
 	 * @param string $condizione Opzionale, condizioni della clausola WHERE
@@ -395,7 +427,7 @@ class DB_BASE
 	 * @param integer $pagina Per caricamenti paginati, la pagina da caricare
 	 * @param integer $dim_pagina Per caricamenti paginati, la dimensione delle pagine
 	 * @param boolean $conta Dice se eseguire o meno in conteggio dei record
-	 * @param mixed $usa_cache Dice se usare o meno la cache. Se FALSE non la usa, se !FALSE �una stringa tabella.campo_id usata per capire se si pu�o meno
+	 * @param mixed $usa_cache Dice se usare o meno la cache. Se FALSE non la usa, se !FALSE e' una stringa tabella.campo_id usata per capire se si puo' o meno
 	 * @return integer
 	 */
 	protected function carica_righe($table, $colonne = NULL, $condizione = NULL, $ordine = NULL, $distinct = FALSE, 
@@ -415,7 +447,7 @@ class DB_BASE
 		if (is_null($colonne)) {
 			$this->carica_info_tabella($table);
 			$_colonne = implode(", ", $this->campi);
-		// se sono specificate e sono un array, allora metto le colonne specificate o * se l'array �vuoto
+		// se sono specificate e sono un array, allora metto le colonne specificate o * se l'array e' vuoto
 		} elseif (is_array($colonne)) {
 			$_colonne = (count($colonne) > 0 ? implode(", ", $colonne) : "*");
 		// se mi arriva una stringa, uso quella		
@@ -468,7 +500,7 @@ class DB_BASE
 		}
 
 		// potrei aver richiesto una pagina che sborda rispetto al set corrente di dati (es a seguito di una delete sull'ultimo record di una pagina)
-		// quindi decremento il numero di pagina finch�non inglobo al pelo i dati caricati
+		// quindi decremento il numero di pagina finche' non inglobo al pelo i dati caricati
 		if (count($this->rs) == 0 && $pagina > 0) {
 			return $this->carica_righe($table, $colonne, $condizione, $ordine, $distinct, $pagina - 1, $dim_pagina, $conta, $usa_cache);
 		} else {
@@ -602,7 +634,7 @@ class DB_BASE
 
 
 /** 
- * Fornisce le funzionalit�di spostamento fra righe con impostazione di EOF e BOF, nonch�la restituzione dei valori in formato utente
+ * Fornisce le funzionalita' di spostamento fra righe con impostazione di EOF e BOF, nonche' la restituzione dei valori in formato utente
  * @package db
  */
 class RECORDSET extends DB_BASE
@@ -820,7 +852,7 @@ class RECORDSET extends DB_BASE
 
 	/**
 	 * Ritorna tutti i valori attualmente caricati della / delle colonne specificate in un array associativo (colonna, array valori)
-	 * @param mixed $colonne Pu�essere un array o una stringa singola
+	 * @param mixed $colonne Puo' essere un array o una stringa singola
 	 * @return array
 	 */
 	public function valori()
@@ -885,7 +917,7 @@ class RECORDSET extends DB_BASE
 	}
 
 	/**
-	 * Ritorna la somma di tutti valori presenti nella colonna indicata, 0 se la colonna non �numerica (f o i)
+	 * Ritorna la somma di tutti valori presenti nella colonna indicata, 0 se la colonna non e' numerica (f o i)
 	 * @param string $colonna 
 	 * @return float
 	 */
@@ -986,9 +1018,9 @@ class GESTORE extends RECORDSET
 	private $usa_cache = FALSE;
 	
 	/**
-	 * Carica le informazioni sulla tabella specificata ({@link DB_BASE::default DB_BASE::nullable})
+	 * Carica le informazioni sulla tabella specificata
 	 * @param string $tabella
-	 * @param string $campo_id Opzionale, se manca viene usato il campo id ottenuto dalla {@link campo_id_tabella}
+	 * @param string $campo_id Opzionale
 	 * @param bool $usa_cache Opzionale, attiva la cache per i risultati del gestore
 	 * @param array $db_connection Connessione su cui operare
 	 */
@@ -1004,9 +1036,9 @@ class GESTORE extends RECORDSET
 
 
 	/**
-	 * Carica le informazioni sulla tabella specificata ({@link DB_BASE::default DB_BASE::nullable})
+	 * Backward compatibility
 	 * @param string $tabella
-	 * @param string $campo_id Opzionale, se manca viene usato il campo id ottenuto dalla {@link campo_id_tabella}
+	 * @param string $campo_id Opzionale
 	 * @param bool $usa_cache Opzionale, attiva la cache per i risultati del gestore
 	 * @param array $db_connection Connessione su cui operare
 	 */
@@ -1034,7 +1066,7 @@ class GESTORE extends RECORDSET
 
 	/**
 	 * Esegue un caricamento
-	 * @param string $condizione Condizione WHERE generata usando le funzioni in {@link funzioni_db.inc}
+	 * @param string $condizione Condizione WHERE
 	 * @param string $ordine Opzionale, campi da ordinare (argomento della ORDER BY)
 	 * @param array $colonne Opzionale, colonne da reperire - se omesso, vengono prese tutte le colonne della tabella gestita
 	 * @param bool $distinct Indica se inserire la clausola DISTINCT nel caricamento
@@ -1083,7 +1115,7 @@ class GESTORE extends RECORDSET
 	/**
 	 * Esegue un aggiornamento delle riga rispondenti al criterio passato con i valori specificati
 	 * @param array $associazioni Matrice del tipo nome_colonna => valore contenente i dati da aggiornare
-	 * @param string $condizione Condizione WHERE generata usando le funzioni in {@link funzioni_db.inc}
+	 * @param string $condizione Condizione WHERE 
 	 */
 	public function aggiorna_dove($associazioni, $condizione)
 	{
@@ -1134,7 +1166,7 @@ class GESTORE extends RECORDSET
 
 	/**
 	 * Elimina le righe rispondenti al criterio passato
-	 * @param string $condizione Condizione WHERE generata usando le funzioni in {@link funzioni_db.inc}
+	 * @param string $condizione Condizione WHERE 
 	 */
 	public function elimina_dove($condizione)
 	{
@@ -1151,13 +1183,23 @@ class GESTORE extends RECORDSET
 
 	/**
 	 * Conta tutte le righe della tabella che verificano la condizione passata
-	 * @param string $condizione Condizione WHERE generata usando le funzioni in {@link funzioni_db.inc}
+	 * @param string $condizione Condizione WHERE 
 	 * @param mixed $distinct Indica se inserire la clausola DISTINCT nel conteggio; se FALSE o equivalente non la inserisce, else indica cosa contare in modo distinto (elenco colonne, *, etc.)
 	 * @return integer
 	 */
 	public function conta($condizione = NULL, $distinct = FALSE)
 	{
 		return DB_BASE::conta_righe($this->tabella, $condizione, $distinct);
+	}
+
+	/**
+	 * Dice se esistono righe della tabella che verificano la condizione passata
+	 * @param string $condizione Condizione WHERE 
+	 * @return bool
+	 */
+	public function esiste($condizione = NULL)
+	{
+		return DB_BASE::esistono_righe($this->tabella, $condizione);
 	}
 
 	/**
@@ -1190,7 +1232,7 @@ class GESTORE extends RECORDSET
 	/**
 	 * Ritorna i valori dei campi specificati come provenissero dalla pagina ($_POST) per eseguire una query (crea o aggiorna) sulla riga specificata
 	 * @param array $campi Campi per cui ritornare i valori
-	 * @param string $id Riga su cui bisogner�operare
+	 * @param string $id Riga su cui bisognera' operare
 	 * @return array
 	 */
 	public function valori_per_query($campi, $id = "-1")

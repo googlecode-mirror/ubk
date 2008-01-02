@@ -1,6 +1,6 @@
 <?php
 /**
- * Funzioni di utilità generale per le date
+ * Funzioni di utilita' generale per le date
  * @author Ubik <emiliano.leporati@gmail.com>
  * @package date
  */
@@ -57,14 +57,14 @@ function somma_giorni($data, $numero)
 }
 
 /**
- * Ritorna il numero di giorni fra le due date, con segno. La prima è quella di riferimento, quindi delta_giorni('01/01/2005', '02/01/2005') ritorna +1, delta_giorni('02/01/2005', '01/01/2005') ritorna -1
+ * Ritorna il numero di giorni fra le due date, con segno. La prima e' quella di riferimento, quindi delta_giorni('01/01/2005', '02/01/2005') ritorna +1, delta_giorni('02/01/2005', '01/01/2005') ritorna -1
  * @param string $data1 Data in formato gg/mm/yyyy
  * @param string $data2 Data in formato gg/mm/yyyy
  * @return integer
  */
 function delta_giorni($data1, $data2)
 {
-	// data1 è il riferimento
+	// data1 e' il riferimento
 	$data1 = explode("/", $data1);
 	$data2 = explode("/", $data2);
 	$i_data1 = implode("", array_reverse($data1));
@@ -132,7 +132,7 @@ function dateISO($data)
 }
 
 /**
- * Ritorna il numero di minuti che avanzano dal conteggio di ore intere da una quantità di minuti complessiva. 
+ * Ritorna il numero di minuti che avanzano dal conteggio di ore intere da una quantita' di minuti complessiva. 
  * @param int $minuti numero di minuti
  * @return integer numero di minuti nell'ora non finita 
  */

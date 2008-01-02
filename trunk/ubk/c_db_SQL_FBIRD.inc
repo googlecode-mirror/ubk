@@ -41,6 +41,20 @@ class DB_SQL_FBIRD extends DB_SQL
 		return $_sql;
 	}
 
+	/**
+	 * Genera una query EXISTS su una tabella
+	 * @param string $tabella Nome della tabella
+	 * @param string $condizione Eventuale clausola WHERE
+	 * @return string
+	 */ 
+	public static function genera_exists($tabella, $condizione = NULL)
+	{	
+		$_where = (is_null($condizione) ? '' : ' WHERE '.$condizione);
+
+		return 'SELECT CASE WHEN EXISTS(SELECT 1 FROM '.$tabella.$_where.') THEN \'1\' ELSE \'0\' END as b_exists FROM RDB$DATABASE';
+	}
+
+
 	public static function tsEqu($colonna, $valore)
 	{
 		$valore_db = call_user_func(array(self::$driver, 'utente_2_db'), $colonna, $valore);

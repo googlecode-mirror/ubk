@@ -22,12 +22,16 @@ require_once('funzioni_url.inc');
  */
 require_once('c_crypter.inc');
 
-/**********************************************************************************************
+/* *********************************************************************************************
  *
  * G E N E R I C H E
  *
- **********************************************************************************************/
+ * *********************************************************************************************/
 
+/**
+ * Eccezione durante l'interazione con la base dati
+ * @package general
+ */
 class DbException extends Exception
 {
 	public function __construct($function, $message)
@@ -36,14 +40,26 @@ class DbException extends Exception
 	}
 }
 
+/**
+ * Eccezione a livello di codice in fase di sviluppo
+ * @package general
+ */
 class CodeException extends Exception {}
 
+/**
+ * Eccezione a livello applicativo
+ * @package general
+ */
 class AppException extends Exception {}
 
+/**
+ * Eccezione fatale
+ * @package general
+ */
 class FatalException extends Exception {}
 
 /**
- * Ritorna TRUE se la costante �definita e ha valore == TRUE, FALSE altrimenti
+ * Ritorna TRUE se la costante e' definita e ha valore == TRUE, FALSE altrimenti
  * @param string $constant
  * @return boolean
  */
@@ -56,7 +72,7 @@ function constant_true($constant)
 }
 
 /**
- * Ritorna il valore della costante se �definita, $valore-default altrimenti
+ * Ritorna il valore della costante se e' definita, $valore-default altrimenti
  * @param string $constant
  * @param mixed $valore_default
  * @return mixed
@@ -80,7 +96,7 @@ function not($valore)
 }
 
 /**
- * Ritorna TRUE se il valore passato �"TRUE", FALSE altrimenti
+ * Ritorna TRUE se il valore passato e' "TRUE", FALSE altrimenti
  * @param string $valore
  * @return bool
  */
@@ -98,28 +114,40 @@ function get_microtime()
     return array_sum(explode(' ', microtime()));
 }
 
+/**
+ * Ritorna $else se $value == FALSE (stringa vuota, null, etc)
+ * @param mixed $value
+ * @param mixed $else
+ * @return mixed
+ */
 function invl($value, $else)
 {
 	return $value ? $value : $else;
 }
 
-/**********************************************************************************************
+/* *********************************************************************************************
  *
  * S T R I N G H E
  *
- **********************************************************************************************/
+ * *********************************************************************************************/
 
-function trim_to($str, $size)
+/**
+ * Tronca la stringa alla dimensione specificata, aggiungendo eventuali ellissi
+ * @param string $str
+ * @param integer $len
+ * @return string
+ */
+function trim_to($str, $len)
 {
-	if (strlen($str) <= $size + 3) {
+	if (strlen($str) <= $len + 3) {
 		return $str;
 	} else {
-		return substr($str, 0, $size) . '...';
+		return substr($str, 0, $len) . ELLIPSIS; //'...';
 	}
 }
 
 /**
- * Ritorna il valore formattato in modo consono per essere inserito in una stringa javascript racchiusa fra apici singoli (apici singoli quotati e caratteri speciali trasformati in entit�
+ * Ritorna il valore formattato in modo consono per essere inserito in una stringa javascript racchiusa fra apici singoli (apici singoli quotati e caratteri speciali trasformati in entita'
  * @param string $valore
  * @return string
  */
@@ -282,11 +310,11 @@ function xml_att_crea($array_attributi, $xml = FALSE)
 	return $risultato;
 }
 
-/**********************************************************************************************
+/* *********************************************************************************************
  *
  * I N I
  *
- **********************************************************************************************/
+ * *********************************************************************************************/
 
 /**
  * Legge il file .ini specificato ed esegue delle define per ognuna delle chiavi presenti
@@ -380,11 +408,11 @@ function critta_ini($file)
 }
 
 
-/**********************************************************************************************
+/* *********************************************************************************************
  *
  * A R R A Y
  *
- **********************************************************************************************/
+ * *********************************************************************************************/
 
 /**
  * Ritorna $array[$chiave] se la chiave esiste, $se_manca altrimenti
@@ -436,7 +464,11 @@ function array_stampa(&$array, $livello = 0)
 
 }
 
-
+/**
+ * Appiattisce un array contenente altri array ([a, [b, c], d] => [a, b, c, d])
+ * @param array $a 
+ * @return array
+ */
 function array_flatten($a) 
 {
 	$res = array();
@@ -449,11 +481,11 @@ function array_flatten($a)
 	return $res;
 }
 
-/**********************************************************************************************
+/* *********************************************************************************************
  *
  * X S L T
  *
- **********************************************************************************************/
+ * *********************************************************************************************/
 
 /**
  * Esegue le trasformazioni XSLT indicate in PHDIR/xsl/transform.xsl (se questo file esiste) sul testo XML passato.
@@ -577,11 +609,12 @@ function xsl_transform($xml, $strip = false, $xsl = NULL, $params = NULL)
 }
 
 
-/** DEPRECATA
+/** 
  * Ritorna il risultato della trasformazione xsl sul documento xml passato. Entrambi i parametri possono essere del codice xml / xsl o un nome di file.
  * @param string $xml Nome del documento da trasformare, o testo xml da trasformare
  * @param string $xsl Nome del documento di trasformazione, o codice xsl di trasformazione
  * @return string
+ * @deprecated
  */
 function xsl_transform_file($xml, $xsl, $params = NULL)
 {
@@ -600,11 +633,11 @@ function xsl_transform_file($xml, $xsl, $params = NULL)
 	}
 }
 
-/**********************************************************************************************
+/* *********************************************************************************************
  *
  * F I L E
  *
- **********************************************************************************************/
+ * *********************************************************************************************/
 
 /**
  * Esegue una copia del file o della directory specificata
@@ -614,7 +647,7 @@ function xsl_transform_file($xml, $xsl, $params = NULL)
  */
 function copy_file($old_name, $new_name, $copy_perms = TRUE)
 {
-	// se �un file, lo copio pari pari
+	// se e' un file, lo copio pari pari
 	if (is_file($old_name)) {
 
 		copy($old_name, $new_name);
@@ -625,7 +658,7 @@ function copy_file($old_name, $new_name, $copy_perms = TRUE)
 			chmod($new_name, 0777);
 		}
 
-	// se �una dir, la copio con la sua routine
+	// se e' una dir, la copio con la sua routine
 	} elseif (is_dir($old_name)) {
 
 		copy_dir($old_name, $new_name, $copy_perms);
@@ -760,11 +793,6 @@ function rmdirr($dir)
           }
     }
     rmdir($dir);
-}
-
-function deltree($dir)
-{
-	rmdirr($dir);
 }
 
 ?>

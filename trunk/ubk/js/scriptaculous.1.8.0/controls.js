@@ -39,7 +39,8 @@
 if(typeof Effect == 'undefined')
   throw("controls.js requires including script.aculo.us' effects.js library");
 
-var Autocompleter = { }
+var Autocompleter = { };
+
 Autocompleter.Base = Class.create({
   baseInitialize: function(element, update, options) {
     element          = $(element)

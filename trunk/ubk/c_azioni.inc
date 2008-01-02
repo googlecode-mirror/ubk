@@ -2,7 +2,7 @@
 /**
  * Classe base per l'esecuzione delle azioni comandate dai link delle pagine generate
  * @author Ubik <leporati@immaginazioneelavoro.it>
- * @package db
+ * @package gateway
  */
 
 /** 
@@ -16,10 +16,15 @@ require_once('c_parser.inc');
 
 /** 
  * Esegue le azioni comandate dalla pagina HTML chiamante via GET sui dati passati via POST
- * @package db
+ * @package gateway
  */
 class AZIONI_FORM
 {
+	/**
+	 * Conteggi per le statistiche di esecuzione
+	 * @var array
+	 * @static
+	 */
 	public static $time = array('TRANS' => 0, 'TOTAL' => 0);
 
 	/**
