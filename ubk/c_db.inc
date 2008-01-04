@@ -432,7 +432,12 @@ abstract class DB_SQL
 	 */ 
 	public static function iequ($colonna, $valore)
 	{
-		return strtr(self::cond($colonna, strtoupper($valore), '='), array($colonna => "UPPER($colonna)"));
+		$cond = self::cond($colonna, $valore, '=');
+		if (strpos($cond, '=') !== FALSE) {
+			$pos = strlen($colonna) + 3;
+			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
+		}
+		return strtr($cond, array($colonna => "UPPER($colonna)"));
 	}
 
 	/**
@@ -501,7 +506,10 @@ abstract class DB_SQL
 		switch($colonna[0]) {
 		case 's':
 		case 't':
-			return strtr(self::cond($colonna, strtoupper("%{$valore}%"), 'LIKE'), array('?' => '_', '*' => '%', $colonna => "UPPER($colonna)"));
+			$cond = self::cond($colonna, "%$valore%", 'LIKE');
+			$pos = strlen($colonna) + 6;
+			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
+			return strtr($cond, array('?' => '_', '*' => '%', $colonna => "UPPER($colonna)"));
 		default:
 			return self::equ($colonna, $valore);
 		}
@@ -518,7 +526,10 @@ abstract class DB_SQL
 		switch($colonna[0]) {
 		case 's':
 		case 't':
-			return strtr(self::cond($colonna, strtoupper("{$valore}%"), 'LIKE'), array('?' => '_', '*' => '%', $colonna => "UPPER($colonna)"));
+			$cond = self::cond($colonna, "$valore%", 'LIKE');
+			$pos = strlen($colonna) + 6;
+			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
+			return strtr($cond, array('?' => '_', '*' => '%', $colonna => "UPPER($colonna)"));
 		default:
 			return self::equ($colonna, $valore);
 		}
@@ -535,7 +546,10 @@ abstract class DB_SQL
 		switch($colonna[0]) {
 		case 's':
 		case 't':
-			return strtr(self::cond($colonna, strtoupper("%{$valore}"), 'LIKE'), array('?' => '_', '*' => '%', $colonna => "UPPER($colonna)"));
+			$cond = self::cond($colonna, "%$valore", 'LIKE');
+			$pos = strlen($colonna) + 6;
+			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
+			return strtr($cond, array('?' => '_', '*' => '%', $colonna => "UPPER($colonna)"));
 		default:
 			return self::equ($colonna, $valore);
 		}

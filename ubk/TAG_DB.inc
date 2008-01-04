@@ -196,7 +196,7 @@ class FORM extends CONTENITORE
  * Questa classe non e' relazionata ad alcun tag; serve per mettere a disposizione dei suoi figli (i campi) un metodo comune di individuazione della modalita' corretta (e consentita in base ai diritti) di visualizzazione.
  * @package tag
  */
-class CAMPO_ACCESSO extends TAG
+abstract class CAMPO_ACCESSO extends TAG
 {
 	/** 
 	 * Contatore che viene incrementato per garantire l'ordine dei campi
@@ -793,7 +793,7 @@ class CHECKBOX_FK extends CAMPO_ACCESSO
  * Base per COMBO, PICKER, COD_DESC, implementa id_js
  * @package tag
  */
-class CAMPO_TABELLA_ESTERNA extends CAMPO_ACCESSO
+abstract class CAMPO_TABELLA_ESTERNA extends CAMPO_ACCESSO
 {
 	public function id_js()
 	{

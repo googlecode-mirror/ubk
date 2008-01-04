@@ -5,20 +5,22 @@ var CUbkFieldCheck = Class.create({
 		var i = 0; 
 		var acapo = String.fromCharCode(10, 13);
 
-		$A(fields).each(function(f, idx) {
+		fields.each(function(f, idx) {
 			if ($(f) && $F(f).length == 0) msg[i++] = messages[idx];
 		});
 
-		if (msg.length > 0)
-			return Ubk.confirm('Attenzione, si consiglia di riempire anche i seguenti campi: ' 
+		if (msg.length > 0) {
+			return confirm('Attenzione, si consiglia di riempire anche i seguenti campi: ' 
 				+ acapo + acapo + msg.join(', ' + acapo) 
-				+ acapo + acapo + 'proseguire comunque ?');
-		else
+				+ acapo + acapo + 'Proseguire comunque ?');
+		} else {
 			return true;
+		}
 	},
 
 	mandatory: function(fields)
 	{
+		
 		for(i = 0; i < fields.length; i++) {
 			if ($(fields[i]) && $F(fields[i]).length == 0) {
 				Ubk.error("Manca un valore necessario !");
@@ -32,7 +34,6 @@ var CUbkFieldCheck = Class.create({
 
 	/**
 	 * Verifica che in una casella di testo sia presente un indirizzo di posta elettronica.
-	 * @author Ubik <leporati@immaginazioneelavoro.it>
 	 */
 	mail: function(obj)
 	{
@@ -51,7 +52,6 @@ var CUbkFieldCheck = Class.create({
 
 	/**
 	 * Verifica che in una casella di testo sia presente un codice fiscale (non necessariamente valido)
-	 * @author Ubik <leporati@immaginazioneelavoro.it>
 	 */
 	cf: function(obj)
 	{
@@ -69,7 +69,6 @@ var CUbkFieldCheck = Class.create({
 
 	/**
 	 * Verifica che in una casella di testo sia presente un indirizzo web.
-	 * @author Ubik <leporati@immaginazioneelavoro.it>
 	 */
 	url: function(obj)
 	{
@@ -86,8 +85,7 @@ var CUbkFieldCheck = Class.create({
 	},
 
 	/**
-	 * Verifica che in una casella di testo sia presente un numero decimale. In realt� questa funzione toglie tutti i caratteri non numerici e tutti i punti di separazione decimale (. o ,) successivi al primo, quindi alla fine dell'esecuzione il contenuto sar� sempre un numero decimale - il check ha sempre successo.
-	 * @author Ubik <leporati@immaginazioneelavoro.it>
+	 * Verifica che in una casella di testo sia presente un numero decimale. In realta' questa funzione toglie tutti i caratteri non numerici e tutti i punti di separazione decimale (. o ,) successivi al primo, quindi alla fine dell'esecuzione il contenuto sara' sempre un numero decimale - il check ha sempre successo.
 	 */
 	real: function(obj)
 	{
@@ -109,8 +107,7 @@ var CUbkFieldCheck = Class.create({
 	},
 
 	/**
-	 * Verifica che in una casella di testo sia presente un numero intero. In realt� questa funzione toglie tutti i caratteri non numerici, quindi alla fine dell'esecuzione il contenuto sar� sempre un numero intero - il check ha sempre successo.
-	 * @author Ubik <leporati@immaginazioneelavoro.it>
+	 * Verifica che in una casella di testo sia presente un numero intero. In realta' questa funzione toglie tutti i caratteri non numerici, quindi alla fine dell'esecuzione il contenuto sara' sempre un numero intero - il check ha sempre successo.
 	 */
 	integer: function(obj)
 	{
@@ -141,7 +138,6 @@ var CUbkFieldCheck = Class.create({
 
 	/**
 	 * Verifica che in una casella di testo sia presente un "time" (hh.mm). Questa funzione effettua le seguenti trasformazioni: hh -> hh.00; hhmm -> hh.mm; h -> 0h.00; hmm -> 0h.mm
-	 * @author Ubik <leporati@immaginazioneelavoro.it>
 	 */
 	hour: function(obj)
 	{
@@ -179,7 +175,6 @@ var CUbkFieldCheck = Class.create({
 
 	/**
 	 * Verifica che in una casella di testo sia presente un "date" (dd/mm/yyyy). Questa funzione effettua le seguenti trasformazioni: d -> 0d; m -> 0m; yy -> 20yy; yyy -> 2yyy; e tutte le combinazioni (es: d/m/yy -> 0d/0m/20yy). Verifica anche il 29 febbraio sugli anni bisestili
-	 * @author Ubik <leporati@immaginazioneelavoro.it>
 	 */
 	date: function(obj, century)
 	{

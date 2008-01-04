@@ -15,7 +15,13 @@ var CUbk = Class.create({
 
 	followLink: function(l)
 	{
-		if ($(l)) eval($(l).href.substr(11));
+		l = $(l);
+		if (l && l.href) {
+			eval(l.href.substr(11));
+			return true;
+		} else {
+			return false;
+		}
 	},
 
 	// fallimento chiamata AJAX
@@ -129,18 +135,22 @@ var CUbk = Class.create({
 	// post di dati
 	post: function(form, id, target, url, pars, replace, async, onComplete) 
 	{
-		if (form.onsubmit) {
-			var body = 'onsubmit = ' + form.onsubmit.toString().replace(/#id/g, id);
+		var oForm = document.forms[form];
+
+		var onsubmit = null;
+
+		if (oForm.onsubmit) {
+			var body = 'onsubmit = ' + oForm.onsubmit.toString().replace(/#id/g, id);
 			eval(body);
 		} else {
-			var onsubmit = function() { return true; }
+			onsubmit = function() { return true; };
 		}
 
 		if (onsubmit.call()) {
 
 			this.working(true, 
 				{ 
-					form: form.name
+					form: form
 					, target: target
 					, url: url
 					, pars: pars
@@ -194,9 +204,13 @@ var CUbk = Class.create({
 	},
 
 	// message boxes
-	confirm: function (message)
+	confirm: function (message, onOk, onCancel)
 	{
-		return confirm(message);
+		if (confirm(message)) {
+			Try.these(onOk);
+		} else {
+			Try.these(onCancel);
+		}
 	},
 	
 	error: function(message)
