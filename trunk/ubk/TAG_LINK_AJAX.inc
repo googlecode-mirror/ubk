@@ -53,9 +53,12 @@ class AJAX_FORM extends CONTENITORE
 			}
 		}
 
-		if (count($check))
+		if (count($check)) {
 			log_value('SUGGESTING: -------> '.implode(' , ',$check));
-		return 'if (!Fld.Check.suggested(['.implode(',', array_keys($check)).'], ['.implode(',', array_values($check)).'])) return false;';
+			return 'if (!Fld.Check.suggested(['.implode(',', array_keys($check)).'], ['.implode(',', array_values($check)).'])) return false;';
+		} else {
+			return '';
+		}
 	}
 
 	protected function campi_richiesti(&$rs, &$campi)
@@ -94,9 +97,12 @@ class AJAX_FORM extends CONTENITORE
 			}
 		}
 
-		if (count($check))
+		if (count($check)) {
 			log_value('CHECKING: -------> '.implode(' , ',$check));
-		return 'if (!Fld.Check.mandatory(['.implode(',', array_values($check)).'])) return false;';
+			return 'if (!Fld.Check.mandatory(['.implode(',', array_values($check)).'])) return false;';
+		} else {
+			return '';
+		}
 	}
 
 	public function stampa_html(&$parametri)
@@ -126,6 +132,7 @@ class AJAX_FORM extends CONTENITORE
 		unset($atts['CAMPI-RICHIESTI']);
 		unset($atts['CAMPI-CONSIGLIATI']);
 		unset($atts['NUMERO']);
+		unset($atts['CHECKBOXES']);
 		// informazione sui campi CHECKBOX
 		// devo sapere quali check ci sono sulla pagina, cosi' quando le posto sceccate (?) posso
 		// sapere che c'erano e scrivere 0 sul db
@@ -164,6 +171,7 @@ class AJAX_FORM extends CONTENITORE
 		// campi necessari
 		$js .= $this->campi_richiesti($rs, $campi);
 
+		// ok finale
 		$js .= "return true;";
 
 		// stampa del forum
@@ -328,7 +336,7 @@ class LINK_AJAX_GENERICO extends TAG
 		if ($target != 'null' && FALSE === strpos($target, "'")) $target = qt($target);
 		if ($post) {
 			$form =  array_get("FORM", $parametri);
-			$form = "document.forms['$form']";
+			$form = qt($form);
 			if (isset($reazione) && strlen($reazione)) {
 				$ajax = "if (Ubk.post($form, '".$this->js_id($parametri)."', $target, '$gateway', '$pars', $show, $async, $onComplete)) $reazione ";
 			} else {
@@ -444,7 +452,7 @@ class LINK_AJAX_GENERICO extends TAG
 		if ($target != 'null' && FALSE === strpos($target, "'")) $target = qt($target);	
 		if ($post) {
 			$form =  array_get("FORM", $parametri);
-			$form = "document.forms['$form']";
+			$form = qt($form);
 			$ret .= "Ubk.silentPost($form, '".$this->js_id($parametri)."', $target, '$gateway', '$pars', $show, $async, null); ";	// silent
 		} else {
 			$ret .= "Ubk.follow($target, '$gateway', '$pars', $show, $async, null); ";
@@ -537,10 +545,33 @@ class LINK_AJAX_GENERICO extends TAG
 }
 
 /**
+ * Fornisce un metodo per la riscrittura del codice di js-onclick per le classi che aggiungono una conferma
+ * @package tag
+ */
+abstract class LINK_AJAX_CONFERMA extends LINK_AJAX_GENERICO
+{
+	protected function aggiorna_js_onclick($js)
+	{
+		$nodo_azione =& $this->figlio_richiesto("AZIONE");
+
+		if ($nodo_azione -> attributo_esiste("JS-ONCLICK")) {
+			$jsOr = $nodo_azione -> attributo_originale("JS-ONCLICK");
+			if (strpos($jsOr, '@ajax') === FALSE) {
+				$nodo_azione -> attributi["JS-ONCLICK"] = str_replace('@ajax', $jsOr.'@ajax', $js);
+			} else {
+				$nodo_azione -> attributi["JS-ONCLICK"] = str_replace('@ajax', $jsOr, $js);
+			}
+		} else {
+			$nodo_azione -> attributi["JS-ONCLICK"] = $js;
+		}
+	}
+}
+
+/**
  * Link che scatena l'eliminazione di una riga in una tabella. 
  * @package tag
  */
-class LINK_AJAX_ELIMINA extends LINK_AJAX_GENERICO
+class LINK_AJAX_ELIMINA extends LINK_AJAX_CONFERMA
 {
 	private $setup_done = FALSE;
 
@@ -552,20 +583,16 @@ class LINK_AJAX_ELIMINA extends LINK_AJAX_GENERICO
 				$nodo_azione = new TAG("AZIONE");
 			}
 			
-			$js = " if (Ubk.confirm('Proseguire con l\'eliminazione ?')) { @ajax }";
-			if (isSet($nodo_azione -> attributi["JS-ONCLICK"])) {
-				$nodo_azione -> attributi["JS-ONCLICK"] .= $js;
-			} else {
-				$nodo_azione -> attributi["JS-ONCLICK"] = $js;
-			}
 			if (!$this->attributo_esiste("DIRITTO"))
 				$this -> attributi["DIRITTO"] = "D";
 
-			if (!$nodo_azione -> attributo_esiste("NOME")) {
+			if (!$nodo_azione -> attributo_esiste("NOME"))
 				$nodo_azione -> attributi["NOME"] = "elimina";
-			}
+
 			$nodo_azione -> attributi["USA-ID"] = "true";
 			$nodo_azione -> attributi["POST"] = "false";
+
+			$this->aggiorna_js_onclick("Ubk.confirm('Proseguire con l\'eliminazione ?',function(){@ajax});");
 
 			array_unshift($this -> figli, $nodo_azione);
 
@@ -582,7 +609,7 @@ class LINK_AJAX_ELIMINA extends LINK_AJAX_GENERICO
  * Link che scatena l'aggiornamento di una riga in una tabella. 
  * @package tag
  */
-class LINK_AJAX_AGGIORNA extends LINK_AJAX_GENERICO
+class LINK_AJAX_AGGIORNA extends LINK_AJAX_CONFERMA
 {
 	private $setup_done = FALSE;
 
@@ -599,20 +626,16 @@ class LINK_AJAX_AGGIORNA extends LINK_AJAX_GENERICO
 
 			if (!$this->attributo_esiste("DIRITTO"))
 				$this -> attributi["DIRITTO"] = "RW";
-			if (!$nodo_azione -> attributo_esiste("NOME")) {
+			if (!$nodo_azione -> attributo_esiste("NOME"))
 				$nodo_azione -> attributi["NOME"] = "aggiorna";
-			}
+
 			$nodo_azione -> attributi["USA-ID"] = "true";
 			$nodo_azione -> attributi["POST"] = "true";
 
+			$this->aggiorna_js_onclick("Ubk.confirm('Proseguire con l\'aggiornamento ?',function(){@ajax});");
+
 			array_unshift($this -> figli, $nodo_azione);
 
-			$js = " if (Ubk.confirm('Proseguire con l\'aggiornamento ?')) { @ajax } ";
-			if (isSet($nodo_azione -> attributi["JS-ONCLICK"])) {
-				$nodo_azione -> attributi["JS-ONCLICK"] .= $js;
-			} else {
-				$nodo_azione -> attributi["JS-ONCLICK"] = $js;
-			}
 			$this->setup_done = TRUE;
 		}
 
@@ -625,7 +648,7 @@ class LINK_AJAX_AGGIORNA extends LINK_AJAX_GENERICO
  * Link che scatena l'aggiornamento pagina, sulla quale devono essere presenti tutti gli id da aggiornare in un campo multiplo
  * @package tag
  */
-class LINK_AJAX_AGGIORNA_TUTTO extends LINK_AJAX_GENERICO
+class LINK_AJAX_AGGIORNA_TUTTO extends LINK_AJAX_CONFERMA
 {
 	private $setup_done = FALSE;
 
@@ -642,19 +665,15 @@ class LINK_AJAX_AGGIORNA_TUTTO extends LINK_AJAX_GENERICO
 			$nodo_azione -> attributi["POST"] = "true";
 			if (!$this->attributo_esiste("DIRITTO"))
 				$this -> attributi["DIRITTO"] = "RW";
-			if (!$nodo_azione -> attributo_esiste("NOME")) {
+			if (!$nodo_azione -> attributo_esiste("NOME"))
 				$nodo_azione -> attributi["NOME"] = "aggiorna_tutto";
-			}
+
 			$nodo_azione -> attributi["USA-ID"] = "false";
+
+			$this->aggiorna_js_onclick("Ubk.confirm('Proseguire con l\'aggiornamento pagina ?',function(){@ajax});");
 
 			array_unshift($this -> figli, $nodo_azione);
 
-			$js = " if (Ubk.confirm('Proseguire con l\'aggiornamento pagina ?')) { @ajax }";
-			if (isSet($nodo_azione -> attributi["JS-ONCLICK"])) {
-				$nodo_azione -> attributi["JS-ONCLICK"] .= $js;
-			} else {
-				$nodo_azione -> attributi["JS-ONCLICK"] = $js;
-			}
 			$this->setup_done = TRUE;
 		}
 
@@ -665,7 +684,7 @@ class LINK_AJAX_AGGIORNA_TUTTO extends LINK_AJAX_GENERICO
  * Link che scatena l'aggiunta di una riga in una tabella. 
  * @package tag
  */
-class LINK_AJAX_CREA extends LINK_AJAX_GENERICO
+class LINK_AJAX_CREA extends LINK_AJAX_CONFERMA
 {
 	private $setup_done = FALSE;
 
@@ -677,25 +696,18 @@ class LINK_AJAX_CREA extends LINK_AJAX_GENERICO
 				$nodo_azione = new TAG("AZIONE");
 			}
 
-			if (!$this->attributo_esiste("REAZIONE")){
+			if (!$this->attributo_esiste("REAZIONE"))
 				$this -> attributi["REAZIONE"] = "TRUE";
-			}
-
-			$js = " if (Ubk.confirm('Proseguire con la creazione ?')) { @ajax };";
-			if (isSet($nodo_azione -> attributi["JS-ONCLICK"])) {
-				$nodo_azione -> attributi["JS-ONCLICK"] .= $js;
-			} else {
-				$nodo_azione -> attributi["JS-ONCLICK"] = $js;
-			}
-			$nodo_azione -> attributi["POST"] = "true";
 			if (!$this->attributo_esiste("DIRITTO"))
 				$this -> attributi["DIRITTO"] = "W";
-			if (!$nodo_azione -> attributo_esiste("NOME")) {
+			if (!$nodo_azione -> attributo_esiste("NOME"))
 				$nodo_azione -> attributi["NOME"] = "crea";
-			}
-			$nodo_azione -> attributi["USA-ID"] = "false";
 
+			$nodo_azione -> attributi["POST"] = "true";
+			$nodo_azione -> attributi["USA-ID"] = "false";
 			$this -> attributi["JS-ID"] = "link_crea_".($parametri['FORM-N']);
+
+			$this->aggiorna_js_onclick("Ubk.confirm('Proseguire con la creazione ?',function(){@ajax});");
 
 			array_unshift($this -> figli, $nodo_azione);
 
@@ -1077,7 +1089,7 @@ class PAGINATORE_AJAX extends TAG
  * Classe base per la generazione di qualunque tag html, basandosi sul nome classe
  * @package tag
  */
-class HTML_TAG extends HTML
+abstract class HTML_TAG extends HTML
 {
 	public function stampa_html(&$parametri)
 	{
@@ -1152,7 +1164,6 @@ class SCRIPT extends HTML
 	{
 		if ($this->attributo_esiste('SRC')) {
 			$this->attributi['TAG'] = 'script';
-			$this->attributi['LANGUAGE'] = 'Javascript';
 			$this->attributi['TYPE'] = 'text/javascript';
 			parent::stampa_html($parametri);
 		} else {

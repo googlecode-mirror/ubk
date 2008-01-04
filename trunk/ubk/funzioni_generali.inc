@@ -338,22 +338,25 @@ function leggi_ini($file, $crittato = false)
 		$_vals = array();
 		foreach($_keys as $_name => $_value) {
 			if ($crittato) {
-				$_vals[$_name] = $cry->decrypt($_value);	// hex2bin ?
+				$_vals[$_name] = $cry->decrypt($_value);
 			} else {
 				$_vals[$_name] = $_value;
 			}
 		}
 
 		// gestisce i valori ini condizionali utilizzando la direttiva MATCH nel file ini su nomehost:porta
-		if(isset($_vals['MATCH'])){
+		if (array_key_exists('MATCH', $_vals)) {
 			$_regexp = "/{$_vals['MATCH']}/";
 			if (!isset($_URL)){
-				if (isset($_SERVER['HTTP_HOST'])){ 
+				if (isset($_SERVER['HTTP_HOST'])) { 
 					$_URL = $_SERVER['HTTP_HOST'].':'.$_SERVER['SERVER_PORT'];
 				} else {
 					$_URL = false;	
-				}	
-			}			
+				}
+			}
+			// se non matcha, non vado avanti
+			// quindi non riempio $_all_defines,
+			// e i valori di questa sezione non saranno definiti
 			if (!preg_match($_regexp, $_URL)) {
 				continue;
 			}
@@ -376,7 +379,7 @@ function leggi_ini($file, $crittato = false)
 	}
 	
 	foreach($_all_defines as $_name => $_value) {
-			define($_name, $_value);
+		define($_name, $_value);
 	}
 
 	if ($crittato) {

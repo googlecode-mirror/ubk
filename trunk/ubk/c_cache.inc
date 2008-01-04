@@ -192,7 +192,7 @@ class CACHE
 	 */
 	public function page_get($filename)
 	{
-		if ($this->page_cache && file_exists($cache = $this->page_name($filename))) {
+		if ($this->page_cache && file_exists($cache = $this->page_name($filename)) && filemtime($cache) > filemtime($filename)) {
 			return unserialize(file_get_contents($cache));
 		} else {
 			return NULL;
