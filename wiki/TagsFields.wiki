@@ -49,3 +49,34 @@ Javascript controls to ensure correct data format and length are automatically g
 == UBK:CAMPO-MAIL ==
 
 A simple extension to *UBK:CAMPO*: when in R *mode*, if *tipo* is different from _hidden_ and _password_, it displays itself as a _mailto:_ link to its value; in W or RW *mode*, it checks correct e-mail format for its value.
+
+== UBK:COMBO ==
+
+This one represents a select or radio group, whose values are taken from an other database table.
+
+|| attribute || required || default || domain || notes ||
+|| *tabella* || X || || || the name of the database table containing values to display / select ||
+|| *campo-id-tabella* || || *tabella*'s id field || || the name of the database field containing ids (primary key) ||
+|| *nome* || || *campo-id-tabella* || || the name of the database field in the source table (foreign key) ||
+|| *campi* || X || || string[|string..] || sequence of strings representing *tabella*'s fields and separators, alternatively (example: t_name| - |t_description) ||
+|| *filtro* || || || SQL || filter condition over values in *tabella* ||
+|| *ordine* || || *campi*[ 0 ] || SQL || sort condition ||
+|| *distinct* || || FALSE || FALSE, TRUE || tells the framework if values in the select should be forced to be unique ||
+|| *mode* || || environment || R, W, RW || tells the framework how to show the field: as a label, as a blank field, as a field filled with current value. Also the name of the field is affected by this property ||
+|| *usa-id* || || TRUE if *mode* = RW, FALSE if *mode* = W || TRUE, FALSE || tells the framework which id should be used to identify the field in the page: when FALSE, -1 is used, else *valore-id* if exists, else the current row-id ||
+|| *valore-id* || || || mixed || the id value to be used to identify the field; if *mode* == R, then it's the value used as source, regardless of the current row value for *nome* ||
+|| *multiplo* || || FALSE || TRUE, FALSE || if true, the field is not uniquely identified, but becomes part of an array ||
+|| *js-name* || || *nome* || || base part of the final html _name_ attribute ||
+|| *js-id* || || *nome* || || base part of the final html _id_ attribute || 
+|| *diritti* || || environment || array || Hash of type [section => [right => bool]] containing current user rights. If no rights are presente, field is displayed in any case ||
+|| *sezione* || || environment || mixed || section of user rights to be used to check right needed to display the field. If no section is present, field is displayed in any case||
+|| *diritto* || || *mode* || R, W, RW, D || the right needed to display this field, checked against current environment rights ||
+|| *tipo* || || combo || combo,radio || type of the field ||
+|| *class* || || || environment || the css class to be applied to the field; if *mode* is R, then the value is entagged in a _span_ with that class ||
+|| *valore-default* || || database field default value || || used only if *mode* is W ||
+|| *se-null* || || || || value to be displayed if field IS NULL; used only if *mode* is R ||
+|| *formato* || || || || specifies the name of a php function of type _mixed_ => _mixed_ that is applyed to database / *se-null* value to format it (before the eventual _span_/*class* entagging); used in every display *mode* ||
+|| *trim* || || || int || maximum string characters to display (ellipsis added after); used in every display *mode* ||
+|| *tabindex* || || environment || int || ||
+|| *js-onclick* || || || js || javascript code to be executed on field value change ||
+|| *richiesto* || || FALSE || TRUE, FALSE || if TRUE, forces the field to be required on data submit and displays an asterisk after the field; if the global parameter *STAR* is set, then the asterisk is entagged in a _span_ of class _star_ ||
