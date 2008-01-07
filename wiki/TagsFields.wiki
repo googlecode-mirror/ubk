@@ -72,6 +72,7 @@ This one represents a select or radio group, whose values are taken from an othe
 || *sezione* || || environment || mixed || section of user rights to be used to check right needed to display the field. If no section is present, field is displayed in any case||
 || *diritto* || || *mode* || R, W, RW, D || the right needed to display this field, checked against current environment rights ||
 || *tipo* || || combo || combo,radio || type of the field ||
+|| *riga-vuota* || || TRUE || FALSE, TRUE || if FALSE and *tipo* == COMBO, no empty option is displayed (empty option is displayed by default even if field is required) ||
 || *class* || || || environment || the css class to be applied to the field; if *mode* is R, then the value is entagged in a _span_ with that class ||
 || *valore-default* || || database field default value || || used only if *mode* is W ||
 || *se-null* || || || || value to be displayed if field IS NULL; used only if *mode* is R ||
