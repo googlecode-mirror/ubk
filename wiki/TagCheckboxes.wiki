@@ -1,4 +1,4 @@
-#summary Description of xml-tags used to show and manipulate table fields
+#summary Description of xml-tags used to show and manipulate boolean table fields or conditions
 
 = Introduction =
 
