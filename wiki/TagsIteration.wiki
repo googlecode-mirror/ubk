@@ -1,0 +1,75 @@
+#summary Description of xml-tags used to iterate through result sets or arrays
+
+== UBK:ITER ==
+
+This tag acts much like a _for_ or _foreach_, over a range of numbers or over an array, specified in a variety of ways.
+
+If used to loop over a range of numbers, two new environment variables are set:
+  * ITER-START: the start value
+  * ITER-CURRENT: the current value
+and the attributes that the tag handles are the followings:
+|| attribute || required || default || domain || notes ||
+|| *inizio* || X || || int || the start value ||
+|| *fine* || X || || int || the end value ||
+|| *step* || || 1 || int || the increment for the index ||
+this modality is used if both *inizio* and *fine* are specified; no other attribute is considered.
+
+
+If used to loop over an array, two new environment variables are set:
+  * ITER-CURRENT-KEY: the index or the current key of the array
+  * ITER-CURRENT: the current value
+and the attributes that the tag handles are the followings:
+|| attribute || required || default || domain || notes ||
+|| *array* || || || string || the name of a global variable that actually contains the array to loop over ||
+|| *dati* || || || mixed || any expression returning a string suitable to define an array (for example: dati="%implode(array(1,2,3,4,5))", dati="'one' => 1,'two' => 2") ||
+this modality is used if one of *array* or *dati* are specified; no other attribute is considered.
+
+== UBK:RIGHE ==
+
+This tag loops over the current result set, repeating its content for every tuple.
+Some attributes can be specified to loop over just a part of the result set:
+
+|| attribute || required || default || domain || notes ||
+|| *page-size* || X || || int || the number of records to display, starting from the first ||
+|| *start* || || || int || the record number to start from ||
+|| *page* || || 0 || int || the page number (assumed containing *page-size* record) to start from ||
+this modality is used if *page-size* is specified; if neither *start* nor *page* is specified, then the loop starts from the first record (like if *page* was set to 0).
+
+== UBK:RIGHE-CORRELATE ==
+
+This tag acts much like ubk:righe, but changing the result set to loop over, that is the set of tuple in another table somehow related to current tuple.
+
+|| attribute || required || default || domain || notes ||
+|| *tabella* || X || || string || the new table / view to loop over ||
+|| *campo-id-tabella* || || *tabella*'s primary key || string || the name of the field in *tabella* used as id ||
+|| *campo-id-link* || || *campo-id-tabella* || string || the name of the field in *tabella* used to find related tuples ||
+|| *campo-id* || || *campo-id-link* || string || the name of the field in current table used to find related tuples ||
+|| *filtro* || || || SQL || additional filter for *tabella*'s tuples ||
+|| *ordine* || || || SQL || additional sort clause for *tabella*'s tuples ||
+|| *colonne* || || * || column|column[,column] || which columns should be fetched: specifying less columns in wide tables speeds up the process ||
+|| *distinct* || || FALSE || FALSE, TRUE || should tuples be forced to be distinct ||
+
+A common and minimal use of this tag is the following:
+{{{
+<ubk:righe-correlate tabella="xxx" campo-id-link="i_yyy_id">
+....
+</ubk:righe-correlate>
+}}}
+
+When primary key in *tabella* and foreign key in current table have same name, you can just specify *tabella*.
+Default filtering is done like this: 
+{{{
+SELECT * FROM tabella WHERE campo-id-link = current_table[ campo-id ]
+}}}
+that usually is equivalent to
+{{{
+SELECT * FROM tabella WHERE primary-key = current_table[ tabella.primary-key ]
+}}}
+
+Some attributes can be specified to loop over just a part of the result set:
+
+|| attribute || required || default || domain || notes ||
+|| *page-size* || X || || int || the number of records to display, starting from the first ||
+|| *start* || || || int || the record number to start from ||
+|| *page* || || 0 || int || the page number (assumed containing *page-size* record) to start from ||
+this modality is used if *page-size* is specified; if neither *start* nor *page* is specified, then the loop starts from the first record (like if *page* was set to 0).
