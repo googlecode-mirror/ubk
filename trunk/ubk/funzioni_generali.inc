@@ -381,6 +381,8 @@ function leggi_ini($file, $crittato = false)
 	foreach($_all_defines as $_name => $_value) {
 		define($_name, $_value);
 	}
+	if (!defined('NS_GFX')) define('NS_GFX', 'http://ubk.googlecode.com');
+	if (!defined('NS_UBK')) define('NS_UBK', 'http://ubk.googlecode.com');
 
 	if ($crittato) {
 		unset($cry);
