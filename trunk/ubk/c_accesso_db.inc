@@ -51,12 +51,12 @@ class DB_BASE
 	public static $time = array('SQL' => 0, 'NUM' => 0, 'ALL' => array());
 	/**
 	 * Classe di interazione col db
-	 * @var string
+	 * @var DB_DRIVER
 	 */
 	protected $driver = NULL;
 	/**
 	 * Classe che fornisce query sui metadati
-	 * @var string
+	 * @var DB_META
 	 */
 	protected $meta = NULL;
 	/**
@@ -66,7 +66,7 @@ class DB_BASE
 	protected $sql = NULL;
 	/**
 	 * Classe per la gestione della cache
-	 * @var string
+	 * @var CACHE
 	 */
 	protected $cache = NULL;
 
@@ -101,7 +101,7 @@ class DB_BASE
 	public $lunghezza = array();
 
 	/**
-	 * Array associativo con i tipi dei campi (vedere dbms_field_type)
+	 * Array associativo con i tipi fisici dei campi
 	 * @var array
 	 */
 	public $tipo = array();

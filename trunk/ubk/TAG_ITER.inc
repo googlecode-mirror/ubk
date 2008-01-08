@@ -129,7 +129,6 @@ class RIGHE_CORRELATE extends CONTENITORE
 				$start = $this->attributo('START', 0);
 				$rs_link -> pagina = $pagina = floor($start / $dim_pagina);
 				$rs_link -> dim_pagina = $dim_pagina;
-//				log_value("PAG ".($rs_link->pagina)." - DIM ".($rs_link->dim_pagina)." - START ".($start)." - OFFS ".($start % $dim_pagina));
 				$start = $start % $dim_pagina;
 			} else {
 				$rs_link -> pagina = $pagina = $this->attributo('PAGE', 0);
@@ -153,13 +152,12 @@ class RIGHE_CORRELATE extends CONTENITORE
 		
 		// carico le righe
 		// se nn ne ho trovate con la paginazione, vuol dire che ero oltre ! quindi nn stampo un cazzo
-		$rs_link->carica($where, $this->attributo('ORDINE', NULL),$this->attributo('CAMPI',null),$this->attributo('DISTINCT', false));
+		$rs_link->carica($where, $this->attributo('ORDINE',NULL),$this->attributo('CAMPI',NULL),$this->attributo('DISTINCT',FALSE));
 		
 		if ($rs_link->pagina == $pagina) {
 			// per orni riga stampo il contenuto
 			if ($start) $rs_link->move_rel($start - 1);
-			for(; !$rs_link->eof
-				; $rs_link->move_next()) {
+			for(; !$rs_link->eof; $rs_link->move_next()) {
 				parent::stampa_html($parametri);
 			}
 		} 
@@ -175,19 +173,63 @@ class RIGHE_CORRELATE extends CONTENITORE
  */
 class RIGHE_RICORSIVE extends CONTENITORE
 {
+	/**
+	 * tabella
+	 * @var string
+	 */
 	protected $tabella;
+	/**
+	 * campo id figlio
+	 * @var string
+	 */
 	protected $campo_id_figlio;
+	/**
+	 * campo id padre
+	 * @var string
+	 */
 	protected $campo_id_padre;
+	/**
+	 * padding corrente
+	 * @var int
+	 */
 	protected $padding;
+	/**
+	 * ordinamento durante la select
+	 * @var string
+	 */
 	protected $ordine;
+	/**
+	 * tag usato per raccogliere i figli (div, ..)
+	 * @var string
+	 */
 	protected $tag;
+	/**
+	 * metodo di padding (padding, margin, ..)
+	 * @var string
+	 */
 	protected $pad_mtd;
+	/**
+	 * incremento del padding 
+	 * @var int
+	 */
 	protected $pad_inc;
+	/**
+	 * unita' di misura del padding (pt, px, em, ..)
+	 * @var string
+	 */
 	protected $pad_um;
+	/**
+	 * display dei figli (block, inline, ..)
+	 * @var string
+	 */
 	protected $child_display;
+	/**
+	 * array associativo id-padre => numero figli
+	 * @var array
+	 */
 	protected $rsf;
 
-	function style($id, $padding = 0)
+	protected function atts($id, $padding = 0)
 	{
 		$over = $out = $click = $s = "";
 
@@ -208,43 +250,33 @@ class RIGHE_RICORSIVE extends CONTENITORE
 
 		$ret = " $over $out $click";
 		if ($s)
-			$ret .= "style=\"$s\" ";
+			$ret .= " style=\"$s\"";
 		if ($class = $this->attributo('CLASS', NULL))
-			$ret .= "class=\"{$class}\"";
+			$ret .= " class=\"{$class}\"";
 
 		return $ret;
 	}
-/*
-	function conta_figli(&$rs, $padre)
-	{
-		$idx = $rs->index;
-		$tot = 0;
-		for($rs->move_first(); !$rs->eof; $rs->move_next()) {
-			if ($rs->valore($this->campo_id_padre) == $padre)
-				$tot ++;
-		}
-		log_value($padre.' '.$tot);
-		$rs->move($idx);
-		return $tot;
-	}
-*/
-	function stampa_figli($padre, $rs)
+
+	protected function stampa_figli($padre, $rs)
 	{
 		$vecchio_gestore =& $this->parametri['GESTORE'];
 
 		$this->parametri['GESTORE'] =& $rs;
 
+		// arrivo alla riga giusta, quella col padre indicato
 		for($rs->move_first(); !$rs->eof && $rs->valore($this->campo_id_padre) != $padre; $rs->move_next());
-		for(; !$rs->eof && $rs->valore($this->campo_id_padre) == $padre; $rs->move_next()) {
+		// ciclo finche' il padre e' quello indicato
+		for(; !$rs->eof && $rs->valore($this->campo_id_padre) == $padre; $rs->move_next()) 
+		{
+
 			$id_nodo = $rs->valore($this->campo_id_figlio);
-			// questo rallenta abbestia ...
-//			$this->parametri['RIGHE-RICORSIVE-FIGLI'] = $rs->conta(equ($this->campo_id_padre, $id_nodo));
+
 			$this->parametri['RIGHE-RICORSIVE-FIGLI'] = array_get_default($id_nodo, $this->rsf, 0);
 
 			if ($this->padding == 0 || ($this->parametri['RIGHE-RICORSIVE-LIVELLO'] == 0 && !$this->attributo_esiste('START-IND'))) {
-				echo '<'.$this->tag.$this->style($id_nodo ).'>';
+				echo '<'.$this->tag.$this->atts($id_nodo ).'>';
 			} else {
-				echo '<'.$this->tag.$this->style($id_nodo , $this->padding.$this->pad_um).'>';
+				echo '<'.$this->tag.$this->atts($id_nodo , $this->padding.$this->pad_um).'>';
 			}
 
 			parent::stampa_html($this->parametri);
@@ -256,7 +288,7 @@ class RIGHE_RICORSIVE extends CONTENITORE
 					$this->padding += $this->pad_inc;
 					echo '<'.$this->tag.' style="display: '.$this->child_display.'">';
 					$this->stampa_figli($id_nodo, $rs);
-					echo '</div>';
+					echo '</'.$this->tag.'>';
 					$this->padding -= $this->pad_inc;
 				} else {
 					$this->stampa_figli($id_nodo, $rs);
@@ -273,7 +305,7 @@ class RIGHE_RICORSIVE extends CONTENITORE
 	}
 
 
-	function stampa_html(&$parametri)
+	public function stampa_html(&$parametri)
 	{
 		$this->nodi_aperti = $this->parametro('NODI-APERTI', NULL);
 
