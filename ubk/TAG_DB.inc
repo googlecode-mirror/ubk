@@ -264,34 +264,28 @@ abstract class CAMPO_ACCESSO extends TAG
 	{
 		$modalita = $this->attributo("MODE", $parametri["MODE"]);
 
-		// prendo la sezione fra i parametri (vedi tag SEZIONE)
+		// prendo la sezione e i diritti fra i parametri (vedi tag SEZIONE)
 		$sezione = array_get_default("SEZIONE", $parametri);
+		$diritti = array_get_default("DIRITTI", $parametri, array());
 
-		// se non c'e' nessuna sezione specificata, allora ritorno la modalita' originale
-		if (strlen($sezione) == 0) {
+		// se non c'e' nessuna sezione specificata o nessun diritto da usare, allora ritorno la modalita' originale
+		if (strlen($sezione) == 0 || count($diritti == 0)) {
 			$_mod = $modalita;
-		// altrimenti guardo se ci sono dei diritti specificati nei parametri
 		} else {
-			$diritti = array_get("DIRITTI", $parametri, array());
-			// se non ci sono, ritorno la modalita' originale
-			if (count($diritti) == 0) {
+			// altrimenti verifichiamo il diritto corrente
+			$diritto = $this->attributo("DIRITTO", $modalita);
+			// se la classe e' uno dei filtri, mi basta avere il diritto R
+			if (finisce_per(get_class($this), "FILTRO") || finisce_per(get_class($this), "FILTRO_TP")) {
+				$_mod = ($diritti[$sezione]["R"] ? $modalita : "NONE");
+			// se ho il diritto, la modalita' va bene
+			} elseif ($diritti[$sezione][$diritto]) {
 				$_mod = $modalita;
-			// altrimenti dipende dal diritto specificato
+			// se non ho il diritto (RW), la modalita' e' RW e ho il diritto R, allora ritorno R
+			} elseif ($modalita == "RW" && $diritti[$sezione]["R"]) {
+				$_mod = "R";
+			// altrimenti niente
 			} else {
-				$diritto = $this->attributo("DIRITTO", $modalita);
-				// se la classe e' uno dei filtri, mi basta avere il diritto R
-				if (finisce_per(get_class($this), "FILTRO") || finisce_per(get_class($this), "FILTRO_TP")) {
-					$_mod = ($diritti[$sezione]["R"] ? $modalita : "NONE");
-				// se ho il diritto, la modalita' va bene
-				} elseif ($diritti[$sezione][$diritto]) {
-					$_mod = $modalita;
-				// se non ho il diritto (RW), la modalita' e' RW e ho il diritto R, allora ritorno R
-				} elseif ($modalita == "RW" && $diritti[$sezione]["R"]) {
-					$_mod = "R";
-				// altrimenti niente
-				} else {
-					$_mod = "NONE";
-				}
+				$_mod = "NONE";
 			}
 		}
 			
@@ -408,7 +402,7 @@ class CAMPO extends CAMPO_ACCESSO
 
 				$trim_length = $this->attributo("TRIM", 0);
 				if ($trim_length && strlen($da_stampare) > $trim_length){
-					$da_stampare = substr($da_stampare,0,$trim_length) . '...';	
+					$da_stampare = substr($da_stampare,0,$trim_length) . '...';
 				}
 				if (strlen($classe_css) > 0) {
 					echo "<span class=\"$classe_css\">";
@@ -463,9 +457,7 @@ class CAMPO extends CAMPO_ACCESSO
 				$align = $this->attributo("ALIGN", "left");
 			}
 
-			$bloccato = cbool($this->attributo("BLOCCATO", "FALSE")) ? ' readonly="1"' : "";
-			if ($bloccato)
-				$classe_css .= " bloccato";
+			$bloccato = cbool($this->attributo("BLOCCATO", "FALSE")) ? ' disabled="disabled"' : "";
 
 			// javascript
 			$js_onfocus = $this->attributo("JS-ONFOCUS");
@@ -520,7 +512,7 @@ class CAMPO extends CAMPO_ACCESSO
 				$tabindex = $this->get_tabindex();
 				// bloccato da rifare
 				if($modalita=='RW'){
-					$selected = $this->attributo("VALORE-DEFAULT") == $valore_default ? 'checked="1"' : '';
+					$selected = $this->attributo("VALORE-DEFAULT") == $valore_default ? 'checked="checked"' : '';
 				}
 				echo "<input tabindex=\"$tabindex\" class=\"$classe_css\" type=\"$tipo\" name=\"$nome\" id=\"$js_id\" value=\"$valore_default\" onclick=\"$js_onblur\" $selected/>".$star;
 				break;
@@ -590,8 +582,8 @@ class CHECKBOX extends CAMPO_ACCESSO
 			throw new CodeException("Attenzione coder, il campo $campo non esiste nella tabella/vista {$rs->tabella}");
 		}
 
-		$bloccato   = cbool($this->attributo("BLOCCATO", "FALSE")) ? 'disabled="1"' : "";
-		$classe_css = $this->attributo("CLASS", array_get_default("CLASS", $parametri));
+		$bloccato   = cbool($this->attributo("BLOCCATO", "FALSE")) ? 'disabled="disabled"' : "";
+		$classe_css = 'check '.$this->attributo("CLASS", array_get_default("CLASS", $parametri));
 
 		$id = $this->valore_id($modalita, $rs);
 		$value = $this->attributo("VALORE", "1");
@@ -623,31 +615,40 @@ class CHECKBOX extends CAMPO_ACCESSO
 				$img = $this->attributo("IMG");
 				if (!inizia_per($img, 'img/')) $img = 'img/'.$img;
 				$estensione = constant_def('DEF_IMG_EXT', '.gif');
-				$valore_vero = '<img src="'.$img.'SI'.$estensione.'"/>';
-				$valore_falso = '<img src="'.$img.'NO'.$estensione.'"/>';
+				$valore_vero = '<img class="'.$classe_css.'" src="'.$img.'SI'.$estensione.'"/>';
+				$valore_falso = '<img class="'.$classe_css.'" src="'.$img.'NO'.$estensione.'"/>';
 
 			} else {
 				
 				$valore_vero = 'Vero';
 				$valore_falso = 'Falso';
 			}
+
+			$da_stampare = $rs->valore($campo) ? $valore_vero : $valore_falso;
+
+			if (!$this->attributo_esiste('IMG')) {
+				echo "<span class=\"$classe_css\">";
+				echo $da_stampare;
+				echo "</span>";
+			} else {
+				echo $da_stampare;
+			}
 	
-			echo $rs->valore($campo) ? $valore_vero : $valore_falso;
 			break;
 
 		case "W":
 			$tabindex = $this->get_tabindex();
 			$this->componi_nome($campo, $id, $nome, $js_id);
-			$valore_default	= $this->attributo("VALORE-DEFAULT", $rs->valore_default($campo));
-			$checked   	    = ($valore_default == "1" || cbool($valore_default)) ? 'checked="1"' : "";
-			echo "<input class=\"$classe_css\" onclick=\"$js_onclick\" style=\"border: 0; background-color: transparent;\" tabindex=\"$tabindex\" type=\"checkbox\" id=\"$js_id\" name=\"$nome\" value=\"$value\" $checked $bloccato/>";
+			$valore_default = $this->attributo("VALORE-DEFAULT", $rs->valore_default($campo));
+			$checked = ($valore_default == "1" || cbool($valore_default)) ? 'checked="checked"' : "";
+			echo "<input class=\"$classe_css\" onclick=\"$js_onclick\" tabindex=\"$tabindex\" type=\"checkbox\" id=\"$js_id\" name=\"$nome\" value=\"$value\" $checked $bloccato/>";
 			break;
 
 		case "RW":
 			$tabindex = $this->get_tabindex();
 			$this->componi_nome($campo, $id, $nome, $js_id);
-			$checked = $rs->valore($campo) ? 'checked="1"' : "";
-			echo "<input class=\"$classe_css\" onclick=\"$js_onclick\" style=\"border: 0; background-color: transparent;\" tabindex=\"$tabindex\" type=\"checkbox\" id=\"$js_id\" name=\"$nome\" value=\"$value\" $checked $bloccato/>";
+			$checked = $rs->valore($campo) ? 'checked="checked"' : "";
+			echo "<input class=\"$classe_css\" onclick=\"$js_onclick\" tabindex=\"$tabindex\" type=\"checkbox\" id=\"$js_id\" name=\"$nome\" value=\"$value\" $checked $bloccato/>";
 			break;
 		}
 	}
@@ -691,41 +692,41 @@ class CHECKBOX_IMG extends CAMPO_ACCESSO
 		$js_onclick .= "Check.imageToggle(this, '$bloccato');";
 		
 		$alt = $this->attributo_richiesto('ALT');
-		$classe_css = $this->attributo("CLASS", array_get_default("CLASS", $parametri));
+		$classe_css = 'check '.$this->attributo("CLASS", array_get_default("CLASS", $parametri));
 
 		switch ($modalita) {
 		case "R":
 
-			$valore_vero  = "<img title=\"$alt\" class=\"check $classe_css\" src=\"{$img}SIR{$estensione}\"/>";
-			$valore_falso = "<img title=\"$alt\" class=\"check $classe_css\" src=\"{$img}NOR{$estensione}\"/>";
+			$valore_vero  = "<img title=\"$alt\" class=\"$classe_css\" src=\"{$img}SIR{$estensione}\"/>";
+			$valore_falso = "<img title=\"$alt\" class=\"$classe_css\" src=\"{$img}NOR{$estensione}\"/>";
 
 			echo $rs->valore($campo) ? $valore_vero : $valore_falso;
 			break;
 
 		case "W":
 			$this->componi_nome($campo, $id, $nome, $js_id);
-			$valore_default	= $this->attributo("VALORE-DEFAULT", $rs->valore_default($campo));
-			$checked   	    = ($valore_default == "1" || cbool($valore_default)) ? 'checked="1"' : "";
+			$valore_default = $this->attributo("VALORE-DEFAULT", $rs->valore_default($campo));
+			$checked = ($valore_default == "1" || cbool($valore_default)) ? 'checked="checked"' : "";
 
 			$tabindex = $this->get_tabindex();
 			echo "<input tabindex=\"$tabindex\" onclick=\"$js_onclick\" style=\"display: none;\" type=\"checkbox\" id=\"$js_id\" name=\"$nome\" value=\"$value\" $checked/>";
 			
 			$tabindex = $this->get_tabindex();
-			$src = ($bloccato ? ($checked ? 'SIR' : 'NOR') : ($checked ? 'SI' : 'NO'));
-			echo "<img title=\"$alt\" class=\"check $classe_css\" src=\"{$img}{$src}{$estensione}\" tabindex=\"$tabindex\" ".
+			$src = ($checked ? 'SI' : 'NO') . ($bloccato ? 'R' : '');
+			echo "<img title=\"$alt\" class=\"$classe_css\" src=\"{$img}{$src}{$estensione}\" tabindex=\"$tabindex\" ".
 					"onclick=\"Check.checkToggle(this, '$bloccato')\" onkeydown=\"Check.keyToggle(event, '$bloccato');\"/>";
 			break;
 
 		case "RW":
 			$this->componi_nome($campo, $id, $nome, $js_id);
-			$checked = $rs->valore($campo) ? 'checked="1"' : "";
+			$checked = $rs->valore($campo) ? 'checked="checked"' : "";
 
 			$tabindex = $this->get_tabindex();
 			echo "<input tabindex=\"$tabindex\" onclick=\"$js_onclick\" style=\"display: none;\" type=\"checkbox\" id=\"$js_id\" name=\"$nome\" value=\"$value\" $checked/>";
 
 			$tabindex = $this->get_tabindex();
-			$src = ($bloccato ? ($checked ? 'SIR' : 'NOR') : ($checked ? 'SI' : 'NO'));
-			echo "<img title=\"$alt\" class=\"check $classe_css\" src=\"{$img}{$src}{$estensione}\" tabindex=\"$tabindex\" ".
+			$src = ($checked ? 'SI' : 'NO') . ($bloccato ? 'R' : '');
+			echo "<img title=\"$alt\" class=\"$classe_css\" src=\"{$img}{$src}{$estensione}\" tabindex=\"$tabindex\" ".
 				"onclick=\"Check.checkToggle(this, '$bloccato');\" onkeydown=\"Check.keyToggle(event, '$bloccato');\"/>";
 			break;
 		}
@@ -748,18 +749,17 @@ class CHECKBOX_FK extends CAMPO_ACCESSO
 		$rs       =& $parametri["GESTORE"];
 		# boh, con calma aggiungere controlli sui campi
 
-		$classe_css = $this->attributo("CLASS");
-		$bloccato = cbool($this->attributo("BLOCCATO", "FALSE")) ? 'disabled="1"' : "";
+		$classe_css = 'check '.$this->attributo("CLASS", array_get_default("CLASS", $parametri));
+		$bloccato = cbool($this->attributo("BLOCCATO", "FALSE")) ? 'disabled="disabled"' : "";
 
 		$id = $this->valore_id($modalita, $rs);
 
 		// dati della tabella esterna
 		$tabella_fk  = $this->attributo_richiesto("TABELLA");
 		$campo_id_fk = $this->attributo("CAMPO-ID-LINK", $campo);
+		$filtro = equ($campo_id_fk, $rs->valore($campo));
 		if ($this->attributo_esiste("FILTRO")) {
-			$filtro = c_and($this->attributo("FILTRO"), equ($campo_id_fk, $rs->valore($campo)));
-		} else {
-			$filtro = equ($campo_id_fk, $rs->valore($campo));
+			$filtro = c_and($this->attributo("FILTRO"), $filtro);
 		}
 
 		// verifico se esiste
@@ -770,19 +770,21 @@ class CHECKBOX_FK extends CAMPO_ACCESSO
 			if ($this->attributo_esiste("IMG")) {
 				$img = $this->attributo("IMG");
 				if (!inizia_per($img, 'img/')) $img = 'img/'.$img;
-				echo '<img src="'.$img.($esiste ? "SI.gif" : "NO.gif").'"/>';
+				$estensione = constant_def('DEF_IMG_EXT', '.gif');
+				echo '<img class="'.$classe_css.'" src="'.$img.($esiste ? "SI" : "NO").$estensione.'"/>';
 			} else {
-				echo "<SPAN style=\"height: 10px; width: 10px; border: 1px solid black; font-size: 8px;\">";
-				echo $esiste ? "X" : "";
-				echo "</SPAN>";
+				$da_stampare = $esiste ? "Vero" : "Falso";
+				echo "<span class=\"$classe_css\">";
+				echo $da_stampare;
+				echo "</span>";
 			}
 			break;
 
 		case "RW":
 			$tabindex = $this->get_tabindex();
 			$this->componi_nome($campo, $id, $nome, $js_id);
-			$checked = $esiste ? 'checked="1"' : "";
-			echo "<input class=\"$classe_css\" style=\"border: 0; background-color: transparent;\" tabindex=\"$tabindex\" type=\"checkbox\" id=\"$js_id\" name=\"$nome\" value=\"1\" $checked $bloccato/>";
+			$checked = $esiste ? 'checked="checked"' : "";
+			echo "<input class=\"$classe_css\" tabindex=\"$tabindex\" type=\"checkbox\" id=\"$js_id\" name=\"$nome\" value=\"1\" $checked $bloccato/>";
 			break;
 		}
 	}
@@ -873,7 +875,7 @@ class COMBO extends CAMPO_TABELLA_ESTERNA
 
 		$campi 		= explode("|", $this->attributo_richiesto("CAMPI"));
 
-		$bloccato 	= cbool($this->attributo("BLOCCATO", "FALSE")) ? ' disabled="1"' : "";
+		$bloccato 	= cbool($this->attributo("BLOCCATO", "FALSE")) ? ' disabled="disabled"' : "";
 		$classe_css = $this->attributo("CLASS", array_get_default("CLASS", $parametri));
 
 		// computo le colonne da caricare
@@ -893,17 +895,11 @@ class COMBO extends CAMPO_TABELLA_ESTERNA
 				$valore_id = $rs->valore($campo_id);
 			}
 			if($this->attributo_esiste("FILTRO")){
-				$rs_combo->carica(
-						c_and(equ($campo_id_combo, $valore_id), $this->attributo("FILTRO", NULL)), 
-						$this->attributo("ORDINE", NULL), 
-						$colonne, 
-						cbool($this->attributo("DISTINCT", "FALSE")), 
-						FALSE);
+				$rs_combo->carica(c_and(equ($campo_id_combo, $valore_id), $this->attributo("FILTRO", NULL)), NULL, $colonne, FALSE, FALSE);
 			} else {
 				$rs_combo->abilita_cache(true);
-				$rs_combo->carica(equ($campo_id_combo, $valore_id), $this->attributo("ORDINE", NULL), $colonne, cbool($this->attributo("DISTINCT", "FALSE")),null,null,false);
+				$rs_combo->carica(equ($campo_id_combo, $valore_id), NULL, $colonne, FALSE, FALSE);
 			}
-
 
 			if ($rs_combo->eof) {
 
@@ -929,20 +925,20 @@ class COMBO extends CAMPO_TABELLA_ESTERNA
 			}
 
 			if (strlen($classe_css) > 0) {
-				echo "<SPAN class=\"$classe_css\">";
+				echo "<span class=\"$classe_css\">";
 				echo $risultato;
-				echo "</SPAN>";
+				echo "</span>";
 			} else {
 				echo $risultato;
 			}
 			break;
 
 		case "W":
-			if ($this->attributo_esiste("CAMPO-VALORE-DEFAULT") && 
+			/*if ($this->attributo_esiste("CAMPO-VALORE-DEFAULT") && 
 					(!$this->attributo_esiste("VALORE-DEFAULT") || $this->attributo("VALORE-DEFAULT")=="")) {
 				$campo_default = $this->attributo("CAMPO-VALORE-DEFAULT");
 				array_push($colonne, $campo_default);
-			}		
+			}*/
 		case "RW":
 			$valore_default	= ($modalita == "RW")
 								? $rs->valore($campo_id)
@@ -1012,7 +1008,7 @@ class COMBO extends CAMPO_TABELLA_ESTERNA
 					}
 
 					if ( ($valore_id !== 0 && $valore_id == $valore_default) || ($valore_default === 0 && $valore_id === $valore_default) ) {
-						echo "<option value=\"$valore_id\" selected=\"1\">$text</option>";
+						echo "<option value=\"$valore_id\" selected=\"selected\">$text</option>";
 					} else {
 						echo "<option value=\"$valore_id\">$text</option>";
 					}
@@ -1028,7 +1024,7 @@ class COMBO extends CAMPO_TABELLA_ESTERNA
 					$valore_id = $rs_combo->valore($campo_id_combo);
 					
 					echo "<input tabindex=\"$tabindex\" type=\"radio\" class=\"$classe_css\" name=\"$nome\" value=\"$valore_id\" $bloccato";
-					if ($valore_id == $valore_default) echo " checked=\"1\"";
+					if ($valore_id == $valore_default) echo " checked=\"checked\"";
 					echo "/>";
 					
 					$text = '';
@@ -1291,7 +1287,7 @@ class PICKER extends CAMPO_TABELLA_ESTERNA
 
 			echo "<div style=\"border: 0; margin: 0; padding: 0; white-space: nowrap\">";
 			echo "<input type=\"hidden\" onchange=\"$js_onchange\" name=\"$nome\" id=\"$js_id\" value=\"$valore_default\"/>";
-			echo "<input type=\"text\" name=\"dummy[]\" value=\"$risultato\" readonly=\"1\" size=\"$size\"/>".$star;
+			echo "<input type=\"text\" name=\"dummy[]\" value=\"$risultato\" disabled=\"disabled\" size=\"$size\"/>".$star;
 			$this->stampa_link_pop_up($parametri, $js_id, $this->attributo_richiesto("CAMPI"));
 			$this->stampa_link_annulla($js_id);
 			echo "</div>";
@@ -1444,7 +1440,7 @@ class COD_DESC extends PICKER
 			echo "<iframe name=\"dummy[]\" src=\"about:blank\" style=\"height: 0; width: 0; display: inline;\" frameborder=\"0\"></iframe>";
 			echo "<input type=\"hidden\" onchange=\"$js_onchange\" name=\"$nome\" id=\"$js_id\" value=\"$valore_default\"/>";
 
-			$bloccato = cbool($this->attributo("BLOCCATO", "FALSE")) ? 'readonly="1"' : "";
+			$bloccato = cbool($this->attributo("BLOCCATO", "FALSE")) ? 'disabled="disabled"' : "";
 
 			$tabindex = $this->get_tabindex();
 			if (strlen($valore_default) == 0) {
@@ -1454,7 +1450,7 @@ class COD_DESC extends PICKER
 					echo "<input type=\"text\" tabindex=\"$tabindex\" name=\"dummy[]\" value=\"\" size=\"{$size[0]}\" onblur=\"this.previousSibling.previousSibling.src = '$bg_load' + this.value;\"/>";
 				}
 				echo "<span style=\"border: 0; margin: 0; padding: 0\"> - </span>";
-				echo "<input type=\"text\" name=\"dummy[]\" value=\"\" readonly=\"1\" size=\"{$size[1]}\"/>";
+				echo "<input type=\"text\" name=\"dummy[]\" value=\"\" disabled=\"disabled\" size=\"{$size[1]}\"/>";
 			} else {
 				$rs_combo->carica(equ($campo_id_combo, $valore_default), NULL, $campi);
 				$valori = array($rs_combo->valore($campi[0]), $rs_combo->valore($campi[1]));
@@ -1464,7 +1460,7 @@ class COD_DESC extends PICKER
 					echo "<input type=\"text\" tabindex=\"$tabindex\" name=\"dummy[]\" value=\"{$valori[0]}\" size=\"{$size[0]}\" onblur=\"this.previousSibling.previousSibling.src = '$bg_load' + this.value;\"/>";
 				}
 				echo "<span style=\"border: 0; margin: 0; padding: 0\"> - </span>";
-				echo "<input type=\"text\" name=\"dummy[]\" value=\"{$valori[1]}\" readonly=\"1\" size=\"{$size[1]}\"/>";
+				echo "<input type=\"text\" name=\"dummy[]\" value=\"{$valori[1]}\" disabled=\"disabled\" size=\"{$size[1]}\"/>";
 			}
 			
 			echo $star;
