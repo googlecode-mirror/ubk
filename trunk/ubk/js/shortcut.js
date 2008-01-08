@@ -91,60 +91,45 @@ var CShortcut = Class.create({
 		
 		var element = event.element();
 		//Don't enable shortcut keys in Input, Textarea fields
-		if (opt.disableInFields) { 
-			if (element.tagName == 'INPUT' || element.tagName == 'TEXTAREA') return;
+		if (this.disableInFields) { 
+			if (['INPUT','TEXTAREA','SELECT','OPTION'].indexOf(element.tagName) > -1) return;
 		}
 
-		//Find Which key is pressed
+		//Find which key is pressed
 		var code = event.keyCode || event.which;
 		var character = String.fromCharCode(code).toLowerCase();
 		
 		if(code == 188) character=","; //If the user presses , when the type is onkeydown
-		if(code == 190) character="."; //If the user presses . when the type is onkeydown
-
+		else if(code == 190) character="."; //If the user presses . when the type is onkeydown
+		else if (this.object.shiftNums[character] && event.shiftKey) character = this.object.shiftNums[character]; //Stupid Shift key bug created by using lowercase
+		// expected keys
 		var keys = this.shortcut.split("+");
 
-		//Key Pressed - counts the number of valid keypresses - if it is same as the number of keys, the shortcut function is invoked
+		// counts the number of valid keypresses - if it is same as the number of keys, the shortcut function is invoked
 		var kp = 0;
+
+		// modifiers pressed
 		var modifiers = { 
 			shift : { wanted:keys.indexOf('shift') != -1, pressed: event.shiftKey }
 			,ctrl : { wanted:keys.indexOf('ctrl') != -1, pressed: event.ctrlKey }
 			,alt  : { wanted:keys.indexOf('alt') != -1, pressed: event.altKey }
 			,meta : { wanted:keys.indexOf('meta') != -1, pressed: event.metaKey }
 		};
+
 					
 		for(var i=0; k=keys[i],i<keys.length; i++) {
-			//Modifiers
-			if (['ctrl','shift','alt','meta'].indexOf(k) != -1 ) {
-			
+			if (	(['ctrl','shift','alt','meta'].indexOf(k) > -1 && modifiers[k].pressed && modifiers[k].wanted)
+				|| (k.length > 1 && this.object.specialKeys[k] === code)
+				|| (this.keyCode === code)
+				|| (k === character)) {
 				kp++;
-
-			} else if (k.length > 1) { //If it is a special key
-
-				if (this.object.specialKeys[k] == code) kp++;
-				
-			} else if (this.keyCode) {
-				
-				if (this.keyCode == code) kp++;
-
-			} else { //The special keys did not match
-				if (character == k) {
-					kp++;
-				} else if(this.object.shiftNums[character] && event.shiftKey) { //Stupid Shift key bug created by using lowercase
-					character = this.object.shiftNums[character]; 
-					if (character == k) kp++;
-				}
 			}
 		}
 
-		if(kp == keys.length && 
-					modifiers.ctrl.pressed == modifiers.ctrl.wanted &&
-					modifiers.shift.pressed == modifiers.shift.wanted &&
-					modifiers.alt.pressed == modifiers.alt.wanted &&
-					modifiers.meta.pressed == modifiers.meta.wanted) {
+		if (kp == keys.length) {
 			this.callback(event);
 
-			if(!this.propagate) { //Stop the event
+			if (!this.propagate) {
 				event.stop();
 				return false;
 			}
@@ -156,7 +141,7 @@ var CShortcut = Class.create({
 		var defaultOptions = {
 			event:				'keydown'
 			,propagate:			false
-			,disableInFields:	false
+			,disableInFields:		false
 			,target:			document
 			,keyCode:			false
 		};
