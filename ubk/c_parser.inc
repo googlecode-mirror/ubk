@@ -6,7 +6,6 @@
  * @package tag
  */
 
-
 /** 
  * Definisce quali tag necessitano di chiusura "inline" in XML
  * @global array $TAG_SINGOLI 
