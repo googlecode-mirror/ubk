@@ -9,8 +9,6 @@ var CUbk = Class.create({
 		Ajax.Responders.register({
 			onFailure: this.failure.bind(this)
 		});
-
-//		Ajax.isFailure = this.isFailure.bind(this);
 	},
 
 	followLink: function(l)
@@ -63,9 +61,7 @@ var CUbk = Class.create({
 		} else {
 
 			if (target) Element.update(target, request.responseText);
-			if (target && !this.isVisible(target)) {
-				this.show(target);
-			}
+			if (target) this.show(target);
 		}
 	},
 
@@ -93,9 +89,7 @@ var CUbk = Class.create({
 			this.working(false);
 			if (target) Element.update(target, request.responseText);
 			if (onComplete) onComplete(request, target);
-			if (target && !this.isVisible(target)) {
-				this.show(target);
-			}
+			if (target) this.show(target);
 		}
 	},
 
@@ -191,11 +185,10 @@ var CUbk = Class.create({
 	// stiamo lavorando ....
 	working: function (state, options)
 	{
-		opt = { duration: 0.1 };
 		if (state) {
+
 			if (options.target && options.pars.indexOf('&TARGET=') == -1)
 				options.pars += '&TARGET=' + options.target;
-			//opt.ubk = options;
 
 			if (this.historyManager) this.historyManager.add(options.url+'?'+options.pars, options);
 
@@ -270,8 +263,8 @@ var CUbkCheck = Class.create({
 	{
 		if (input.checked != state) {
 			input.checked = state;
-			input.onclick.call(input);
 		}
+		input.onclick.call(input);
 	},
 
 	// toggle su barra spaziatrice
@@ -302,7 +295,7 @@ var CUbkHistory = Class.create({
 
 	},
 
-	// mi dice se la chiamata Ã¨ alla root o Ã¨ un refresh
+	// mi dice se la chiamata e' alla root o e' un refresh
 	isRoot: function()
 	{
 		return dhtmlHistory.getCurrentLocation() == '';
@@ -314,7 +307,7 @@ var CUbkHistory = Class.create({
 	start: function(firstHistoryCall)
 	{
 		dhtmlHistory.addListener(this.show.bind(this));
-		// se questa Ã¨ una chiamata alla root, non un refresh,
+		// se questa e' una chiamata alla root, non un refresh,
 		// carico quanto devo caricare
 		if (this.isRoot()) {
 			Try.these(firstHistoryCall);
@@ -332,12 +325,11 @@ var CUbkHistory = Class.create({
 	{
 		// se sono arrivato qua mentre tornavo indietro, non aggiorno la history
 		if (this.backing) return;
-		// se ci sono opzioni, Ã¨ una mia chiamata ...
-		// verifico che si voglia cambiare il contenuto centrale, nel caso aggiungo
-		// la location in history
+		// se ci sono opzioni, e' una mia chiamata ...
+		// verifico che si voglia cambiare un contenuto storicizzabile
+		// nel caso aggiungo la location in history
 		if (options) {
 			location = hex_md5(location);
-			//location != dhtmlHistory.getCurrentLocation() 
 			if (options.replace && History.isValidTarget(options.target)) {
 				dhtmlHistory.add(location, options);
 			}
@@ -350,7 +342,7 @@ var CUbkHistory = Class.create({
 	show: function(location, options)
 	{
 		this.backing = true;
-		// se ho opzioni, Ã¨ una mia chiamata fatta durante una working
+		// se ho opzioni, e' una mia chiamata fatta durante una working
 		// la rieseguo, tutti i parametri sono nelle opzioni
 		if (options) {
 			options.afterFinish = options.request = (options.type == 'get' ? Ubk.getRequest : Ubk.postRequest).bind(Ubk);
