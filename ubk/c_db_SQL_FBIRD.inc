@@ -54,12 +54,84 @@ class DB_SQL_FBIRD extends DB_SQL
 		return 'SELECT CASE WHEN EXISTS(SELECT 1 FROM '.$tabella.$_where.') THEN \'1\' ELSE \'0\' END as b_exists FROM RDB$DATABASE';
 	}
 
-
-	public static function tsEqu($colonna, $valore)
+	/**
+	 * Genera un confronto di uguaglianza (=) case-insensitive
+	 * @param string $colonna Nome del campo
+	 * @param mixed $valore Valore in formato utente
+	 * @return string
+	 */ 
+	public static function iequ($colonna, $valore, $tipo = NULL)
 	{
-		$valore_db = call_user_func(array(self::$driver, 'utente_2_db'), $colonna, $valore);
+		$cond = self::cond($colonna, $valore, '=');
+		if (strpos($cond, '=') !== FALSE) {
+			$pos = strlen($colonna) + 3;
+			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
+		}
+		$conv = ($tipo == 'text' ? "SUBSTRING($colonna FROM 1 FOR 32767)" : "UPPER($colonna)");
+		return strtr($cond, array($colonna => $conv));
+	}
 
-		return $colonna.' - CAST('.$valore_db.' as TIMESTAMP) < 1';
+	/**
+	 * Genera un confronto di similitudine (LIKE)
+	 * @param string $colonna Nome del campo
+	 * @param mixed $valore Valore in formato utente
+	 * @return string
+	 */ 
+	public static function like($colonna, $valore, $tipo = NULL)
+	{
+		switch($colonna[0]) {
+		case 's':
+		case 't':
+			$cond = self::cond($colonna, "%$valore%", 'LIKE');
+			$pos = strlen($colonna) + 6;
+			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
+			$conv = ($tipo == 'text' ? "SUBSTRING($colonna FROM 1 FOR 32767)" : "UPPER($colonna)");
+			return strtr($cond, array('?' => '_', '*' => '%', $colonna => $conv));
+		default:
+			return self::equ($colonna, $valore);
+		}
+	}
+
+	/**
+	 * Genera un confronto di inizio simile (LIKE)
+	 * @param string $colonna Nome del campo
+	 * @param mixed $valore Valore in formato utente
+	 * @return string
+	 */ 
+	public static function begins_like($colonna, $valore)
+	{
+		switch($colonna[0]) {
+		case 's':
+		case 't':
+			$cond = self::cond($colonna, "$valore%", 'LIKE');
+			$pos = strlen($colonna) + 6;
+			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
+			$conv = ($tipo == 'text' ? "SUBSTRING($colonna FROM 1 FOR 32767)" : "UPPER($colonna)");
+			return strtr($cond, array('?' => '_', '*' => '%', $colonna => $conv));
+		default:
+			return self::equ($colonna, $valore);
+		}
+	}
+
+	/**
+	 * Genera un confronto di fine simile (LIKE)
+	 * @param string $colonna Nome del campo
+	 * @param mixed $valore Valore in formato utente
+	 * @return string
+	 */ 
+	public static function ends_like($colonna, $valore)
+	{
+		switch($colonna[0]) {
+		case 's':
+		case 't':
+			$cond = self::cond($colonna, "%$valore", 'LIKE');
+			$pos = strlen($colonna) + 6;
+			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
+			$conv = ($tipo == 'text' ? "SUBSTRING($colonna FROM 1 FOR 32767)" : "UPPER($colonna)");
+			return strtr($cond, array('?' => '_', '*' => '%', $colonna => $conv));
+		default:
+			return self::equ($colonna, $valore);
+		}
 	}
 
 	/**
