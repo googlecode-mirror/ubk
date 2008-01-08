@@ -1027,7 +1027,7 @@ class PAGINATORE_AJAX extends TAG
 		if ($pagina_corrente >= $size){
 			// se non sono al primo blocco, vado a 1
 			if ($blocco_attuale - $size > 0) {
-				$pars  = $base_pars . 1 ;
+				$pars  = $base_pars . 0 ;
 				$etich = 1; 
 				$click = "Ubk.follow($target, '$gateway', '$pars', $show, $async);";
 				array_push($pags, "<a href=\"javascript:$click\" id=\"$js_id\" class=\"$classe_css first\">", $etich, '</a>');
