@@ -418,8 +418,6 @@ class HTML extends CONTENITORE
 {
 	public function stampa_html(&$parametri)
 	{
-		global $TAG_SINGOLI;
-
 		$tag = strtolower($this->attributo_richiesto("TAG"));
 
 		echo LT.$tag;
@@ -428,7 +426,7 @@ class HTML extends CONTENITORE
 				echo ' '.strtolower($name).'='.dQt($valore);
 		}
 
-		if (in_array(strtoupper($tag), $TAG_SINGOLI)) {
+		if (in_array(strtoupper($tag), PARSER::$TAG_SINGOLI)) {
 			if ($this->contenuto)
 				throw new CodeException("Uso invalido del tag $tag");
 			echo '/'.GT;
@@ -439,6 +437,59 @@ class HTML extends CONTENITORE
 		}
 	}
 	
+}
+
+/**
+ * Classe base per la generazione di qualunque tag html, basandosi sul nome classe
+ * @package tag
+ */
+abstract class HTML_TAG extends HTML
+{
+	public function stampa_html(&$parametri)
+	{
+		$this->attributi['TAG'] = $this->nome;
+		if (in_array($this->nome, array('INPUT', 'A', 'TEXTAREA', 'SELECT', 'IMG')))
+			$this->attributi['TABINDEX'] = CAMPO_ACCESSO::get_static_tabindex($this->attributo('TABINDEX'));
+		parent::stampa_html($parametri);
+	}
+}
+
+/**
+ * Tag SCRIPT
+ * @package tag
+ */
+class SCRIPT extends HTML
+{
+	public function stampa_html(&$parametri)
+	{
+		if ($this->attributo_esiste('SRC')) {
+			$this->attributi['TAG'] = 'script';
+			$this->attributi['TYPE'] = 'text/javascript';
+			parent::stampa_html($parametri);
+		} else {
+			echo '<script type="text/javascript">';
+			echo "/*<![CDATA[*/";
+			CONTENITORE::stampa_html($parametri);
+			echo "/*]]>*/";
+			echo '</script>';
+		}
+	}
+}
+
+/**
+ * Tag STYLE
+ * @package tag
+ */
+class STYLE extends HTML
+{
+	public function stampa_html(&$parametri)
+	{
+		echo '<style type="text/css" media="screen">';
+		echo "/*<![CDATA[*/";
+		CONTENITORE::stampa_html($parametri);
+		echo "/*]]>*/";
+		echo '</style>';
+	}
 }
 
 /**
