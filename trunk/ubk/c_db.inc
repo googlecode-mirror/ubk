@@ -109,8 +109,16 @@ abstract class DB_META
  */
 abstract class DB_DRIVER
 {
+	/**
+	 * Elenco delle ultime query eseguite
+	 * @var array
+	 */
 	public static $SQL = array();
 
+	/**
+	 * Aggiunge una query all'elenco {@link $SQL}
+	 * @param string $sql
+	 */
 	final public static function sql_push($sql)
 	{
 		array_unshift(self::$SQL, $sql);
@@ -118,7 +126,7 @@ abstract class DB_DRIVER
 	}
 
 	/**
-	 * Nome della classe del driver
+	 * Nome della classe del driver - serve per le chiamate parametriche a metodi della stessa classe quando viene estesa
 	 * @var string
 	 */
 	protected static $driver = 'DB_DRIVER';
@@ -831,11 +839,28 @@ abstract class DB_SQL
  */
 class DB_CLASS_FACTORY
 {
+	/**
+	 * Istanze dei driver per tipo di dbms
+	 * @var array
+	 */ 
 	private static $drivers = array();
+	/**
+	 * Istanze dei provider di meta-dati per tipo di dbms
+	 * @var array
+	 */ 
 	private static $metas   = array();
+	/**
+	 * Istanze dei generatori sql per tipo di dbms
+	 * @var array
+	 */ 
 	private static $sqls    = array();
 
-	public static function & get_driver($db_connection)
+	/**
+	 * Ritorna il driver necessario per interagire con il dbms specificato nei parametri di connessione
+	 * @param array $db_connection Parametri di connessione
+	 * @return DB_DRIVER
+	 */ 
+	final public static function & get_driver($db_connection)
 	{
 		if (is_array($db_connection)) {
 			check_db_connection($db_connection);
@@ -856,6 +881,11 @@ class DB_CLASS_FACTORY
 		return self::$drivers[$_db_type];
 	}
 
+	/**
+	 * Ritorna il provider di meta-dati necessario per interagire con il dbms specificato nei parametri di connessione
+	 * @param array $db_connection Parametri di connessione
+	 * @return DB_META
+	 */ 
 	final public static function & get_meta($db_connection)
 	{
 		if (is_array($db_connection)) {
@@ -879,8 +909,11 @@ class DB_CLASS_FACTORY
 		return self::$metas[$_db_type];
 	}
 
-
-
+	/**
+	 * Ritorna il generatore di sql necessario per interagire con il dbms specificato nei parametri di connessione
+	 * @param array $db_connection Parametri di connessione
+	 * @return DB_SQL
+	 */ 
 	final public static function & get_sql($db_connection)
 	{
 		if (is_array($db_connection)) {
@@ -902,7 +935,6 @@ class DB_CLASS_FACTORY
 
 		return self::$sqls[$_db_type];
 	}
-
 }
 
 ?>
