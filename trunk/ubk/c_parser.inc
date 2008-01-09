@@ -6,69 +6,6 @@
  * @package tag
  */
 
-/** 
- * Definisce quali tag necessitano di chiusura "inline" in XML
- * @global array $TAG_SINGOLI 
- */
-$TAG_SINGOLI = array("BR", "LINK", "META", "BASE", "HR", "PARAM", "SPACER", "AREA", "FRAME", "IMG", "INPUT");
-
-/** 
- * Definisce quali tag vengono trasformati senza il namespace UBK
- * @global array $TAG_HTML
- */
-$TAG_HTML    = array('ACRONYM', 'TD', 'TH', 'TR', 'DIV', 'INPUT', 'IMG', 'SCRIPT', 'STYLE', 'SELECT', 'OPTION');
-
-/** 
- * Definisce, per tutti quei TAG che hanno nome della classe di definizione differente dal nome del tag, o piu' classi associabili a seconda del contesto {@link CONTESTI_CLASSE}, i nomi della o delle classi che il tag puo' diventare
- * @global array $CLASSI_TAG 
- */
-$CLASSI_TAG = array(
-	"VAR"   => "XML_VAR"
-	,"PHP"   => "XML_PHP"
-	,"IF"    => "XML_IF"
-	,"SWITCH"=> "XML_SWITCH"
-	,"TEST"  => "TAG"
-	,"CASE"  => "TAG"
-	,"AZIONE" => "TAG"
-	,"REAZIONE" => "TAG"
-	,"EXTRA_GET" => "TAG"
-	,"EXTRA_RE_GET" => "TAG"
-	,"POP_UP" => "TAG"
-	,"THEN"  => "CONTENITORE"
-	,"ELSE"  => "CONTENITORE"
-	,"CONTENUTO" => "CONTENITORE"
-	,"PAGINA" => "TAG"
-	,"HREF" => "XML_PHP"
-	,"INTESTAZIONE" => "CONTENITORE"
-	,"LINK" => "TAG"
-	,"CONST" => "XML_CONST"
-	,"INCLUDE" => "XML_INCLUDE"
-);
-
-
-/** 
- * Definisce, i contesti (ambiti di posizionamento entro il sorgente XHML) in cui certi tag o classi sono attivabili, ossia i contesti in cui il tag viene trasformato nella classe corrispondente o la classe viene istanziata
- * @global array $CONTESTI_CLASSE 
- */
-$CONTESTI_CLASSE = array(
-	"THEN" => array("/IF/THEN","/WHEN/THEN", "/SWITCH/THEN")
-	,"ELSE" => array("/IF/ELSE","/WHEN/ELSE", "/SWITCH/ELSE")
-	,"TEST" => array("/IF/TEST","/WHEN/TEST", "/SWITCH/TEST")
-	,"CASE" => "/SWITCH/CASE"
-	,"HREF" => array("/LINK_MAILTO/HREF", "/LINK_HTML/HREF")
-	,"AZIONE" => array("/LINK_GENERICO/AZIONE","/LINK_CREA/AZIONE","/LINK_AGGIORNA/AZIONE","/LINK_ELIMINA/AZIONE", "/LINK_FILTRA/AZIONE", "/LINK_ANNULLA_FILTRO/AZIONE", "/LINK_AGGIORNA_TUTTO/AZIONE",
-					"/LINK_AJAX_GENERICO/AZIONE","/LINK_AJAX_CREA/AZIONE","/LINK_AJAX_AGGIORNA/AZIONE","/LINK_AJAX_ELIMINA/AZIONE", "/LINK_AJAX_FILTRA/AZIONE", "/LINK_AJAX_ANNULLA_FILTRO/AZIONE", "/LINK_AJAX_AGGIORNA_TUTTO/AZIONE")
-	,"REAZIONE" => array("/LINK_GENERICO/REAZIONE","/LINK_CREA/REAZIONE","/LINK_AGGIORNA/REAZIONE","/LINK_ELIMINA/REAZIONE", "/LINK_FILTRA/REAZIONE", "/LINK_ANNULLA_FILTRO/REAZIONE", "/LINK_AGGIORNA_TUTTO/REAZIONE",
-					"/LINK_AJAX_GENERICO/REAZIONE","/LINK_AJAX_CREA/REAZIONE","/LINK_AJAX_AGGIORNA/REAZIONE","/LINK_AJAX_ELIMINA/REAZIONE", "/LINK_AJAX_FILTRA/REAZIONE", "/LINK_AJAX_ANNULLA_FILTRO/REAZIONE", "/LINK_AJAX_AGGIORNA_TUTTO/REAZIONE")
-	,"POP_UP" => array("/LINK_GENERICO/POP_UP", "/PICKER/LINK/POP_UP", "/PICKER_FILTRO/LINK/POP_UP", "/COD_DESC/LINK/POP_UP", "/COD_DESC_FILTRO/LINK/POP_UP",
-					"/LINK_AJAX_GENERICO/POP_UP", "/PICKER/LINK/POP_UP", "/PICKER_FILTRO/LINK/POP_UP", "/COD_DESC/LINK/POP_UP", "/COD_DESC_FILTRO/LINK/POP_UP")
-	,"EXTRA_GET" => array("/LINK_GENERICO/EXTRA_GET","/LINK_CREA/EXTRA_GET","/LINK_AGGIORNA/EXTRA_GET","/LINK_ELIMINA/EXTRA_GET", "/LINK_FILTRA/EXTRA_GET", "/LINK_ANNULLA_FILTRO/EXTRA_GET", "/LINK_AGGIORNA_TUTTO/EXTRA_GET", "/PICKER/LINK/EXTRA_GET",
-					"/LINK_AJAX_GENERICO/EXTRA_GET","/LINK_AJAX_CREA/EXTRA_GET","/LINK_AJAX_AGGIORNA/EXTRA_GET","/LINK_AJAX_ELIMINA/EXTRA_GET", "/LINK_AJAX_FILTRA/EXTRA_GET", "/LINK_AJAX_ANNULLA_FILTRO/EXTRA_GET", "/LINK_AJAX_AGGIORNA_TUTTO/EXTRA_GET", "/PICKER/LINK/EXTRA_GET")
-	,"EXTRA_RE_GET" => array("/LINK_GENERICO/EXTRA_RE_GET","/LINK_CREA/EXTRA_RE_GET","/LINK_AGGIORNA/EXTRA_RE_GET","/LINK_ELIMINA/EXTRA_RE_GET", "/LINK_FILTRA/EXTRA_RE_GET", "/LINK_ANNULLA_FILTRO/EXTRA_RE_GET", "/LINK_AGGIORNA_TUTTO/EXTRA_RE_GET", "/PICKER/LINK/EXTRA_RE_GET",
-					"/LINK_AJAX_GENERICO/EXTRA_RE_GET","/LINK_AJAX_CREA/EXTRA_RE_GET","/LINK_AJAX_AGGIORNA/EXTRA_RE_GET","/LINK_AJAX_ELIMINA/EXTRA_RE_GET", "/LINK_AJAX_FILTRA/EXTRA_RE_GET", "/LINK_AJAX_ANNULLA_FILTRO/EXTRA_RE_GET", "/LINK_AJAX_AGGIORNA_TUTTO/EXTRA_RE_GET", "/PICKER/LINK/EXTRA_RE_GET")
-	,"LINK" => array("/PICKER/LINK", "/PICKER_FILTRO/LINK", "/COD_DESC/LINK", "/COD_DESC_FILTRO/LINK")
-);
-// migliorare il linguaggio: XTABLE/TBODY/TR/!(XTABLE)/TD, XTABLE/TBODY/*/!(XTABLE)/TD, XTABLE/TBODY/*/!(XTABLE|TABLE)/TD, etc.
 
 /** 
  * Inclusione delle funzioni di uso comune
@@ -87,8 +24,73 @@ require_once("TAG.inc");
  */
 class PARSER 
 {
+	/**
+	 * Mantiene il conteggio delle pagine parsificate e del tempo impiegato, per le statistiche
+	 * @var array
+	 */
 	public static $time = array('PARSE' => 0, 'NUM' => 0);
 
+	/** 
+	 * Definisce quali tag necessitano di chiusura "inline" in XML
+	 * @var array
+	 */
+	public static $TAG_SINGOLI = array('BR', 'LINK', 'META', 'BASE', 'HR', 'PARAM', 'SPACER', 'AREA', 'FRAME', 'IMG', 'INPUT');
+	
+	/** 
+	 * Definisce quali tag vengono trasformati senza il namespace UBK
+	 * @var array
+	 */
+	public static $TAG_NO_NS = array('SCRIPT', 'STYLE');
+	
+	/** 
+	 * Definisce, per tutti quei TAG che hanno nome della classe di definizione differente dal nome del tag, o piu' classi associabili a seconda del contesto {@link CONTESTI_CLASSE}, i nomi della o delle classi che il tag puo' diventare
+	 * @var array
+	 */
+	private static $CLASSI_TAG = array(
+		'VAR'   => 'XML_VAR'
+		,'PHP'   => 'XML_PHP'
+		,'IF'    => 'XML_IF'
+		,'SWITCH'=> 'XML_SWITCH'
+		,'TEST'  => 'TAG'
+		,'CASE'  => 'TAG'
+		,'AZIONE' => 'TAG'
+		,'REAZIONE' => 'TAG'
+		,'EXTRA_GET' => 'TAG'
+		,'EXTRA_RE_GET' => 'TAG'
+		,'POP_UP' => 'TAG'
+		,'THEN'  => 'CONTENITORE'
+		,'ELSE'  => 'CONTENITORE'
+		,'CONTENUTO' => 'CONTENITORE'
+		,'PAGINA' => 'TAG'
+		,'HREF' => 'XML_PHP'
+		,'INTESTAZIONE' => 'CONTENITORE'
+		,'LINK' => 'TAG'
+		,'CONST' => 'XML_CONST'
+		,'INCLUDE' => 'XML_INCLUDE'
+	);
+	
+	/** 
+	 * Definisce, i contesti (ambiti di posizionamento entro il sorgente XHML) in cui certi tag o classi sono attivabili, ossia i contesti in cui il tag viene trasformato nella classe corrispondente o la classe viene istanziata
+	 * @var array
+	 */
+	private static $CONTESTI_CLASSE = array(
+		'THEN' => array('/IF/THEN','/WHEN/THEN', '/SWITCH/THEN')
+		,'ELSE' => array('/IF/ELSE','/WHEN/ELSE', '/SWITCH/ELSE')
+		,'TEST' => array('/IF/TEST','/WHEN/TEST', '/SWITCH/TEST')
+		,'CASE' => '/SWITCH/CASE'
+		,'HREF' => array('/LINK_MAILTO/HREF', '/LINK_HTML/HREF')
+		,'AZIONE' => array('/LINK_GENERICO/AZIONE','/LINK_CREA/AZIONE','/LINK_AGGIORNA/AZIONE','/LINK_ELIMINA/AZIONE', '/LINK_FILTRA/AZIONE', '/LINK_ANNULLA_FILTRO/AZIONE', '/LINK_AGGIORNA_TUTTO/AZIONE',
+						'/LINK_AJAX_GENERICO/AZIONE','/LINK_AJAX_CREA/AZIONE','/LINK_AJAX_AGGIORNA/AZIONE','/LINK_AJAX_ELIMINA/AZIONE', '/LINK_AJAX_FILTRA/AZIONE', '/LINK_AJAX_ANNULLA_FILTRO/AZIONE', '/LINK_AJAX_AGGIORNA_TUTTO/AZIONE')
+		,'REAZIONE' => array('/LINK_GENERICO/REAZIONE','/LINK_CREA/REAZIONE','/LINK_AGGIORNA/REAZIONE','/LINK_ELIMINA/REAZIONE', '/LINK_FILTRA/REAZIONE', '/LINK_ANNULLA_FILTRO/REAZIONE', '/LINK_AGGIORNA_TUTTO/REAZIONE',
+						'/LINK_AJAX_GENERICO/REAZIONE','/LINK_AJAX_CREA/REAZIONE','/LINK_AJAX_AGGIORNA/REAZIONE','/LINK_AJAX_ELIMINA/REAZIONE', '/LINK_AJAX_FILTRA/REAZIONE', '/LINK_AJAX_ANNULLA_FILTRO/REAZIONE', '/LINK_AJAX_AGGIORNA_TUTTO/REAZIONE')
+		,'POP_UP' => array('/LINK_GENERICO/POP_UP', '/PICKER/LINK/POP_UP', '/PICKER_FILTRO/LINK/POP_UP', '/COD_DESC/LINK/POP_UP', '/COD_DESC_FILTRO/LINK/POP_UP',
+						'/LINK_AJAX_GENERICO/POP_UP', '/PICKER/LINK/POP_UP', '/PICKER_FILTRO/LINK/POP_UP', '/COD_DESC/LINK/POP_UP', '/COD_DESC_FILTRO/LINK/POP_UP')
+		,'EXTRA_GET' => array('/LINK_GENERICO/EXTRA_GET','/LINK_CREA/EXTRA_GET','/LINK_AGGIORNA/EXTRA_GET','/LINK_ELIMINA/EXTRA_GET', '/LINK_FILTRA/EXTRA_GET', '/LINK_ANNULLA_FILTRO/EXTRA_GET', '/LINK_AGGIORNA_TUTTO/EXTRA_GET', '/PICKER/LINK/EXTRA_GET',
+						'/LINK_AJAX_GENERICO/EXTRA_GET','/LINK_AJAX_CREA/EXTRA_GET','/LINK_AJAX_AGGIORNA/EXTRA_GET','/LINK_AJAX_ELIMINA/EXTRA_GET', '/LINK_AJAX_FILTRA/EXTRA_GET', '/LINK_AJAX_ANNULLA_FILTRO/EXTRA_GET', '/LINK_AJAX_AGGIORNA_TUTTO/EXTRA_GET', '/PICKER/LINK/EXTRA_GET')
+		,'EXTRA_RE_GET' => array('/LINK_GENERICO/EXTRA_RE_GET','/LINK_CREA/EXTRA_RE_GET','/LINK_AGGIORNA/EXTRA_RE_GET','/LINK_ELIMINA/EXTRA_RE_GET', '/LINK_FILTRA/EXTRA_RE_GET', '/LINK_ANNULLA_FILTRO/EXTRA_RE_GET', '/LINK_AGGIORNA_TUTTO/EXTRA_RE_GET', '/PICKER/LINK/EXTRA_RE_GET',
+						'/LINK_AJAX_GENERICO/EXTRA_RE_GET','/LINK_AJAX_CREA/EXTRA_RE_GET','/LINK_AJAX_AGGIORNA/EXTRA_RE_GET','/LINK_AJAX_ELIMINA/EXTRA_RE_GET', '/LINK_AJAX_FILTRA/EXTRA_RE_GET', '/LINK_AJAX_ANNULLA_FILTRO/EXTRA_RE_GET', '/LINK_AJAX_AGGIORNA_TUTTO/EXTRA_RE_GET', '/PICKER/LINK/EXTRA_RE_GET')
+		,'LINK' => array('/PICKER/LINK', '/PICKER_FILTRO/LINK', '/COD_DESC/LINK', '/COD_DESC_FILTRO/LINK')
+	);
 
 	/**
 	 * Stringa contenente la descrizione dell'ultimo errore di parsing, impostata solo se la funzione {@link} parsifica ritorna null
@@ -174,13 +176,11 @@ class PARSER
 	 */
 	private function _contesto_corretto($classe)
 	{
-		global $CONTESTI_CLASSE;
-
-		if (array_key_exists($classe, $CONTESTI_CLASSE)) {
-			if (is_string($CONTESTI_CLASSE[$classe])) { 
-				return $this->_match($CONTESTI_CLASSE[$classe]);
+		if (array_key_exists($classe, self::$CONTESTI_CLASSE)) {
+			if (is_string(self::$CONTESTI_CLASSE[$classe])) { 
+				return $this->_match(self::$CONTESTI_CLASSE[$classe]);
 			} else {
-				foreach($CONTESTI_CLASSE[$classe] as $_contesto) {
+				foreach(self::$CONTESTI_CLASSE[$classe] as $_contesto) {
 					if ( $this->_match($_contesto) ) {
 						return true;
 					}
@@ -201,13 +201,10 @@ class PARSER
 	 */
 	private function _esiste_classe($tag)
 	{
-		global $CLASSI_TAG;
-		global $CONTESTI_CLASSE;
-		
 		// prendo tutte le classi che quel tag puo' avere:
 		// quelle specificate, se esistono, o quella chiamata come il tag
-		if (array_key_exists($tag, $CLASSI_TAG)) {
-			$_classi = $CLASSI_TAG[$tag];
+		if (array_key_exists($tag, self::$CLASSI_TAG)) {
+			$_classi = self::$CLASSI_TAG[$tag];
 		} else {
 			$_classi = $tag;
 		}
@@ -222,11 +219,11 @@ class PARSER
 			// e' univoca - questo non vale se l'associazione e' molteplice
 			if (class_exists($_classi) && 
 					(
-						(array_key_exists($_classi, $CONTESTI_CLASSE) && $this->_contesto_corretto($_classi))
+						(array_key_exists($_classi, self::$CONTESTI_CLASSE) && $this->_contesto_corretto($_classi))
 						|| 
-						(array_key_exists($tag, $CONTESTI_CLASSE) && $this->_contesto_corretto($tag))
+						(array_key_exists($tag, self::$CONTESTI_CLASSE) && $this->_contesto_corretto($tag))
 						|| 
-						(!array_key_exists($tag, $CONTESTI_CLASSE) && !array_key_exists($_classi, $CONTESTI_CLASSE))
+						(!array_key_exists($tag, self::$CONTESTI_CLASSE) && !array_key_exists($_classi, self::$CONTESTI_CLASSE))
 					)
 				) {
 				return $_classi;
@@ -281,8 +278,6 @@ class PARSER
 	 */
 	private function _apertura($parser, $nome, $attributi)
 	{
-		global $TAG_SINGOLI;
-		global $TAG_HTML;
 		$_nome = strtoupper(str_replace("-", "_", $nome));
 		if (inizia_per($nome, "ubk:")) $_nome = substr($_nome, 4);
 
@@ -296,7 +291,7 @@ class PARSER
 		// se la classe esiste, creo un nuovo nodo usando la classe giusta
 		// altrimenti, se sono dentro una sezione "contenitore", aggiungo un pezzo
 
-		if ((inizia_per($nome, "ubk:") || in_array(strtoupper($nome), $TAG_HTML)) && $_classe = $this->_esiste_classe($_nome)) {
+		if ((inizia_per($nome, "ubk:") || in_array(strtoupper($nome), self::$TAG_NO_NS)) && $_classe = $this->_esiste_classe($_nome)) {
 		
 			// creo il nodo e gli imposto gli attributi basilari
 			$_nome_classe = strtoupper(inizia_per($nome, "ubk:") ? substr($nome, 4) : $nome);
@@ -318,7 +313,7 @@ class PARSER
 			if ($this->XML) {
 				$_dati = "<".$nome.xml_att_crea($attributi, TRUE).">";
 			} else {
-				if (in_array(strtoupper($nome), $TAG_SINGOLI)) {
+				if (in_array(strtoupper($nome), self::$TAG_SINGOLI)) {
 					$_dati = "<".strtolower($nome).xml_att_crea($attributi)."/>";
 				} else {
 					$_dati = "<".strtolower($nome).xml_att_crea($attributi).">";
@@ -337,8 +332,6 @@ class PARSER
 	 */
 	private function _chiusura($parser, $nome)
 	{
-		global $TAG_SINGOLI;
-
 		// se ho chiuso il tag in cima alla pila, lo tolgo
 		// altrimenti, aggiungo dell'html di chiusura al contenitore corrente,
 		// se il tag non e' uno di quelli da chiudere necessariamente inline
@@ -350,7 +343,7 @@ class PARSER
 
 			$this->_aggiungi_a_contenitore("</".$nome.">");
 
-		} elseif (!in_array(strtoupper($nome), $TAG_SINGOLI) && $this->_in_contenitore()) {
+		} elseif (!in_array(strtoupper($nome), self::$TAG_SINGOLI) && $this->_in_contenitore()) {
 		
 			$this->_aggiungi_a_contenitore("</".strtolower($nome).">");
 		}
