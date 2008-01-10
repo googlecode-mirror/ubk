@@ -73,3 +73,42 @@ Some attributes can be specified to loop over just a part of the result set:
 || *start* || || || int || the record number to start from ||
 || *page* || || 0 || int || the page number (assumed containing *page-size* record) to start from ||
 this modality is used if *page-size* is specified; if neither *start* nor *page* is specified, then the loop starts from the first record (like if *page* was set to 0).
+
+== UBK:RIGHE-RICORSIVE ==
+
+This tags loops over a table with tree structure, i.e. whos tuples contains a link to a "parent" tuple.
+
+|| attribute || required || default || domain || notes ||
+|| *tabella* || X || || || the name of the database table containing values to display ||
+|| *campo-id-figlio* || || *tabella*'s id field || || the name of the database field containing ids (primary key) ||
+|| *campo-id-padre* || X || || || the name of the database field containing the link to the parent node ||
+|| *nodi-aperti* || || array() || array || _keys_ in this array contains ids of nodes whose children will be displayed; if no array is provided, only roots will be printed, according to additional filters ||
+|| *filtro* || || || SQL || filter condition on root nodes (those having *campo-id-padre* NULL) ||
+|| *filtro-generale* || || || SQL || filter condition on internal nodes (those having *campo-id-padre* NOT NULL) ||
+|| *ordine* || || *campo-id-padre* asc || SQL || sort clause for records ||
+|| *indentazione* || X || || int || indentation amount for nested nodes, expressed in *um-ind* ||
+|| *um-ind* || || px || px, em, pt, ... || CSS indentation unit measure ||
+|| *incremento-ind* || || 0 || int || indentation increment for each level ||
+|| *start-ind* || || 0 || int || starting value for indentation accumulator ||
+|| *metodo-ind* || || padding-left || padding-left, margin-left, ... || CSS indentation method ||
+|| *child-display* || || block || block, inline, ... || CSS display value for node's children block ||
+|| *tag* || || div || HTML tag || tag used to build node and children blocks ||
+|| *js-over* || || || js || javascript to be executed on mouse over node ||
+|| *js-out* || || || js || javascript to be executed on mouse out node ||
+|| *js-click* || || || js || javascript to be executed on node click ||
+|| *class* || || || string || the css class to be applied to the node ||
+
+During iteration, these environment variables are set:
+  * RIGHE-RICORSIVE-LIVELLO: carries the nesting level, starting from 0 (root)
+  * RIGHE-RICORSIVE-INDICE: a progressive index, incremented for every node printed out
+  * RIGHE-RICORSIVE-FIGLI: the amount of current node's children
+
+
+Initial filter _condition_ is built in this way:
+  * if both *filtro* and *filtro-generale* are set, then _condition_ is : (*filtro* and *campo-id-padre* is null) or (*filtro-generale* and *campo-id-padre* is not null)
+  * if only *filtro* is set, then _condition_ is: (*filtro* and *campo-id-padre* is null)
+  * if only *filtro-generale* is set then _condition_ is *filtro-generale*
+Then an additional _node condition_ is added:
+  * if *nodi-aperti* is not empy, _node condition_ is: (*campo-id-padre* in *nodi-aperti*) or (*campo-id-padre* is null)
+
+Finally, _whole filter condition_ is: (_condition_) and (_node condition_)
