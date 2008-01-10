@@ -82,7 +82,7 @@ This tags loops over a table with tree structure, i.e. whos tuples contains a li
 || *tabella* || X || || || the name of the database table containing values to display ||
 || *campo-id-figlio* || || *tabella*'s id field || || the name of the database field containing ids (primary key) ||
 || *campo-id-padre* || X || || || the name of the database field containing the link to the parent node ||
-|| *nodi-aperti* || || null || array || _keys_ in this array contains ids of nodes whose children will be displayed; if no array is provided, all nodes will be printed ||
+|| *nodi-aperti* || || null || array || _keys_ in this array contains ids of nodes whose children will be displayed; if no array is provided, all nodes will be printed; if an empty array is provided, only roots will be printed ||
 || *filtro* || || || SQL || filter condition on root nodes (those having *campo-id-padre* NULL) ||
 || *filtro-generale* || || || SQL || filter condition on internal nodes (those having *campo-id-padre* NOT NULL) ||
 || *ordine* || || *campo-id-padre* asc || SQL || sort clause for records; default clause is always pre-pended to any sort clause specified ||
