@@ -33,7 +33,7 @@ When *mode* is R, the checkbox is displayed as:
 || *diritti* || || environment || array || Hash of type [section => [right => bool]] containing current user rights. If no rights are presente, field is displayed in any case ||
 || *sezione* || || environment || mixed || section of user rights to be used to check right needed to display the field. If no section is present, field is displayed in any case||
 || *diritto* || || *mode* || R, W, RW, D || the right needed to display this field, checked against current environment rights ||
-|| *class* || || || environment || the css class to be applied to the field; if *mode* is R, then the value is entagged in a _span_ with that class, if *img* attribute is not set; defaul class _check_ is always present ||
+|| *class* || || environment || || the css class to be applied to the field; if *mode* is R, then the value is entagged in a _span_ with that class, if *img* attribute is not set; defaul class _check_ is always present ||
 || *etichette* || || || string|string || labels for true and false values respectively to be shown if *mode* == R ||
 || *img* || || || string || prefix name of a couple of images lying under _img/_ dir, called *prefix* SI *DEF_IMG_EXT* and *prefix* NO *DEF_IMG_EXT* used to represent the checkbox if *mode* == R (for example img/chkSI.png, img/chkNO.png) ||
 || *valore-default* || || database field default value || || used only if *mode* is W ||
@@ -62,7 +62,7 @@ This class needs a javascript extension (CUbkCheckbox).
 || *diritti* || || environment || array || Hash of type [section => [right => bool]] containing current user rights. If no rights are presente, field is displayed in any case ||
 || *sezione* || || environment || mixed || section of user rights to be used to check right needed to display the field. If no section is present, field is displayed in any case||
 || *diritto* || || *mode* || R, W, RW, D || the right needed to display this field, checked against current environment rights ||
-|| *class* || || || environment || the css class to be applied to the image; default class _check_ is always present ||
+|| *class* || || environment || || the css class to be applied to the image; default class _check_ is always present ||
 || *img* || X || || string || prefix name of images used to represent the checkbox ||
 || *alt* || X || || string || alternate description for the checkbox-img ||
 || *valore-default* || || database field default value || || used only if *mode* is W ||
@@ -86,7 +86,7 @@ This one represents a checkbox that displays the presence of a related value to 
 || *diritti* || || environment || array || Hash of type [section => [right => bool]] containing current user rights. If no rights are presente, field is displayed in any case ||
 || *sezione* || || environment || mixed || section of user rights to be used to check right needed to display the field. If no section is present, field is displayed in any case||
 || *diritto* || || *mode* || R, W, RW, D || the right needed to display this field, checked against current environment rights ||
-|| *class* || || || environment || the css class to be applied to the image; default class _check_ is always present, eventually as a span entagging labels ||
+|| *class* || || environment || || the css class to be applied to the image; default class _check_ is always present, eventually as a span entagging labels ||
 || *tabella* || X || || string || the table where the data should be searched ||
 || *campo-id-link* || X || *nome* || string || the column of *table* where the data should be searched ||
 || *filtro* || || || SQL || optional additional search condition (default and always present is *campo-id-link* = *current_table*.*nome*) ||
