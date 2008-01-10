@@ -2,12 +2,14 @@
 
 == UBK:IF ==
 
-This tag is an implementation of common {{{ 
+This tag is an implementation of common 
+{{{ 
 if (test) then
   <block>
 [else
   <block>
-] end if }}}
+] end if 
+}}}
 control structure.
 The _else_ part is optional, while the _then_ and the _test_ are mandatory.
 Into _then_ and _else_, you can put everything you want (until it's XML).
