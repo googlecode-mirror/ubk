@@ -30,7 +30,7 @@ Javascript controls to ensure correct data format and length are automatically g
 || *sezione* || || environment || mixed || section of user rights to be used to check right needed to display the field. If no section is present, field is displayed in any case||
 || *diritto* || || *mode* || R, W, RW, D || the right needed to display this field, checked against current environment rights ||
 || *tipo* || || text || text, hidden, password, radio, textarea || type of the field ||
-|| *class* || || || environment || the css class to be applied to the field; if *mode* is R, then the value is entagged in a _span_ with that class ||
+|| *class* || || environment || || the css class to be applied to the field; if *mode* is R, then the value is entagged in a _span_ with that class ||
 || *valore-default* || || database field default value || || used only if *mode* is W ||
 || *se-null* || || || || value to be displayed if field IS NULL; used only if *mode* is R ||
 || *formato* || || _nl2br_ if *tipo* is TEXTAREA || || specifies the name of a php function of type _mixed_ => _mixed_ that is applyed to database / *se-null* value to format it (before the eventual _span_/*class* entagging); used in every display *mode* ||
@@ -73,7 +73,7 @@ This one represents a select or radio group, whose values are taken from an othe
 || *diritto* || || *mode* || R, W, RW, D || the right needed to display this field, checked against current environment rights ||
 || *tipo* || || combo || combo,radio || type of the field ||
 || *riga-vuota* || || TRUE || FALSE, TRUE || if FALSE and *tipo* == COMBO, no empty option is displayed (empty option is displayed by default even if field is required) ||
-|| *class* || || || environment || the css class to be applied to the field; if *mode* is R, then the value is entagged in a _span_ with that class ||
+|| *class* || || environment || || the css class to be applied to the field; if *mode* is R, then the value is entagged in a _span_ with that class ||
 || *valore-default* || || database field default value || || used only if *mode* is W ||
 || *se-null* || || || || value to be displayed if field IS NULL; used only if *mode* is R ||
 || *formato* || || || || specifies the name of a php function of type _mixed_ => _mixed_ that is applyed to database / *se-null* value to format it (before the eventual _span_/*class* entagging); used in every display *mode* ||
