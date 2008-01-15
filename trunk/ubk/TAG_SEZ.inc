@@ -343,13 +343,25 @@ class SEZIONE extends CONTENITORE
  */
 class XML_INCLUDE extends TAG
 {
+	/**
+	 * Contiene una cache di tutti i file gia' caricati
+	 * @var array
+	 */
 	private static $loadeds = array();
 
+	/**
+	 * Ritorna i nomi dei file caricati
+	 * @return array
+	 */
 	public static function names()
 	{
 		return array_keys(self::$loadeds);
 	}
 
+	/**
+	 * Rimuove dalla cache il file specificato
+	 * @param string $name il nome del file da rimuovere
+	 */
 	public static function unload($name)
 	{
 		unset(self::$loadeds[$name]);
@@ -498,18 +510,34 @@ class STYLE extends HTML
  */
 class SNIPPET extends CONTENITORE
 {
+	/**
+	 * Contiene una cache di tutti gli snippet gia' caricati
+	 * @var array
+	 */
 	private static $loadeds = array();
 
+	/**
+	 * Ritorna i nomi degli snippet caricati
+	 * @return array
+	 */
 	public static function names()
 	{
 		return array_keys(self::$loadeds);
 	}
 
+	/**
+	 * Rimuove dalla cache lo snippet specificato
+	 * @param string $name il nome dello snippet da rimuovere
+	 */
 	public static function unload($name)
 	{
 		unset(self::$loadeds[$name]);
 	}
 
+	/**
+	 * Routine effettiva di stampa
+	 * @param array $parametri Ambiente di valutazione
+	 */
 	public function stampa_contenuto(&$parametri)
 	{
 		parent::stampa_html($parametri);
@@ -562,6 +590,10 @@ class SNIPPET extends CONTENITORE
 		}
 	}
 
+	/**
+	 * Permette ai FORM di trovare i campi attraverso le chiamate a snippet
+	 * @param $nome Il nome dei tag da trovare
+	 */
 	public function figli_profondita($nome) 
 	{
 		if ($n = $this->attributo('CALL')) {
