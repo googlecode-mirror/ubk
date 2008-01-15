@@ -332,6 +332,7 @@ function leggi_ini($file, $crittato = false)
 
 	$_all_defines = array();
 	$_sect = parse_ini_file($file, TRUE);
+	$GLOBALS['DRIVERS'] = array();
 	
 	foreach($_sect as $_sect_name => $_keys) {
 		// valori della sezione corrente
@@ -373,6 +374,7 @@ function leggi_ini($file, $crittato = false)
 			} else {
 				$GLOBALS[$_sect_name] = $_vals;
 			}
+			$GLOBALS['DRIVERS'][array_get_default('DB_TYPE', $GLOBALS[$_sect_name])] = TRUE;
 		} else {
 			$_all_defines = array_merge($_all_defines, $_vals);
 		}

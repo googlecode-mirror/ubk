@@ -21,22 +21,26 @@ require_once('funzioni_bwc.inc');
  */
 require_once('c_db.inc');
 
-require_once('c_db_META_FBIRD.inc');
-require_once('c_db_DRIVER_FBIRD.inc');
-require_once('c_db_SQL_FBIRD.inc');
-
-require_once('c_db_META_MYSQL.inc');
-require_once('c_db_DRIVER_MYSQL.inc');
-require_once('c_db_SQL_MYSQL.inc');
-
-require_once('c_db_META_MSSQL.inc');
-require_once('c_db_DRIVER_MSSQL.inc');
-require_once('c_db_SQL_MSSQL.inc');
-
-require_once('c_db_META_ODBC.inc');
-require_once('c_db_DRIVER_ODBC.inc');
-require_once('c_db_SQL_ODBC.inc');
-
+if (isset($GLOBALS['DRIVERS']['FBIRD'])) {
+	require_once('c_db_META_FBIRD.inc');
+	require_once('c_db_DRIVER_FBIRD.inc');
+	require_once('c_db_SQL_FBIRD.inc');
+}
+if (isset($GLOBALS['DRIVERS']['MYSQL'])) {
+	require_once('c_db_META_MYSQL.inc');
+	require_once('c_db_DRIVER_MYSQL.inc');
+	require_once('c_db_SQL_MYSQL.inc');
+}
+if (isset($GLOBALS['DRIVERS']['MSSQL'])) {
+	require_once('c_db_META_MSSQL.inc');
+	require_once('c_db_DRIVER_MSSQL.inc');
+	require_once('c_db_SQL_MSSQL.inc');
+}
+if (isset($GLOBALS['DRIVERS']['ODBC'])) {
+	require_once('c_db_META_ODBC.inc');
+	require_once('c_db_DRIVER_ODBC.inc');
+	require_once('c_db_SQL_ODBC.inc');
+}
 /** 
  * Inclusione funzioni di gestione cache
  */
@@ -75,12 +79,6 @@ class DB_BASE
 	 * @var array
 	 */
 	protected $db_connection = array();
-
-	/**
-	 * Connessione al db / transazione corrente
-	 * @var resource_id
-	 */
-	protected $conn_id = NULL;
 
 	/**
 	 * Recordset con i dati originali (formato db) dell'ultima select
@@ -163,8 +161,7 @@ class DB_BASE
 	public function tr_begin()
 	{
 		$this->apri_connessione();
-		$this->driver->tr_begin($this->conn_id);
-		assert(!is_null($this->conn_id));
+		$this->driver->tr_begin();
 	}
 
 	/**
@@ -172,8 +169,7 @@ class DB_BASE
 	 */
 	public function tr_commit()
 	{
-		$this->driver->tr_commit($this->conn_id);
-		assert(is_null($this->conn_id));
+		$this->driver->tr_commit();
 	}
 
 	/**
@@ -181,8 +177,7 @@ class DB_BASE
 	 */
 	public function tr_rollback()
 	{
-		$this->driver->tr_rollback($this->conn_id);
-		assert(is_null($this->conn_id));
+		$this->driver->tr_rollback();
 	}
 
 	/**
@@ -190,11 +185,7 @@ class DB_BASE
 	 */
 	protected function apri_connessione()
 	{
-		if (is_null($this->conn_id)) {
-			$this->conn_id = $this->driver->connect($this->db_connection);
-		}
-
-		assert(!is_null($this->conn_id));
+		$this->driver->connect($this->db_connection);
 	}
 
 	/**
@@ -202,10 +193,7 @@ class DB_BASE
 	 */
 	protected function chiudi_connessione()
 	{
-		if (!is_null($this->conn_id)) {
-			$this->driver->disconnect($this->conn_id);
-		}
-		assert(is_null($this->conn_id));
+		$this->driver->disconnect();
 	}
 
 	/**
@@ -268,11 +256,9 @@ class DB_BASE
 		// non ho il file serializzato, chiedo al db
 		if (is_null($_table_info)) {
 			
-			$_no_connection = is_null($this->conn_id);
-
-			if ($_no_connection) $this->apri_connessione();
-			$_table_info = $this->driver->field_info_table($table_name, $this->conn_id);
-			if ($_no_connection) $this->chiudi_connessione();
+			$this->apri_connessione();
+			$_table_info = $this->driver->field_info_table($table_name);
+			$this->chiudi_connessione();
 			
 			// aggiorna le lunghezza dei campi secondo le regole del ubk
 			foreach($_table_info['length'] as $_field => $_len){
@@ -306,10 +292,9 @@ class DB_BASE
 
 		if (constant_true('LOG_STATS')) $_start = get_microtime();
 		
-		$_no_connection = is_null($this->conn_id);
-		if ($_no_connection) $this->apri_connessione();
+		$this->apri_connessione();
 
-		$_res_rs = $this->driver->query($sql, $this->conn_id);
+		$_res_rs = $this->driver->query($sql);
 
 		if ($carica_info) $this->carica_info_colonne($_res_rs, $sql);
 
@@ -335,7 +320,7 @@ class DB_BASE
 
 		// libero le risorse
 		$this->driver->free_result($_res_rs);
-		if ($_no_connection) $this->chiudi_connessione();
+		$this->chiudi_connessione();
 		
 		if (!$campo_id) {
 			$this->cache->salva_sql($sql, $this);
@@ -363,11 +348,10 @@ class DB_BASE
 	{
 		if (constant_true('LOG_STATS')) $_start = get_microtime();
 
-		$_no_connection = is_null($this->conn_id);
-		if ($_no_connection) $this->apri_connessione();
+		$this->apri_connessione();
 
 		$_sql_cnt = $this->sql->genera_count($table, $condizione, $distinct);
-		$_res_rs = $this->driver->query($_sql_cnt, $this->conn_id);
+		$_res_rs = $this->driver->query($_sql_cnt);
 		$_riga   = $this->driver->fetch_assoc($_res_rs);
 		$_righe  = $_riga["i_numero"];
 
@@ -380,7 +364,7 @@ class DB_BASE
 			self::$time['ALL'][$_sql_cnt] = ($_end - $_start);
 		}
 		
-		if ($_no_connection) $this->chiudi_connessione();
+		$this->chiudi_connessione();
 
 		return $_righe;
 	}
@@ -395,11 +379,10 @@ class DB_BASE
 	{
 		if (constant_true('LOG_STATS')) $_start = get_microtime();
 
-		$_no_connection = is_null($this->conn_id);
-		if ($_no_connection) $this->apri_connessione();
+		$this->apri_connessione();
 
 		$_sql    = $this->sql->genera_exists($table, $condizione);
-		$_res_rs = $this->driver->query($_sql, $this->conn_id);
+		$_res_rs = $this->driver->query($_sql);
 		$_riga   = $this->driver->fetch_assoc($_res_rs);
 		$_result = $_riga["b_exists"];
 
@@ -412,7 +395,7 @@ class DB_BASE
 			self::$time['ALL'][$_sql] = ($_end - $_start);
 		}
 		
-		if ($_no_connection) $this->chiudi_connessione();
+		$this->chiudi_connessione();
 
 		return (bool)$_result;
 	}
@@ -466,15 +449,14 @@ class DB_BASE
 
 			if (constant_true('LOG_STATS')) $_start = get_microtime();
 
-			$_no_connection = is_null($this->conn_id);
-			if ($_no_connection) $this->apri_connessione();  
+			$this->apri_connessione();  
 
 			$_sql_cnt = $this->sql->genera_select($table, $_colonne, $condizione, $ordine, $distinct);
-			$_rs      = $this->driver->query($_sql_cnt, $this->conn_id);
-			$_count   = $this->driver->num_rows_select($this->conn_id);
+			$_rs      = $this->driver->query($_sql_cnt);
+			$_count   = $this->driver->num_rows_select();
 			$this->driver->free_result($_rs);
 
-			if ($_no_connection) $this->chiudi_connessione();  
+			$this->chiudi_connessione();
 
 			if (constant_true('LOG_STATS')) {
 				$_end = get_microtime();
@@ -516,13 +498,12 @@ class DB_BASE
 	 */
 	public function esegui($sql)
 	{
-		$_no_connection = is_null($this->conn_id);
-		if ($_no_connection) $this->apri_connessione();
+		$this->apri_connessione();
 
-		$_res_rs = $this->driver->query($sql, $this->conn_id);
+		$_res_rs = $this->driver->query($sql);
 		$this->driver->free_result($_res_rs);
 
-		if ($_no_connection) $this->chiudi_connessione();
+		$this->chiudi_connessione();
 	}
 
 	/**
@@ -532,14 +513,13 @@ class DB_BASE
 	 */
 	protected function ultimo_id_tabella($tabella)
 	{
-		$_no_connection = is_null($this->conn_id);
-		if ($_no_connection) $this->apri_connessione();  
+		$this->apri_connessione();
 
-		$_res_rs = $this->driver->identity($tabella, $this->conn_id);
+		$_res_rs = $this->driver->identity($tabella);
 		$_riga = $this->driver->fetch_assoc($_res_rs);
 		$this->driver->free_result($_res_rs);
 
-		if ($_no_connection) $this->chiudi_connessione();
+		$this->chiudi_connessione();
 
 		return $_riga["i_numero"];
 	}
@@ -557,10 +537,9 @@ class DB_BASE
 
 		if (constant_true('LOG_STATS')) $_start = get_microtime();
 
-		$_no_connection = is_null($this->conn_id);
-		if ($_no_connection) $this->apri_connessione();  
-		$this->driver->exec_procedure( $_params[0], $_fmtd_values, $this->conn_id );
-		if ($_no_connection) $this->chiudi_connessione();  
+		$this->apri_connessione();
+		$this->driver->exec_procedure( $_params[0], $_fmtd_values);
+		$this->chiudi_connessione();
 
 		if (constant_true('LOG_STATS')) {
 			$_end = get_microtime();
@@ -587,11 +566,9 @@ class DB_BASE
 
 		if (is_null($_procedure_info)) {
 
-			$_no_connection = is_null($this->conn_id);
-
-			if ($_no_connection) $this->apri_connessione();  
-			$_procedure_info = $this->driver->field_info_procedure($_procedure, $this->conn_id);
-			if ($_no_connection) $this->chiudi_connessione();  
+			$this->apri_connessione();  
+			$_procedure_info = $this->driver->field_info_procedure($_procedure);
+			$this->chiudi_connessione();  
 
 			$this->cache->mtd_write($this->db_connection, $_procedure, $_procedure_info);
 		}

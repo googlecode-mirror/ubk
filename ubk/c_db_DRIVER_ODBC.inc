@@ -10,42 +10,51 @@ class DB_DRIVER_ODBC extends DB_DRIVER
 	
 	public static function connect($db_connection)
 	{
-		check_db_connection($db_connection);
+		$c =& self::current_connection();
 
-		$_res_conn = odbc_connect($db_connection["DB_NAME"], $db_connection["DB_USERNAME"], $db_connection["DB_PASSWORD"]);
-		if (!$_res_conn)
-			throw new DbException(__CLASS__.'::'.__METHOD__, odbc_errormsg());
+		if (is_null($c->get_info()) || $c->different_from($db_connection)) {
+			check_db_connection($db_connection);
+	
+			$_res_conn = odbc_connect($db_connection["DB_NAME"], $db_connection["DB_USERNAME"], $db_connection["DB_PASSWORD"]);
+			if (!$_res_conn)
+				throw new DbException(__CLASS__.'::'.__METHOD__, odbc_errormsg());
 
-		return $_res_conn;
+			self::add_connection(new DB_CONNECTION($db_connection, $_res_conn));
+		} else {
+			$c->references ++;
+		}
 	}
 
 	
-	public static function disconnect(&$conn_id)
+	public static function disconnect()
 	{
-		@odbc_close($conn_id);
-		$conn_id = NULL;
+		$c =& self::current_connection();
+		$c->references --;
+
+		if ($c->references <= 0) {
+			@odbc_close($c->get_id());
+			self::remove_connection();
+		}
 	}
 
-	public static function get_last_message($conn_id = NULL)
+	public static function get_last_message()
 	{
 		return odbc_errormsg();
 	}
 
 
-	public static function errmsg($sql, $conn_id = NULL)
+	public static function errmsg($sql)
 	{
 
 		return odbc_errormsg().BR.$sql;
 	}
 
 
-	public static function query($sql, $conn_id)
+	public static function query($sql)
 	{
-		assert(!is_null($conn_id));
-
 		DB_DRIVER::sql_push($sql);
 
-		$_res_rs = @odbc_do($conn_id, $sql);
+		$_res_rs = @odbc_do(self::current_connection()->get_id(), $sql);
 
 		if (!$_res_rs)
 			throw new DbException(__CLASS__.'::'.__METHOD__, self::errmsg($sql));
@@ -109,17 +118,15 @@ class DB_DRIVER_ODBC extends DB_DRIVER
 	}
 
 
-	public static function field_info_table($table, $conn_id)
+	public static function field_info_table($table)
 	{
-		assert(!is_null($conn_id));
-
 		$info_table['default'] = array();
 		$info_table['null']   = array();
 		$info_table['fields'] = array();
 		$info_table['length'] = array();
 		$info_table['type']   = array();
 		
-		$_res_rs = 	@odbc_do($conn_id, "SELECT * FROM $table");
+		$_res_rs = 	@odbc_do(self::current_connection()->get_id(), "SELECT * FROM $table");
 
 		$_riga = self::fetch_assoc($_res_rs);
 
@@ -141,21 +148,15 @@ class DB_DRIVER_ODBC extends DB_DRIVER
 	}
 
 	
-	public static function field_info_procedure($procedure, $conn_id)
+	public static function field_info_procedure($procedure)
 	{
 	}
 
 	
-	public static function identity($table, $conn_id) 
+	public static function identity($table) 
 	{
-		$_res_rs = @odbc_do("SELECT MAX(".DB_BASE::campo_id_tabella($tabella).") as i_numero FROM $tabella", $conn_id);
-
-		if (!$_res_rs)
-			throw new DbException(__CLASS__.'::'.__METHOD__, odbc_errormsg());
-
-		return $_res_rs;
+		return self::query("SELECT MAX(".DB_BASE::campo_id_tabella($tabella).") as i_numero FROM $tabella");
 	}
-
 
 
 	public static function db_2_utente($colonna, $valore)
@@ -219,7 +220,7 @@ class DB_DRIVER_ODBC extends DB_DRIVER
 		}
 	}
 
-	public static function exec_procedure($procedure, $params, $conn_id)
+	public static function exec_procedure($procedure, $params)
 	{
 	}
 

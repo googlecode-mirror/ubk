@@ -103,12 +103,98 @@ abstract class DB_META
 }
 
 /**
+ * Rappresenta una connessione a db
+ * @package db
+ */
+class DB_CONNECTION
+{
+	/**
+	 * Identificativo di connessione
+	 * @var resource
+	 */
+	private $id = NULL;
+	/**
+	 * Transazione si / no
+	 * @var bool
+	 */
+	private $trans = FALSE;
+	/**
+	 * Tutti i parametri (DB_TYPE, DB_SERVER, DB_NAME, DB_USERNAME, DB_PASSWORD)
+	 * @var array
+	 */
+	private $info = array();
+	/**
+	 * Numero di volte che è stata aperta
+	 * @var int
+	 */
+	public $references = 0;
+
+	/**
+	 * Costruttore
+	 * @param array $db_connection
+	 * @param resource $conn_id
+	 * @param bool $trans Se e' una transazione
+	 */
+	public function __construct($db_connection, &$conn_id, $trans = FALSE)
+	{
+		$this->info = $db_connection;
+
+		$this->references = 1;
+		$this->id =& $conn_id;
+		$this->trans = $trans;
+	}
+
+	/**
+	 * Dice se e' una connessione differente da quella identificata dai parametri passati
+	 * @param array $db_connection
+	 * @return bool
+	 */
+	public function different_from($db_connection)
+	{
+		return (is_null($this->info) || $this->info != $db_connection);
+	}
+
+	/**
+	 * Ritorna i parametri della connessione
+	 * @return array
+	 */
+	public function get_info()
+	{
+		return $this->info;
+	}
+
+	/**
+	 * Dice se e' una transazione
+	 * @return bool
+	 */
+	public function is_transaction()
+	{
+		return $this->trans;
+	}
+
+	/**
+	 * Ritorna la connessione fisica
+	 * @return resource
+	 */
+	public function &get_id()
+	{
+		return $this->id;
+	}
+}
+
+/**
  * Interfaccia per i driver - nascondono le funzioni base di interazione coi DBMS
  * @package db
  * @abstract
  */
 abstract class DB_DRIVER
 {
+	/**
+	 * Stack delle connessioni
+	 * @var array
+	 */
+	protected static $connections = array();
+
 	/**
 	 * Elenco delle ultime query eseguite
 	 * @var array
@@ -147,23 +233,50 @@ abstract class DB_DRIVER
 	abstract public static function connect($db_connection);
 	/**
 	 * Disconnessione
-	 * @param resource &$conn_id La connection_id che verra' resa null a seguito dell'avvenuta disconnessione
 	 */
-	abstract public static function disconnect(&$conn_id);
+	abstract public static function disconnect();
 
-
+	/**
+	 * Aggiunge una connessione allo stack
+	 * @param DB_CONNECTION $c
+	 */
+	final protected static function add_connection($c)
+	{
+		array_push(self::$connections, $c);
+	}
+	/**
+	 * Rimuove la connessione in cima allo stack
+	 */
+	final protected static function remove_connection()
+	{
+		array_pop(self::$connections);
+	}
+	/**
+	 * Connessione corrente; connessione fittizia (tutto a NULL) se manca
+	 * @return DB_CONNECTION
+	 */
+	final protected static function &current_connection()
+	{
+		if (count(self::$connections)) {
+			return self::$connections[count(self::$connections) - 1];
+		} else {
+			$fake = NULL;
+			$ffake = new DB_CONNECTION($fake, $fake);
+			return $ffake;
+		}
+	}
 
 
 	/**
 	 * Ritorno errore (semplice)
 	 * @return string
 	 */
-	abstract public static function get_last_message($conn_id = NULL);
+	abstract public static function get_last_message();
 	/**
 	 * Ritorno errore (avanzato)
 	 * @return string
 	 */
-	abstract public static function errmsg($sql, $conn_id = NULL);
+	abstract public static function errmsg($sql);
 
 
 
@@ -171,10 +284,9 @@ abstract class DB_DRIVER
 	/**
 	 * Esecuzione di una query (selezione / modifica)
 	 * @param string $sql La query da eseguire
-	 * @param resource $conn_id La connessione su cui eseguire la query
 	 * @return integer
 	 */
-	abstract public static function query($sql, $conn_id);
+	abstract public static function query($sql);
 	/**
 	 * Caricamento della prossima riga in modalita' associativa (campo => valore)
 	 * @param resource $rs Il result set di cui contare le righe coinvolte
@@ -220,23 +332,21 @@ abstract class DB_DRIVER
 	/**
 	 * Ritorna un array di array con le informazioni sui campi della tabella/vista richiesta
 	 * @param string $table Il nome della tabella
-	 * @param resource $conn_id connessione
 	 * @return array 
 	 */
-	abstract public static function field_info_table($table, $conn_id);
+	abstract public static function field_info_table($table);
 	/**
 	 * Ritorna un array di array con le informazioni sui parametri della store procedure richiesta
 	 * @param string $table Il nome della store procedure
-	 * @param resource $conn_id connessione
 	 * @return array 
 	 */
-	abstract public static function field_info_procedure($procedure, $conn_id);
+	abstract public static function field_info_procedure($procedure);
 	/**
 	 * Ritorna l'id corrente associato ad una tabella
 	 * @param string $tabella Il nome della tabella di cui caricare l'identita' 
 	 * @return integer
 	 */
-	abstract public static function identity($table, $conn_id);
+	abstract public static function identity($table);
 
 
 
@@ -312,31 +422,29 @@ abstract class DB_DRIVER
 	 * Esecuzione di una stored procedure
 	 * @param string $procedure Il nome della stored procedure
 	 * @param array $params parametri della stored procedure gia' in formato db
-	 * @param resource $conn_id connessione su cui eseguire la stored
 	 */
-	abstract public static function exec_procedure($procedure, $params, $conn_id);
+	abstract public static function exec_procedure($procedure, $params);
 
 	/**
 	 * Inizia una transazione
-	 * @param resource $conn_id
 	 */
-	public static function tr_begin(&$conn_id)
-	{ }
+	public static function tr_begin()
+	{ 
+		self::connect(self::current_connection()->get_info());
+	}
 	/**
 	 * Commit di una transazione
-	 * @param resource $tr transazione da confermare (connessione)
 	 */
-	public static function tr_commit(&$tr)
+	public static function tr_commit()
 	{
-		self::disconnect($tr);
+		self::disconnect();
 	}
 	/**
 	 * Rollback di una transazione
-	 * @param resource $tr transazione da annullare (connessione)
 	 */
-	public static function tr_rollback(&$tr)
+	public static function tr_rollback()
 	{
-		self::disconnect($tr);
+		self::disconnect();
 	}
 
 
@@ -649,13 +757,15 @@ abstract class DB_SQL
 	 * Genera una clausola IN basata su una subquery. La subquery viene generata come SELECT $campo_ricerca FROM $tabella_ricerca WHERE cond($campo_filtro, $valore), $campo_ricerca deve essere presente anche nella tabella corrente. Es. i_acc_utente_id IN (SELECT i_acc_utente_id FROM t_p_acc_utente_gruppo WHERE i_acc_gruppo_id = 4)
 	 * @param string $tabella_ricerca Tabella in cui la ricerca viene effettuata
 	 * @param string $campo_ricerca Nome del campo su cui viene effettuata la ricerca (il campo della tabella corrente viene confrontato con i valori della query su $tabella_ricerca.$campo_ricerca)
-	 * @param string $campo_filtro Campo su cui viene fatto un filtro nella tabella di ricerca
-	 * @param mixed $valore Valore ( o array di valori ) su cui viene fatto il filtro
+	 * @param string $campo_filtro Campo su cui viene fatto un filtro nella tabella di ricerca; se NULL, nessuna WHERE condition viene aggiunta
+	 * @param mixed $valore Valore ( o array di valori ) su cui viene fatto il filtro; se NULL, nessuna WHERE condition viene aggiunta
 	 * @return string
 	 */
-	final public static function in_tp($tabella_ricerca, $campo_ricerca, $campo_filtro, $valore)
+	final public static function in_tp($tabella_ricerca, $campo_ricerca, $campo_filtro = NULL, $valore = NULL)
 	{
-		if (is_array($valore)) {
+		if (is_null($campo_filtro) || is_null($valore)) {
+			return "$campo_ricerca IN (SELECT $campo_ricerca FROM $tabella_ricerca)";
+		} elseif (is_array($valore)) {
 			$_cond = self::in($campo_filtro, $valore);
 		} else {
 			$_cond = self::equ($campo_filtro, $valore);
@@ -691,19 +801,6 @@ abstract class DB_SQL
 	final public static function cond_tp($tabella_ricerca, $campo_ricerca, $campo, $cond)
 	{
 		return "$campo IN (SELECT $campo_ricerca FROM $tabella_ricerca WHERE $cond)";
-	}
-
-	/**
-	 * Come la {@link cond_tp}, ma genera una clausola del tipo NOT IN
-	 * @param string $tabella_ricerca Tabella in cui la ricerca viene effettuata
-	 * @param string $campo_ricerca Nome del campo su cui viene effettuata la ricerca (il campo della tabella corrente viene confrontato con i valori della query su $tabella_ricerca.$campo_ricerca)
-	 * @param string $campo Campo della tabella corrente, operando di sinistra della clausola IN
-	 * @param string $cond Condizione di filtro su $tabella_ricerca
-	 * @return string
-	 */
-	final public static function not_cond_tp($tabella_ricerca, $campo_ricerca, $campo, $cond)
-	{
-		return "$campo NOT IN (SELECT $campo_ricerca FROM $tabella_ricerca WHERE $cond)";
 	}
 
 	/**
