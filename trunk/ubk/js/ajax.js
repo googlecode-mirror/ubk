@@ -56,7 +56,7 @@ var CUbk = Class.create({
 			if (ok_msg.indexOf('javascript:') == 0)
 				eval(ok_msg.substr(11));
 			else if (ok_msg.length > 0)
-				this.ok(ok_msg);
+				this.alert(ok_msg);
 
 		} else {
 
@@ -80,7 +80,7 @@ var CUbk = Class.create({
 			if (ok_msg.indexOf('javascript:') == 0)
 				eval(ok_msg.substr(11));
 			else if (ok_msg.length > 0)
-				this.ok(ok_msg);
+				this.alert(ok_msg);
 
 			if (onComplete) onComplete(request, target);
 
@@ -206,12 +206,13 @@ var CUbk = Class.create({
 		}
 	},
 	
-	error: function(message)
+	error: function(message, onOk)
 	{
 		alert(message);
+		Try.these(onCancel);
 	},
 	
-	ok: function(message)
+	alert: function(message)
 	{
 		alert(message);
 	},
