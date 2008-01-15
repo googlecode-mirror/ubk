@@ -229,7 +229,13 @@ class RIGHE_RICORSIVE extends CONTENITORE
 	 */
 	protected $rsf;
 
-	protected function atts($id, $padding = 0)
+	/**
+	 * Ritorna i vari attributi del singolo nodo: javascript, stile, classe
+	 * @param mixed $id Identificativo del nodo
+	 * @param int $padding Indentazione del nodo
+	 * @return string
+	 */
+	protected function atts($id, $padding = NULL)
 	{
 		$over = $out = $click = $s = "";
 
@@ -257,6 +263,11 @@ class RIGHE_RICORSIVE extends CONTENITORE
 		return $ret;
 	}
 
+	/**
+	 * Stampa i figli del nodo specificato
+	 * @param mixed $padre Identificativo del nodo
+	 * @param GESTORE $rs Recordset con tutti i nodi da stampare
+	 */
 	protected function stampa_figli($padre, $rs)
 	{
 		$vecchio_gestore =& $this->parametri['GESTORE'];
@@ -266,15 +277,14 @@ class RIGHE_RICORSIVE extends CONTENITORE
 		// arrivo alla riga giusta, quella col padre indicato
 		for($rs->move_first(); !$rs->eof && $rs->valore($this->campo_id_padre) != $padre; $rs->move_next());
 		// ciclo finche' il padre e' quello indicato
-		for(; !$rs->eof && $rs->valore($this->campo_id_padre) == $padre; $rs->move_next()) 
-		{
+		for(; !$rs->eof && $rs->valore($this->campo_id_padre) == $padre; $rs->move_next()) {
 
 			$id_nodo = $rs->valore($this->campo_id_figlio);
 
 			$this->parametri['RIGHE-RICORSIVE-FIGLI'] = array_get_default($id_nodo, $this->rsf, 0);
 
-			if ($this->padding == 0 || ($this->parametri['RIGHE-RICORSIVE-LIVELLO'] == 0 && !$this->attributo_esiste('START-IND'))) {
-				echo '<'.$this->tag.$this->atts($id_nodo ).'>';
+			if ($this->padding == 0) {
+				echo '<'.$this->tag.$this->atts($id_nodo).'>';
 			} else {
 				echo '<'.$this->tag.$this->atts($id_nodo , $this->padding.$this->pad_um).'>';
 			}
@@ -296,9 +306,7 @@ class RIGHE_RICORSIVE extends CONTENITORE
 				$rs->move($pos);
 				$this->parametri['RIGHE-RICORSIVE-LIVELLO'] --;
 			}
-			if ($this->padding > 0) {
-				echo '</'.$this->tag.'>';
-			}
+			echo '</'.$this->tag.'>';
 		}
 
 		$this->parametri['GESTORE'] =& $vecchio_gestore;
@@ -313,7 +321,7 @@ class RIGHE_RICORSIVE extends CONTENITORE
 		$this->tabella = $this->attributo_richiesto('TABELLA');
 		$this->padding = $this->attributo_richiesto('INDENTAZIONE');
 		$this->pad_inc = $this->attributo('INCREMENTO-IND', 0);
-		$this->pad_um  = $this->attributo('UM-IND');
+		$this->pad_um  = $this->attributo('UM-IND', 'px');
 		$this->ordine  = $this->attributo('ORDINE', NULL);
 		$this->tag     = $this->attributo('TAG', 'div');
 		$this->pad_mtd = $this->attributo('METODO-IND', 'padding-left');
@@ -330,8 +338,10 @@ class RIGHE_RICORSIVE extends CONTENITORE
 		unset($rsf);
 		$this->rsf = array_combine($v[$this->campo_id_padre], $v['i_figli']);
 
+		// devo SEMPRE avere questa condizione perchè carico i dati una volta sola
+		// e devo averceli ordinati, dato che faccio un loop sugli id padre
 		if (is_null($this->ordine)) {
-			$this->ordine = $this->campo_id_padre;
+			$this->ordine = $this->campo_id_padre.' ASC';
 		} else {
 			$this->ordine = $this->campo_id_padre.' ASC, '.$this->ordine;
 		}
