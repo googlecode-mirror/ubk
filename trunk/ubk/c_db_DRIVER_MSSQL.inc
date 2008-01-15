@@ -9,34 +9,47 @@ class DB_DRIVER_MSSQL extends DB_DRIVER
 {
 	public static function connect($db_connection)
 	{
-		check_db_connection($db_connection);
+		$c =& self::current_connection();
 
-		$conn_id = mssql_connect($db_connection["DB_SERVER"], $db_connection["DB_USERNAME"], $db_connection["DB_PASSWORD"]);
-		if (!$conn_id)
-			throw new DbException(__METHOD__, mssql_get_last_message());
+		if (is_null($c->get_info()) || $c->different_from($db_connection)) {
 
-		if (!mssql_select_db($db_connection["DB_NAME"], $conn_id))
-			throw new DbException(__CLASS__.'::'.__METHOD__, "Database ".$db_connection["DB_NAME"]." non presente su ".$db_connection["DB_SERVER"]);
-
-		return $conn_id;
-	}
-
+			check_db_connection($db_connection);
 	
-	public static function disconnect(&$conn_id)
-	{
-		$_result = mssql_close($conn_id);
-		if (!$_result)
-			throw new DbException(__CLASS__.'::'.__METHOD__, mssql_get_last_message());
-		
-		$conn_id = NULL;
+			$conn_id = mssql_connect($db_connection["DB_SERVER"], $db_connection["DB_USERNAME"], $db_connection["DB_PASSWORD"]);
+			if (!$conn_id)
+				throw new DbException(__METHOD__, mssql_get_last_message());
+	
+			if (!mssql_select_db($db_connection["DB_NAME"], $conn_id))
+				throw new DbException(__CLASS__.'::'.__METHOD__, "Database ".$db_connection["DB_NAME"]." non presente su ".$db_connection["DB_SERVER"]);
+
+			self::add_connection(new DB_CONNECTION($db_connection, $conn_id));
+
+		} else {
+			$c->references ++;
+		}
 	}
 
-	public static function get_last_message($conn_id = NULL)
+	public static function disconnect()
+	{
+		$c =& self::current_connection();
+		$c->references --;
+
+		if ($c->references <= 0) {
+
+			$_result = mssql_close($c->get_id());
+			if (!$_result)
+				throw new DbException(__CLASS__.'::'.__METHOD__, mssql_get_last_message());
+
+			self::remove_connection();
+		}
+	}
+	
+	public static function get_last_message()
 	{
 		return mssql_get_last_message();
 	}
 
-	public static function errmsg($sql, $conn_id = NULL)
+	public static function errmsg($sql)
 	{
 
 		$_errmsg  = mssql_get_last_message();
@@ -50,19 +63,19 @@ class DB_DRIVER_MSSQL extends DB_DRIVER
 	}
 
 
-	public static function query($sql, $conn_id)
+	public static function query($sql)
 	{
 		if (is_array($sql)) {
 			DB_DRIVER::sql_push($sql['SQL']);
 
-			$_res_rs = @mssql_query($sql["SQL"], $conn_id);
+			$_res_rs = @mssql_query($sql["SQL"], self::current_connection()->get_id());
 			if ($_res_rs && $sql["PAGE"] > 0) {
 				mssql_data_seek($_res_rs, $sql["PAGE"] * $sql["PAGE-SIZE"]);
 			}
 
 		} elseif (is_string($sql)) {
 			DB_DRIVER::sql_push($sql);
-			$_res_rs = @mssql_query($sql, $conn_id);
+			$_res_rs = @mssql_query($sql, self::current_connection()->get_id());
 		
 		} else {
 			throw new CodeException("Query non valida:".BR."$sql");
@@ -118,7 +131,7 @@ class DB_DRIVER_MSSQL extends DB_DRIVER
 	}
 
 
-	public static function field_info_table($table, $conn_id)
+	public static function field_info_table($table)
 	{
 		$_info['default'] = array();
 		$_info['null']    = array();
@@ -127,7 +140,7 @@ class DB_DRIVER_MSSQL extends DB_DRIVER
 		$_info['type']    = array();
 		
 		$_meta =& DB_CLASS_FACTORY::get_meta('MSSQL');
-		$_res_rs = self::query($_meta->table_fields($table), $conn_id);
+		$_res_rs = self::query($_meta->table_fields($table));
 
 		while ($_riga = mssql_fetch_assoc($_res_rs)) {
 			$campo = trim(strtolower($_riga["t_column"]));
@@ -138,7 +151,7 @@ class DB_DRIVER_MSSQL extends DB_DRIVER
 			$_info['length'][$campo]   = $_riga["i_length"];
 			
 			$_def_val = $_riga["t_default"];
-			// è una stringa
+			// ï¿½ una stringa
 			if ($_def_val[1] == "'") {
 				$_info['default'][$campo]  = substr($_def_val, 2, -2);
 			} else {
@@ -152,7 +165,7 @@ class DB_DRIVER_MSSQL extends DB_DRIVER
 	}
 
 	
-	public static function field_info_procedure($procedure, $conn_id)
+	public static function field_info_procedure($procedure)
 	{
 		$_info['params'] = array();
 		$_info['length'] = array();
@@ -166,7 +179,7 @@ class DB_DRIVER_MSSQL extends DB_DRIVER
 			throw new DbException(__CLASS__.'::'.__METHOD__, "Stored procedure inesistente: $procedure");
 
 		// carico tranquillo i parametri
-		$_res_rs = @mssql_query(meta_procedure_parameters($procedure), $conn_id);
+		$_res_rs = @mssql_query(meta_procedure_parameters($procedure), self::current_connection()->get_id());
 		while ($_riga = mssql_fetch_assoc($_res_rs)) {
 			if (strpos($_riga['MODE'],'IN') !== false){
 				$param = trim(strtolower($_riga["NAME"]));
@@ -183,9 +196,9 @@ class DB_DRIVER_MSSQL extends DB_DRIVER
 	}
 
 	
-	public static function identity($table, $conn_id)
+	public static function identity($table)
 	{
-		$_res_rs = @mssql_query("SELECT IDENT_CURRENT('$table') AS i_numero", $conn_id);
+		$_res_rs = @mssql_query("SELECT IDENT_CURRENT('$table') AS i_numero", self::current_connection()->get_id());
 		if (!$_res_rs)
 			throw new DbException(__CLASS__.'::'.__METHOD__, self::errmsg($sql));
 		return $_res_rs;
@@ -281,13 +294,13 @@ class DB_DRIVER_MSSQL extends DB_DRIVER
 		}
 	}
 
-	public static function exec_procedure($procedure, $params, $conn_id)
+	public static function exec_procedure($procedure, $params)
 	{
 		$_sql = "EXEC $procedure " . implode(',', $params);
 
 		DB_DRIVER::sql_push($_sql);
 
-		if (! @mssql_query($_sql, $conn_id))
+		if (! @mssql_query($_sql, self::current_connection()->get_id()))
 			throw new DbException(__CLASS__.'::'.__METHOD__, self::errmsg($_sql));
 	}
 

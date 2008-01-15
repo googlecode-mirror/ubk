@@ -7,12 +7,11 @@
  */
 class DB_DRIVER_MYSQL extends DB_DRIVER
 {
-	private static $tr = NULL;
-	private static $tr_nest = 0;
-
 	public static function connect($db_connection)
 	{
-		if (is_null(self::$tr)) {
+		$c =& self::current_connection();
+
+		if (is_null($c->get_info()) || $c->different_from($db_connection)) {
 
 			check_db_connection($db_connection);
 
@@ -22,51 +21,51 @@ class DB_DRIVER_MYSQL extends DB_DRIVER
 
 			mysqli_autocommit($_res_conn, TRUE);
 
-			return $_res_conn;
+			self::add_connection(new DB_CONNECTION($db_connection, $_res_conn));
+
 		} else {
-			return self::$tr;
+			$c->references ++;
 		}
 	}
 
 	
-	public static function disconnect(&$conn_id)
+	public static function disconnect()
 	{
-		if (is_null(self::$tr)) {
+		$c =& self::current_connection();
+		$c->references --;
 
-			$_result = @mysqli_close($conn_id);
-			if (!$_result)
-				throw new DbException(__CLASS__.'::'.__METHOD__, mysqli_error($conn_id));
+		if ($c->references <= 0) {
+			if ($c->is_transaction()) {
+				self::rollback();
+			} else {
+				$_result = @mysqli_close($c->get_id());
+				if (!$_result)
+					throw new DbException(__CLASS__.'::'.__METHOD__, mysqli_error($c->get_id()));
+				self::remove_connection();
+			}
 
 		}
-		$conn_id = NULL;
 	}
 
-	public static function get_last_message($conn_id = NULL)
+	public static function get_last_message()
 	{
-		assert(!is_null($conn_id));
-
-		return mysqli_error($conn_id);
+		return mysqli_error(self::current_connection()->get_id());
 	}
 
 
-	public static function errmsg($sql, $conn_id = NULL)
+	public static function errmsg($sql)
 	{
-		assert(!is_null($conn_id));
-
-		$_errmsg = mysqli_error($conn_id);
-		return $_errmsg;
+		return mysqli_error(self::current_connection()->get_id());
 	}
 
 
-	public static function query($sql, $conn_id)
+	public static function query($sql)
 	{
-		assert(!is_null($conn_id));
-
 		DB_DRIVER::sql_push($sql);
 
-		$_res_rs = @mysqli_query($conn_id, $sql);
+		$_res_rs = @mysqli_query(self::current_connection()->get_id(), $sql);
 		if (!$_res_rs)
-			throw new DbException(__CLASS__.'::'.__METHOD__, self::errmsg($sql, $conn_id));
+			throw new DbException(__CLASS__.'::'.__METHOD__, self::errmsg($sql));
 
 		return $_res_rs;
 	}
@@ -135,10 +134,8 @@ class DB_DRIVER_MYSQL extends DB_DRIVER
 	}
 
 
-	public static function field_info_table($table, $conn_id)
+	public static function field_info_table($table)
 	{
-		assert(!is_null($conn_id));
-
 		$_meta =& DB_CLASS_FACTORY::get_meta('MYSQL');
 
 		$_info['fields'] = array();
@@ -149,7 +146,7 @@ class DB_DRIVER_MYSQL extends DB_DRIVER
 
 		$_sql = $_meta->table_fields($table);
 
-		$_res_rs = self::query($_sql, $conn_id);
+		$_res_rs = self::query($_sql);
 		
 		while ($_riga = self::fetch_assoc($_res_rs)) {
 
@@ -170,33 +167,15 @@ class DB_DRIVER_MYSQL extends DB_DRIVER
 	}
 
 	
-	public static function field_info_procedure($procedure, $conn_id)
+	public static function field_info_procedure($procedure)
 	{
-		assert(!is_null($conn_id));
-
-		$params = array(
-			'forum_delete' => array('i'),
-			'forum_up' => array('i'),
-			'forum_down' => array('i'),
-			'forum_move' => array('i', 'i')
-		);
-
-
-		$_info['params'] = $params[$procedure];
-		$_info['length'] = array();
-		$_info['type']   = array();
-		
-
-
-		return $_info;
+		return array();
 	}
 
 	
-	public static function identity($table, $conn_id) 
+	public static function identity($table) 
 	{
-		assert(!is_null($conn_id));
-
-		$_res_rs = self::query("SELECT MAX(".campo_id_tabella($table).") as i_numero FROM $table", $conn_id);
+		$_res_rs = self::query("SELECT MAX(".campo_id_tabella($table).") as i_numero FROM $table");
 		if (!$_res_rs)
 			throw new DbException(__CLASS__.'::'.__METHOD__, mysqli_error());
 
@@ -287,55 +266,52 @@ class DB_DRIVER_MYSQL extends DB_DRIVER
 		}
 	}
 
-	public static function exec_procedure($procedure, $params, $conn_id)
+	public static function exec_procedure($procedure, $params)
 	{
-		assert(!is_null($conn_id));
-
 		if (!is_array($params))
 			$params = array($params);
 
 		$_sql = 'CALL '.$procedure.par(implode(',', $params));
 		
-		self::query($_sql, $conn_id);
+		self::query($_sql);
 	}
 
 
-	public static function tr_begin(&$conn_id)
+	public static function tr_begin()
 	{
-		if (!self::$tr) {
-			if (mysqli_autocommit($conn_id, FALSE)) {
-				self::$tr = $conn_id;
-			} else {
-				throw new DbException(__CLASS__.'::'.__METHOD__, mysqli_error($conn_id));
-			}
+		$c =& self::current_connection();
+		if (is_null($c->get_info())) {
+			throw new DbException(__CLASS__.'::'.__METHOD__, 'Cant begin transaction without a connection.');
 		} else {
-			self::$tr_nest ++;
+			if ($c->is_transaction()) {
+				$c->references ++;
+			} else {
+				if (mysqli_autocommit($c->get_id(), FALSE)) {
+					self::add_connection(new DB_CONNECTION($c->get_info(), $c->get_id(), TRUE));
+				} else {
+					throw new DbException(__CLASS__.'::'.__METHOD__, mysqli_error($c->get_id()));
+				}
+			}
 		}
 	}
 
 	public static function tr_commit(&$tr)
 	{
-		if (self::$tr_nest) {
-			self::$tr_nest --;
-		} else {
-			if (!mysqli_commit(self::$tr))
-				throw new DbException(__CLASS__.'::'.__METHOD__, mysqli_error(self::$tr));
+		$c =& self::current_connection();
+		if (!mysqli_commit($c->get_id()))
+			throw new DbException(__CLASS__.'::'.__METHOD__, mysqli_error($c->get_id()));
 
-			self::$tr = NULL;
-		}
-		$tr = NULL;
+		self::remove_connection();
 	}
 
 	public static function tr_rollback(&$tr)
 	{
-		if (!mysqli_rollback(self::$tr))
-			throw new DbException(__CLASS__.'::'.__METHOD__, mysqli_error(self::$tr));
+		$c =& self::current_connection();
+		if (!mysqli_rollback($c->get_id()))
+			throw new DbException(__CLASS__.'::'.__METHOD__, mysqli_error($c->get_id()));
 
-		self::$tr_nest = 0;
-		self::$tr = NULL;
-		$tr = NULL;
+		self::remove_connection();
 	}
-
 }
 
 
