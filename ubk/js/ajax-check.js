@@ -42,7 +42,7 @@ var CUbkFieldCheck = Class.create({
 
 		var is_mail = new RegExp("^[\\w\\-\\.]*[\\w\\.]\\@[\\w\\.]*[\\w\\-\\.]+[\\w\\-]+[\\w]\\.+[\\w]+$");
 		if (!is_mail.test(obj.value)) {
-			alert('Indirizzo e-mail non valido.'); 
+			Ubk.alert('Indirizzo e-mail non valido.'); 
 			obj.focus(); 
 			return false;
 		} else {
@@ -165,7 +165,7 @@ var CUbkFieldCheck = Class.create({
 		var is_time = new RegExp("^([0-1][0-9]|[2][0-3])\.[0-5][0-9]$");
 		var res = is_time.test(obj.value);
 		if (!res) {
-			alert("Formato ora errato.");
+			Ubk.alert("Formato ora errato.");
 			obj.value = '';
 			obj.focus();
 		}
@@ -186,7 +186,7 @@ var CUbkFieldCheck = Class.create({
 		if (i1 == -1) {
 			g = d;
 			if (g < 0 || g > 31) {
-				alert("Giorno sbagliato.");
+				Ubk.alert("Giorno sbagliato.");
 				obj.focus();
 				return false;
 			}
@@ -200,7 +200,7 @@ var CUbkFieldCheck = Class.create({
 				var g = d.substring(0, i1);
 				if (g > 0 && g <= 31) break;
 			default:
-				alert("Giorno sbagliato.");
+				Ubk.alert("Giorno sbagliato.");
 				obj.focus();
 				return false;
 			}
@@ -227,13 +227,13 @@ var CUbkFieldCheck = Class.create({
 				var m = d.substring(i1,i2);
 				// trenta giorni conta novembre, con april giugno e settembre
 				if ((m == "11" || m == "04" || m == "06" || m =="09") && g > 30) {
-					alert("Giorno sbagliato.");
+					Ubk.alert("Giorno sbagliato.");
 					obj.focus();
 					return false;
 				}
 				if (m >= "01" && m <= "12") break;
 			default:
-				alert("Mese sbagliato.");
+				Ubk.alert("Mese sbagliato.");
 				obj.focus();
 				return false;
 			}
@@ -263,27 +263,27 @@ var CUbkFieldCheck = Class.create({
 					max_febbraio = 28;
 				}
 				if (g > max_febbraio) {
-					alert("Giorno sbagliato.");
+					Ubk.alert("Giorno sbagliato.");
 					obj.focus();
 					return false;
 				}
 			}
 			break;
 		default:
-			alert("Anno sbagliato.");
+			Ubk.alert("Anno sbagliato.");
 			obj.focus();
 			return false;
 		}
 
 		var y = parseInt(d.substring(6));
 		if (isNaN(y)){
-			alert("L'anno non e' numerico");
+			Ubk.alert("L'anno non e' numerico");
 			obj.focus();
 			return false;
 		}
 
 		if (y < 1900 || y > 2050) {
-			alert("Anno oltre i limiti. Intervallo valido: 1900 - 2050");
+			Ubk.alert("Anno oltre i limiti. Intervallo valido: 1900 - 2050");
 			obj.focus();
 			return false;
 		}
