@@ -7,309 +7,32 @@
  * @package bwc
  */
 
-function c_and()
+/**
+ * Definisce come funzioni senza namespace tutte quelle della classe DB_SQL per il db di default
+ */
+function define_sql_methods()
 {
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'c_and'),
-			$_params
-		);
+	$cls = 'DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'];
+	$mtds = get_class_methods($cls);
+
+	foreach($mtds as $mtd) {
+		$str = 'function '.$mtd.'() { $_p = func_get_args(); return call_user_func_array(array('.qt($cls).', '.qt($mtd).'), $_p); }';
+		eval($str);
+	}
 }
 
-function c_or()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'c_or'),
-			$_params
-		);
-}
-
-function c_not()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'c_not'),
-			$_params
-		);
-}
-
-function equ()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'equ'),
-			$_params
-		);
-}
-
-function iequ()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'iequ'),
-			$_params
-		);
-}
-
-function diff()
-{	
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'diff'),
-			$_params
-		);
-}
-
-function gt()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'gt'),
-			$_params
-		);
-
-}
-
-function lt()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'lt'),
-			$_params
-		);
-}
-
-function gte()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'gte'),
-			$_params
-		);
-
-}
-
-function lte()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'lte'),
-			$_params
-		);
-
-}
-
-function like()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'like'),
-			$_params
-		);
-}
-
-function begins_like()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'begins_like'),
-			$_params
-		);
-}
-
-function ends_like()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'ends_like'),
-			$_params
-		);
-}
-
-function word_like()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'word_like'),
-			$_params
-		);
-}
-
-function in()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'in'),
-			$_params
-		);
-}
-
-function not_in()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'not_in'),
-			$_params
-		);
-}
-
-function between()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'between'),
-			$_params
-		);
-}
-
-function in_tp()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'in_tp'),
-			$_params
-		);
-}
-
-function op_tp()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'op_tp'),
-			$_params
-		);
-}
-
-
-function cond_tp()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'cond_tp'),
-			$_params
-		);
-}
-
-function not_cond_tp()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'not_cond_tp'),
-			$_params
-		);
-}
-
-function year($colonna, $valore, $operatore = "=")
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'year'),
-			$_params
-		);
-}
-
-function month($colonna, $valore, $operatore = "=")
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'month'),
-			$_params
-		);
-}
-
-function day($colonna, $valore, $operatore = "=")
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'day'),
-			$_params
-		);
-}
-
-function text_like()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_MSSQL', 'text_like'),
-			$_params
-		);
-}
-
-function all_tp($tabella_ricerca, $campo_ricerca, $campo_filtro, $valore)
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_MSSQL', 'all_tp'),
-			$_params
-		);
-}
-
-function in_last_days($colonna, $giorni)
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_FBIRD', 'in_last_days'),
-			$_params
-		);
-}
-
-function not_in_last_days($colonna, $giorni)
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_FBIRD', 'not_in_last_days'),
-			$_params
-		);
-}
-
-function tsEqu($colonna, $valore)
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_FBIRD', 'tsEqu'),
-			$_params
-		);
-}
-
-
-
-
-function genera_insert()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'genera_insert'),
-			$_params
-		);
-}
-
-function genera_update()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'genera_update'),
-			$_params
-		);
-}
-
-function genera_delete()
-{
-	$_params = func_get_args();
-	return call_user_func_array(
-			array('DB_SQL_'.$GLOBALS['DB_DEFAULT']['DB_TYPE'], 'genera_delete'),
-			$_params
-		);
-}
-
-
-
+/**
+ * Crea un processore XSLT (backward compatibility)
+ */
 function & xslt_create()
 {
 	$o = new XsltProcessor();
 	return $o;
 }
 
+/**
+ * Esegue un processing XSLT (backward compatibility)
+ */
 function xslt_process($xsltproc, $xml_arg, $xsl_arg, $xslcontainer = null, $args = null, $params = null) 
 {
 	// Start with preparing the arguments
@@ -339,6 +62,9 @@ function xslt_process($xsltproc, $xml_arg, $xsl_arg, $xslcontainer = null, $args
 	}
 }
 
+/**
+ * Rilascia le risorse associate a un processore XSLT (backward compatibility)
+ */
 function xslt_free(&$xsltproc)
 {
 	unset($xsltproc);
