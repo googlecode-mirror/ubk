@@ -91,9 +91,7 @@ var CShortcut = Class.create({
 		
 		var element = event.element();
 		//Don't enable shortcut keys in Input, Textarea fields
-		if (this.disableInFields) { 
-			if (['INPUT','TEXTAREA','SELECT','OPTION'].indexOf(element.tagName) > -1) return;
-		}
+		if (this.disableInFields && ['INPUT','TEXTAREA','SELECT','OPTION'].include(element.tagName)) return;
 
 		//Find which key is pressed
 		var code = event.keyCode || event.which;
@@ -118,7 +116,7 @@ var CShortcut = Class.create({
 
 					
 		for(var i=0; k=keys[i],i<keys.length; i++) {
-			if (	(['ctrl','shift','alt','meta'].indexOf(k) > -1 && modifiers[k].pressed && modifiers[k].wanted)
+			if (	(['ctrl','shift','alt','meta'].include(k) && modifiers[k].pressed && modifiers[k].wanted)
 				|| (k.length > 1 && this.object.specialKeys[k] === code)
 				|| (this.keyCode === code)
 				|| (k === character)) {
@@ -161,6 +159,7 @@ var CShortcut = Class.create({
 		var element = opt.target;
 		if (typeof opt.target == 'string') element = $(opt.target);
 
+		// options are thisArg for handler
 		var observer = this.handler.bindAsEventListener(opt);
 
 		if (this.all[shortcut]) this.remove(shortcut);
