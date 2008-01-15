@@ -519,7 +519,7 @@ class CAMPO extends CAMPO_ACCESSO
 			case "TEXTAREA":
 				$tabindex = $this->get_tabindex();
 				$size = explode(",",$size);
-				echo "<TEXTAREA tabindex=\"$tabindex\" onkeyup=\"$js_onchange\" onblur=\"if (this.value.length > $maxsize) { alert('Massimo $maxsize caratteri !'); this.focus(); return false; } $js_onblur\" onfocus=\"$js_onfocus\" class=\"$classe_css\" id=\"$js_id\" name=\"$nome\" rows=\"$size[0]\" cols=\"$size[1]\" style=\"text-align: $align\" $bloccato>$valore_default</TEXTAREA>".$star;
+				echo "<textarea tabindex=\"$tabindex\" onkeyup=\"$js_onchange\" onblur=\"if (this.value.length > $maxsize) { Ubk.alert('Massimo $maxsize caratteri !'); this.focus(); return false; } $js_onblur\" onfocus=\"$js_onfocus\" class=\"$classe_css\" id=\"$js_id\" name=\"$nome\" rows=\"$size[0]\" cols=\"$size[1]\" style=\"text-align: $align\" $bloccato>$valore_default</textarea>".$star;
 				break;
 			}
 
