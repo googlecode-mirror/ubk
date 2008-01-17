@@ -109,7 +109,7 @@ Initial filter _condition_ is built in this way:
   * if only *filtro* is set, then _condition_ is: (*filtro* and *campo-id-padre* is null)
   * if only *filtro-generale* is set then _condition_ is *filtro-generale*
 
-Then an additional _node condition_ , to build _whole filter condition:
+Then an additional _node condition_ , to build _whole filter condition_:
   * if at least *filtro* is set: (_condition_) and (*campo-id-padre* in *nodi-aperti*)
   * if *filtro-generale* is set: (_condition_) and ((*campo-id-padre* is null) or (*campo-id-padre* in *nodi-aperti*))
   * else: (*campo-id-padre* is null) or (*campo-id-padre* in *nodi-aperti*)
