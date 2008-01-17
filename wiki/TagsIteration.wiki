@@ -108,7 +108,10 @@ Initial filter _condition_ is built in this way:
   * if both *filtro* and *filtro-generale* are set, then _condition_ is : (*filtro* and *campo-id-padre* is null) or (*filtro-generale* and *campo-id-padre* is not null)
   * if only *filtro* is set, then _condition_ is: (*filtro* and *campo-id-padre* is null)
   * if only *filtro-generale* is set then _condition_ is *filtro-generale*
-Then an additional _node condition_ is added:
-  * if *nodi-aperti* is not empy, _node condition_ is: (*campo-id-padre* in *nodi-aperti*) or (*campo-id-padre* is null)
 
-Finally, _whole filter condition_ is: (_condition_) and (_node condition_)
+Then an additional _node condition_ , to build _whole filter condition:
+  * if at least *filtro* is set: (_condition_) and (*campo-id-padre* in *nodi-aperti*)
+  * if *filtro-generale* is set: (_condition_) and ((*campo-id-padre* is null) or (*campo-id-padre* in *nodi-aperti*))
+  * else: (*campo-id-padre* is null) or (*campo-id-padre* in *nodi-aperti*)
+
+Seems a bit odd, but this ensure minimal tuple selection over the whole tree.
