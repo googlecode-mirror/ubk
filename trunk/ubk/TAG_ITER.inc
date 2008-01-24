@@ -348,31 +348,57 @@ class RIGHE_RICORSIVE extends CONTENITORE
 
 		$where = array();
 
+		// filtro su radice e filtro generale: in or
 		if ($this->attributo_esiste('FILTRO') && $this->attributo_esiste('FILTRO-GENERALE') ) {
 			$where[] = 	c_or(
 							c_and(
-								equ($this->campo_id_padre, NULL),
-								$this->attributo('FILTRO')
+								equ($this->campo_id_padre, NULL)
+								,$this->attributo('FILTRO')
 							),
 							c_and(
-								diff($this->campo_id_padre, NULL),
-								$this->attributo('FILTRO-GENERALE')
+								diff($this->campo_id_padre, NULL)
+								,$this->attributo('FILTRO-GENERALE')
 							)
 						);
-
+		// filtro su radice
 		} elseif ($this->attributo_esiste('FILTRO')) {
 			$where[] = 	c_and(
-							equ($this->campo_id_padre, NULL),
-							$this->attributo('FILTRO')
+							equ($this->campo_id_padre, NULL)
+							,$this->attributo('FILTRO')
 						);
+		// filtro generico
 		} elseif ($this->attributo_esiste('FILTRO-GENERALE')) {
 			$where[] = $this->attributo('FILTRO-GENERALE');
 		}
+		
+		// ho dei nodi aperti
 		if (!is_null($this->nodi_aperti)) {
-			$where[] = c_or(
-							in($this->campo_id_padre, array_keys($this->nodi_aperti))
-							, equ($this->campo_id_padre, NULL)
-						);
+			// se ho un filtro sulla radice
+			// filtro finale: filtro iniziale OR filtro nodi aperti
+			if ($this->attributo_esiste('FILTRO')) {
+				$where = array(c_or(
+								par(implode(') AND (', $where))
+								, in($this->campo_id_padre, array_keys($this->nodi_aperti))
+							));
+			// se no, potrei avere un filtro generale
+			} else {
+				// filtro finale: filtro generale AND (filtro nodi aperti OR nodi radice)
+				if ($this->attributo_esiste('FILTRO-GENERALE')) {
+					$where = array(c_and(
+									par(implode(') AND (', $where))
+									,c_or(
+										 in($this->campo_id_padre, array_keys($this->nodi_aperti))
+										, equ($this->campo_id_padre, NULL)
+									)
+								));
+				// filtro finale: filtro nodi aperti OR nodi radice
+				} else {
+					$where[] = c_or(
+									 in($this->campo_id_padre, array_keys($this->nodi_aperti))
+									, equ($this->campo_id_padre, NULL)
+								);
+				}
+			}
 		}
 
 		if (count($where)) {
