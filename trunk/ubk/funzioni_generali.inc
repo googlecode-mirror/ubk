@@ -479,12 +479,33 @@ function array_stampa(&$array, $livello = 0)
 function array_flatten($a) 
 {
 	$res = array();
-	for($i = 0; $i < count($a); $i ++) {
-		if (is_array($a[$i]))
-			  $res = array_merge($res, array_flatten($a[$i]));
+	foreach($a as $key => $value) {
+		if (is_array($value))
+			  $res[$key] = array_merge($res, array_flatten($value));
 		  else
-			  $res[] = $a[$i];
+			  $res[$key] = $value;
 	}
+	return $res;
+}
+
+/**
+ * Versione ricorsiva di array_map, su un solo array
+ * @param mixed $func
+ * @param array $a 
+ * @return array
+ */
+function array_map_rec($func, $a) 
+{
+	$res = array();
+	
+	foreach( $a as $key => $value ) {
+		if (is_array($value)) {
+			$res[$key] = array_map_rec($func, $value);
+		} else {
+			$res[$key] = call_user_func($func, $value);
+		}
+	}
+	
 	return $res;
 }
 
