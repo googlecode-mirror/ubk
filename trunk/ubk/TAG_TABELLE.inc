@@ -8,6 +8,7 @@
 /**
  * Cambia la classe alle celle in base al numero della riga - usata in combinazione con gli l'XSLT della xtable
  * @package tag
+ * @deprecated
  */
 class ALT_TR extends CONTENITORE
 {
