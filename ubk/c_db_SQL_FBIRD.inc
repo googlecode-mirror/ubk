@@ -98,7 +98,7 @@ class DB_SQL_FBIRD extends DB_SQL
 	 * @param mixed $valore Valore in formato utente
 	 * @return string
 	 */ 
-	public static function begins_like($colonna, $valore)
+	public static function begins_like($colonna, $valore, $tipo = NULL)
 	{
 		switch($colonna[0]) {
 		case 's':
@@ -119,7 +119,7 @@ class DB_SQL_FBIRD extends DB_SQL
 	 * @param mixed $valore Valore in formato utente
 	 * @return string
 	 */ 
-	public static function ends_like($colonna, $valore)
+	public static function ends_like($colonna, $valore, $tipo = NULL)
 	{
 		switch($colonna[0]) {
 		case 's':
