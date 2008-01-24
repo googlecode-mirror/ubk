@@ -531,12 +531,13 @@ class LINK_AJAX_GENERICO extends TAG
 			$classe_css = $this->attributo("CLASS", array_get_default("CLASS", $parametri));
 			$js_id      = $this->attributo("JS-ID");
 			$alt        = $this->attributo("ALT");
+			$datasrc    = $this->attributo("DATASRC");
 			$tabindex   = CAMPO_ACCESSO::get_static_tabindex($this->attributo('TABINDEX'));
 
 			$contenuto =& $this->figlio("CONTENUTO");
 
 
-			echo "<a tabindex=\"$tabindex\" href=\"javascript:$ajax\" id=\"$js_id\" class=\"$classe_css\" title=\"$alt\">";
+			echo "<a tabindex=\"$tabindex\" href=\"javascript:$ajax\" datasrc=\"$datasrc\" id=\"$js_id\" class=\"$classe_css\" title=\"$alt\">";
 			if ($contenuto) $contenuto->stampa_html($parametri);
 			echo "</a>";
 		}
