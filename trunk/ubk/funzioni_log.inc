@@ -80,7 +80,7 @@ function log_value($val)
 	
 	$msg =  date("d/m/Y H:i:s"). ": $val\n";
 	if (constant_true('LOG_SINGLE')) {
-		$msg =  str_pad($_SERVER['REMOTE_ADDR'], 15) . " - $msg";
+		$msg =  str_pad(array_get_default('REMOTE_ADDR', $_SERVER, '127.0.0.1'), 15) . " - $msg";
 	} 
 	if (!file_exists($log_file_name)) {
 		fclose(fopen($log_file_name,'w+'));
@@ -240,7 +240,7 @@ function log_performance(&$params)
 	} else {
 		$data[] = '?';
 	}
-	$data[] = $_SERVER['REMOTE_ADDR'];
+	$data[] = array_get_default('REMOTE_ADDR', $_SERVER, '127.0.0.1');
 	$data[] = date("Ymdhis");
 	
 	@error_log(implode(CSV_SEP,$data)."\n", 3, PERFORMANCE_LOG);
