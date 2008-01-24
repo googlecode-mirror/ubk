@@ -201,6 +201,23 @@ class CACHE
 	}
 
 	/**
+	 * Attiva l'uso della cache se consentito dai parametri di configurazione
+	 */
+	public function page_activate()
+	{
+		$this->page_cache = constant_true('CACHE_XML');
+	}
+
+	/**
+	 * Disattiva l'uso della cache
+	 */
+	public function page_deactivate()
+	{
+		$this->page_cache = FALSE;
+	}
+
+
+	/**
 	 * Cache trasformazioni XSL attiva / disattiva
 	 * Si basa sul parametro ini CACHE_XSL
 	 * @var bool
