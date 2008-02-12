@@ -139,10 +139,10 @@ function invl($value, $else)
  */
 function trim_to($str, $len)
 {
-	if (strlen($str) <= $len + 3) {
-		return $str;
+	if ($len && strlen($str) > $len + 1) {
+		return substr($str, 0, $len) . ellipsis;
 	} else {
-		return substr($str, 0, $len) . ELLIPSIS; //'...';
+		return $str;
 	}
 }
 
@@ -350,7 +350,7 @@ function leggi_ini($file, $crittato = false)
 			$_regexp = "/{$_vals['MATCH']}/";
 			if (!isset($_URL)){
 				if (isset($_SERVER['HTTP_HOST'])) { 
-					$_URL = $_SERVER['HTTP_HOST'].':'.$_SERVER['SERVER_PORT'];
+					$_URL = $_SERVER['HTTP_HOST'].':'.array_get_default('SERVER_PORT', $_SERVER, 80);
 				} else {
 					$_URL = false;	
 				}
@@ -491,22 +491,24 @@ function array_flatten($a)
 /**
  * Versione ricorsiva di array_map, su un solo array
  * @param mixed $func
- * @param array $a 
+ * @param array $arr 
  * @return array
  */
-function array_map_rec($func, $a) 
+function array_map_rec($func, $arr) 
 {
-	$res = array();
-	
-	foreach( $a as $key => $value ) {
-		if (is_array($value)) {
-			$res[$key] = array_map_rec($func, $value);
-		} else {
-			$res[$key] = call_user_func($func, $value);
-		}
+    $result = array();
+    foreach($arr as $key => $value)
+    {
+	if (is_array($value)) {
+		$result[$key] = array_map_r($func, $value);
+	} elseif (is_array($func)) {
+		$result[$key] = call_user_func_array($func, $value);
+	} else {
+	        $result[$key] = $func($value);
 	}
-	
-	return $res;
+    }
+
+    return $result;
 }
 
 /* *********************************************************************************************
