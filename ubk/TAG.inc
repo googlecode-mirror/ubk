@@ -292,12 +292,12 @@ class TAG
 	 */
 	public function stampa($livello = 0)
 	{
-		$_nest = str_repeat("   ", $livello);
-		echo $_nest."&lt;$this->nome(".get_class($this).")".xml_att_crea($this->attributi)."&gt;\n";
+		$_nest = str_repeat("\t", $livello);
+		echo $_nest.LT.$this->nome.par(get_class($this)).xml_att_crea($this->attributi).GT."\n";
 		foreach($this->figli as $figlio) {
 			$figlio->stampa($livello + 1);
 		}
-		echo $_nest."&lt;/".$this->nome."&gt;\n";
+		echo $_nest.LT.'/'.$this->nome.GT."\n";
 	}
 
 	/**
@@ -377,7 +377,7 @@ class CONTENITORE extends TAG
 {
 	public function stampa($livello = 0)
 	{
-		if ($livello == 0) echo "<PRE>";
+		if ($livello == 0) echo "<pre>";
 
 		$_nest = str_repeat("   ", $livello);
 		echo $_nest."&lt;".$this->nome."(".get_class($this).")".xml_att_crea($this->attributi)."&gt;\n";
@@ -390,7 +390,7 @@ class CONTENITORE extends TAG
 		}
 		echo $_nest."&lt;/".$this->nome."&gt;\n";
 		
-		if ($livello == 0) echo "</PRE>";
+		if ($livello == 0) echo "</pre>";
 	}
 
 	/**
