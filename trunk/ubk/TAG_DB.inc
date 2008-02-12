@@ -401,9 +401,8 @@ class CAMPO extends CAMPO_ACCESSO
 				}
 
 				$trim_length = $this->attributo("TRIM", 0);
-				if ($trim_length && strlen($da_stampare) > $trim_length){
-					$da_stampare = substr($da_stampare,0,$trim_length) . '...';
-				}
+				$da_stampare = trim_to($da_stampare, $trim_length);
+
 				if (strlen($classe_css) > 0) {
 					echo "<span class=\"$classe_css\">";
 					echo $da_stampare;
@@ -920,9 +919,7 @@ class COMBO extends CAMPO_TABELLA_ESTERNA
 				}
 			}
 
-			if ($trim_length && strlen($risultato) > $trim_length){
-				$risultato = substr($risultato,0,$trim_length) . '...';	
-			}
+			$risultato = trim_to($risultato, $trim_length);
 
 			if (strlen($classe_css) > 0) {
 				echo "<span class=\"$classe_css\">";
@@ -959,7 +956,7 @@ class COMBO extends CAMPO_TABELLA_ESTERNA
 			} else {
 				$star = ((array_key_exists('FORM-CAMPI-RICHIESTI', $parametri) && in_array($campo_id, $parametri['FORM-CAMPI-RICHIESTI'])) || 
 						(!$rs->nullable[$campo_id] && !$this->attributo_esiste("RICHIESTO") ) || 
-						cbool($this->attributo("RICHIESTO","FALSE"))) ? NBSP."*" : "";
+						cbool($this->attributo("RICHIESTO","FALSE"))) ? nbsp."*" : "";
 				if (constant_true('STAR') && strlen($star))
 					$star = '<span class="star">'.$star.'</span>';
 			}
@@ -1003,9 +1000,7 @@ class COMBO extends CAMPO_TABELLA_ESTERNA
 						}
 					}
 					
-					if ($trim_length && strlen($text) > $trim_length){
-						$text = substr($text,0,$trim_length) . '...';	
-					}
+					$text = trim_to($text, $trim_length);
 
 					if ( ($valore_id !== 0 && $valore_id == $valore_default) || ($valore_default === 0 && $valore_id === $valore_default) ) {
 						echo "<option value=\"$valore_id\" selected=\"selected\">$text</option>";
@@ -1041,9 +1036,7 @@ class COMBO extends CAMPO_TABELLA_ESTERNA
 						}
 					}
 					
-					if ($trim_length && strlen($text) > $trim_length){
-						$text = substr($text,0,$trim_length) . '...';	
-					}
+					$text = trim_to($text, $trim_length);
 					
 					echo $text . BR;
 				}
@@ -1429,7 +1422,7 @@ class COD_DESC extends PICKER
 			} else {
 				$star = ((array_key_exists('FORM-CAMPI-RICHIESTI', $parametri) && in_array($campo_id, $parametri['FORM-CAMPI-RICHIESTI'])) || 
 						(!$rs->nullable[$campo_id] && !$this->attributo_esiste("RICHIESTO") ) || 
-						cbool($this->attributo("RICHIESTO","FALSE"))) ? NBSP."*" : "";
+						cbool($this->attributo("RICHIESTO","FALSE"))) ? nbsp."*" : "";
 				if (constant_true('STAR') && strlen($star))
 					$star = '<span class="star">'.$star.'</span>';
 			}
