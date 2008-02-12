@@ -35,10 +35,9 @@ require_once("c_parser.inc");
  */
 function log_get_file_name()
 {
-	// disabilita la scrittura dei log se PHDIR non e' settato
 	if (!defined('LOG_FILE')){
 		define('LOG_FILE','_default_log_file_'.PHDIR);
-		define('LOG_DIR',path(PHDIR,BASE_LOG_DIR));
+		define('LOG_DIR',path(PHDIR, BASE_LOG_DIR));
 	}
 
 	if (!isset($_SESSION[LOG_FILE])) {
@@ -57,7 +56,7 @@ function log_get_file_name()
 		
 		$_SESSION[LOG_FILE]= path(LOG_DIR, "$log_file_name.log");
 	}
-	//return false;
+
 	return $_SESSION[LOG_FILE] ;
 }
 
@@ -70,9 +69,7 @@ function log_get_file_name()
  */
 function log_value($val)
 {
-	if (($log_file_name = log_get_file_name()) == FALSE) {
-		return;	
-	}
+	$log_file_name = log_get_file_name();
 
 	if (is_array($val) || is_object($val)) {
 		$val = print_r($val, TRUE);
@@ -93,9 +90,7 @@ function log_value($val)
  */
 function log_clear()
 {
-	if (($log_file_name = log_get_file_name()) == FALSE) {
-		return;	
-	}
+	$log_file_name = log_get_file_name();
 	fclose(fopen($log_file_name, "w"));
 }
 
