@@ -54,7 +54,7 @@ class AJAX_FORM extends CONTENITORE
 		}
 
 		if (count($check)) {
-			log_value('SUGGESTING: -------> '.implode(' , ',$check));
+// 			log_value('SUGGESTING: -------> '.implode(' , ',$check));
 			return 'if (!Fld.Check.suggested(['.implode(',', array_keys($check)).'], ['.implode(',', array_values($check)).'])) return false;';
 		} else {
 			return '';
@@ -98,7 +98,7 @@ class AJAX_FORM extends CONTENITORE
 		}
 
 		if (count($check)) {
-			log_value('CHECKING: -------> '.implode(' , ',$check));
+// 			log_value('CHECKING: -------> '.implode(' , ',$check));
 			return 'if (!Fld.Check.mandatory(['.implode(',', array_values($check)).'])) return false;';
 		} else {
 			return '';
