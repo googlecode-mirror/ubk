@@ -597,7 +597,7 @@ class AZIONI_FORM
 
 				exit;
 			// altrimenti e' una cosa tipo mostra
-			} elseif (cbool($this->parametro('REPLACE', 'TRUE'))) {
+			} else {
 				$_file = $this->parametro_richiesto('FILE');
 				
 				$rs -> pagina     = $this->parametro("PAGE", 0);
@@ -638,6 +638,108 @@ class AZIONI_FORM
 
 	}
 
+}
+
+/** 
+ * Esegue le azioni comandate dalla pagina HTML chiamante via GET sui dati passati via POST utilizzando i link di tipo AJAX
+ * @package gateway
+ */
+class AZIONI_FORM_AJAX extends AZIONI_FORM
+{
+
+	public function __construct($defaults = array())
+	{
+		correct_get_post();
+		parent::__construct($defaults);
+	}
+
+	public function crea(&$rs)
+	{
+		parent::crea($rs);
+		die('+OK');
+	}
+
+	public function aggiorna(&$rs)
+	{
+		parent::aggiorna($rs);
+		die('+OK');
+	}
+
+	public function elimina(&$rs)
+	{
+		parent::elimina($rs);
+		die('+OK');
+	}
+
+	public function aggiorna_tutto(&$rs)
+	{
+		parent::aggiorna_tutto($rs);
+		die('+OK');
+	}
+
+	public function aggiorna_fk(&$rs)
+	{
+		parent::aggiorna_fk($rs);
+		die('+OK');
+	}
+
+	public function esegui_stored_procedure(&$rs)
+	{
+		parent::esegui_stored_procedure($rs);
+		die('+OK');
+	}
+
+	public function esegui(&$rs, $check_url = TRUE)
+	{
+		if ($check_url && !url_valida())
+			throw new FatalException("Checksum errato.");
+
+		$_azione = $this->parametro_richiesto('AZIONE');
+
+		if (!method_exists($this, $_azione))
+			throw new CodeException("Azione non implementata: $_azione in ".$_SERVER['PHP_SELF']);
+
+		if (constant_true('LOG_STATS')) $_total_start = get_microtime();
+
+		// eseguo l'azione
+		call_user_func(array($this, $_azione), $rs);
+		// mostro la pagina se devo (e se sono arrivato qua)
+		if (!cbool($this->parametro('REPLACE', 'TRUE'))) return;
+
+		$_file = $this->parametro_richiesto('FILE');
+		
+		$rs -> pagina     = $this->parametro("PAGE", 0);
+		$rs -> dim_pagina = $this->parametro("PAGE-SIZE", 0);
+
+		if ($this->esegui_carica) $this->carica($rs);
+
+		$this->parametri["GESTORE"] =& $rs;
+		$this->parametri["PAGE"]    =  $rs->pagina;
+		$this->parametri["FILE"]    =  $_file;
+
+		$_parser = new PARSER();
+		$_root =& $_parser->parsifica($_file);
+		if (is_null($_root)) 
+			throw new CodeException($_parser->errore);
+
+		$this->parametri["PARSER"] =& $_parser;
+
+		echo "<!-- $_file by ".$this->parametri['GATEWAY']." -->";
+		if (constant_true('LOG_STATS')) $_start = get_microtime();
+
+		$_root->stampa_html($this->parametri);
+		
+		if (constant_true('LOG_STATS')) {
+			$_end   = get_microtime();
+			self::$time['TRANS'] += ($_end - $_start);
+			$_total_end = get_microtime();
+			self::$time['TOTAL'] = ($_total_end - $_total_start);
+
+			log_timing();
+			log_performance($this->parametri);
+		}
+
+	}
 }
 
 ?>
