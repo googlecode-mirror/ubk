@@ -369,8 +369,6 @@ class XML_INCLUDE extends TAG
 
 	public function stampa_html(&$parametri)
 	{
-		static $parser = NULL;
-
 		// backup parametri
 		$bkp_params = array();
 		
@@ -384,12 +382,8 @@ class XML_INCLUDE extends TAG
 		// parsing
 		if (!isset(self::$loadeds[$file])) {
 
-
-			if (isset($parametri['PARSER'])) {
-				$parser =& $parametri['PARSER'];
-			} else {
-				$parser = new PARSER();
-			}
+			if (!isset($parametri['PARSER'])) $parametri['PARSER'] = new PARSER();
+			$parser =& $parametri['PARSER'];
 
 			self::$loadeds[$file] = $root = $parser->parsifica($file);
 			
@@ -398,15 +392,11 @@ class XML_INCLUDE extends TAG
 
 			$this -> aggiungi_figlio($root);
 
-			$vecchio_parser =& $parametri["PARSER"];
-			$parametri["PARSER"]  =& $parser;
-
 			echo "<!-- $file -->";
 			// non stampo "PAGINA"
 			$root->stampa_contenuto($parametri);
 
-			$parametri["PARSER"]  =& $vecchio_parser;
-
+		// stampa se gia' parsificato
 		} else {
 			self::$loadeds[$file]->stampa_contenuto($parametri);
 		}
