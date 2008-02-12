@@ -136,7 +136,8 @@ function dateISO($data)
  * @param int $minuti numero di minuti
  * @return integer numero di minuti nell'ora non finita 
  */
-function calcola_minuti($minuti){
+function calcola_minuti($minuti)
+{
 	return ($minuti % 60);
 }
 
@@ -145,7 +146,8 @@ function calcola_minuti($minuti){
  * @param int $minuti numero di minuti
  * @return integer numero di ore 
  */
-function calcola_ore($minuti){
+function calcola_ore($minuti)
+{
 	return floor($minuti / 60);	
 }
 
