@@ -12,6 +12,7 @@
 				font-size: 10px;
 				color: red;
 			}
+		</style>
 	</head>
 	<body>
 		<table>
