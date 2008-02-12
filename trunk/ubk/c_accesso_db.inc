@@ -636,6 +636,11 @@ class RECORDSET extends DB_BASE
 	 * @var integer
 	 */
 	private $slice_stack = array();
+	/**
+	 * Query identificativa del recordset
+	 * @var string
+	 */
+	private $recordset_query = NULL;
 	
 	/**
 	 * Esegue e carica direttamente la query SELECT passata
@@ -645,7 +650,7 @@ class RECORDSET extends DB_BASE
 	public function __construct($sql, $db_connection = NULL)
 	{
 		DB_BASE::__construct($db_connection);
-		DB_BASE::select($sql, TRUE);
+		DB_BASE::select($this->recordset_query = $sql, TRUE);
 		$this->move_first();
 	}
 
@@ -658,6 +663,15 @@ class RECORDSET extends DB_BASE
 	{
 		DB_BASE::set_db_connection( is_null($db_connection) ? array_get('DB_DEFAULT', $GLOBALS) : $db_connection );
 		DB_BASE::select($sql, TRUE);
+		$this->move_first();
+	}
+
+	/**
+	 * Ri-esegue la query SELECT con cui e' stato creato
+	 */
+	public function carica()
+	{
+		DB_BASE::select($this->recordset_query, TRUE);
 		$this->move_first();
 	}
 
