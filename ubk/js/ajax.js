@@ -11,11 +11,17 @@ var CUbk = Class.create({
 		});
 	},
 
+	tryThis: function(f) {
+
+		if (f == undefined || f == null) f = Prototype.K.curry(0);
+		Try.these(f);
+	},
+
 	followLink: function(l)
 	{
 		l = $(l);
 		if (l && l.href) {
-			eval(l.href.substr(11));
+			eval(decodeURIComponent(l.href).substr(11));
 			return true;
 		} else {
 			return false;
@@ -47,7 +53,7 @@ var CUbk = Class.create({
 
 		if ((ko = request.responseText.indexOf('+KO')) != -1) {
 
-			if (target) Element.setStyle(target, {display: 'none'});
+			if (target) this.hide(target);
 			this.error(request.responseText.substr(ko + 3));
 		
 		} else if (request.responseText.indexOf('+OK') == 0) {	// ok e oks ..
@@ -71,7 +77,7 @@ var CUbk = Class.create({
 		if ((ko = request.responseText.indexOf('+KO')) != -1) {
 
 			this.working(false);
-			if (target) Element.setStyle(target, {display: 'none'});
+			if (target) this.hide(target);
 			this.error(request.responseText.substr(ko + 3));
 		
 		} else if (request.responseText.indexOf('+OK') == 0) {	// ok e oks ..
@@ -182,9 +188,14 @@ var CUbk = Class.create({
 			});
 	},
 
+	workingState: function(state)
+	{},
+
 	// stiamo lavorando ....
 	working: function (state, options)
 	{
+		this.workingState(state);
+
 		if (state) {
 
 			if (options.target && options.pars.indexOf('&TARGET=') == -1)
@@ -200,16 +211,16 @@ var CUbk = Class.create({
 	confirm: function (message, onOk, onCancel)
 	{
 		if (confirm(message)) {
-			Try.these(onOk);
+			this.tryThis(onOk);
 		} else {
-			Try.these(onCancel);
+			this.tryThis(onCancel);
 		}
 	},
 	
 	error: function(message, onOk)
 	{
 		alert(message);
-		Try.these(onCancel);
+		this.tryThis(onCancel);
 	},
 	
 	alert: function(message)
@@ -311,7 +322,7 @@ var CUbkHistory = Class.create({
 		// se questa e' una chiamata alla root, non un refresh,
 		// carico quanto devo caricare
 		if (this.isRoot()) {
-			Try.these(firstHistoryCall);
+			Ubk.tryThis(firstHistoryCall);
 		}
 	},
 	
