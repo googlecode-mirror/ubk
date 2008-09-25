@@ -7,9 +7,88 @@
  */
 class DB_SQL_MSSQL extends DB_SQL
 {
+	public static function db_2_utente($colonna, $valore)
+	{
+		switch($colonna[0]) {
+		case "d":
+			$obj = new DATE('MSSQL');
+			return $obj->db_2_user($valore);
+		case "h":
+			$obj = new TIME('MSSQL');
+			return $obj->db_2_user($valore);
+		case "r":
+			$obj = new TIMESTAMP('MSSQL');
+			return $obj->db_2_user($valore);
+		case "b":
+			return ($valore == 1) ? true : false;
+		
+		case "i":
+		case "f":
+			return $valore;
+		
+		case "s":
+			return strtoupper($valore);
+		case "t":
+			return $valore;
+		
+		case "e":
+			$cry = new CRYPTER("Chiave in chiaro da cambiare come si desidera");
+			$value = $cry->decrypt($valore);
+			unset($cry);
+			
+			return $value;
+		case "c":
+			return $valore;
+		
+		default:
+			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
+		}
+	}
+
+	public static function utente_2_db($colonna, $valore)
+	{
+		if ($valore === "" || is_null($valore)) return "NULL";
+
+		switch($colonna[0]) {
+		
+		case "d":
+			$obj = new DATE('MSSQL');
+			return qt($obj->user_2_db($valore));
+		case "h":
+			$obj = new TIME('MSSQL');
+			return qt($obj->user_2_db($valore));
+		case "r":
+			$obj = new TIMESTAMP('MSSQL');
+			return qt($obj->user_2_db($valore));
+		
+		case "b":
+			return empty($valore) ? 0 : 1;
+		case "i":
+		case "f":
+			return $valore;
+
+		case "s":
+			return qt(htmlentities(utf8_decode(strtoupper(stripslashes($valore))), ENT_QUOTES));
+		case "t":
+			 return qt(htmlentities(utf8_decode(stripslashes($valore)), ENT_QUOTES));
+
+		case "e":
+			$cry = new CRYPTER("Chiave in chiaro da cambiare come si desidera");
+			$value = $cry->encrypt($valore);
+			unset($cry);
+
+			return '0x'.$value;
+		case "c":
+			return qt('0x'.CRYPTER::hash($valore));
+
+		default:
+			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
+		}
+	}
+
 	/**
 	 * Ritorna la query di selezione in base ai parametri specificati
-	 * @param string $tabella Il nome della tabella di cui caricare l'identità
+	 * @param string $tabella Il nome della tabella di cui caricare l'identitï¿½
 	 * @param string $colonne La stringa con in nomi di colonna separati da virgole (come da SQL)
 	 * @param string $condizione Il contenuto dell WHERE
 	 * @param string $ordine Il contenuto della ORDER BY

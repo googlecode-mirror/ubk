@@ -349,75 +349,6 @@ abstract class DB_DRIVER
 	abstract public static function identity($table);
 
 
-
-	/**
-	 * Prende un valore in formato database e lo trasforma nel formato utente (quello visualizzato a video). I formati conosciuti sono: d (data), h (ora), r (timestamp), b (booleano), i (intero), f (float), s (stringa uppercase), t (stringa), e (codifica reversibile), c (codifica hash irreversibile)
-	 * @param string $colonna Nome del campo, mi serve per conoscerne il tipo
-	 * @param mixed $valore Valore in formato db
-	 * @return mixed
-	 */
-	abstract public static static function db_2_utente($colonna, $valore);
-	/**
-	 * Prende un valore in formato utente (quello visualizzato a video) lo trasforma nel formato database
-	 * @param string $colonna Nome del campo, mi serve per conoscerne il tipo
-	 * @param mixed $valore Valore in formato utente
-	 * @return mixed
-	 */
-	abstract public static static function utente_2_db($colonna, $valore);
-
-	/**
-	 * Questa serve nel caso in cui i dati non debbano arrivare a video, ma debbano subire manipolazioni intermedie; vengono restituite totalmente in chiaro. Vedere {@link GESTORE::valore_fwk}
-	 * @param string $colonna Nome del campo, mi serve per conoscerne il tipo
-	 * @param mixed $valore Valore in formato db
-	 * @return mixed
-	 */
-	final public static function db_2_fwk($colonna, $valore)
-	{
-		switch($colonna[0]) {
-		case 'd':
-		case 'h':
-		case 'r':
-		case 'b':
-		case 'i':
-		case 'f':
-		case 'c':
-			return call_user_func(array(self::$driver, 'db_2_utente'), $colonna, $valore);
-		case 't':
-		case 's':
-		case 'e':
-			$_res = call_user_func(array(self::$driver, 'db_2_utente'), $colonna, $valore);
-			return utf8_encode(html_entity_decode($_res, ENT_QUOTES));
-		default:
-			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
-		}
-	}
-	/**
-	 * Questa serve nel caso in cui i dati debbano arrivare a video ma non in HTML vengono restituite totalmente in chiaro. Vedere {@link GESTORE::valore_ascii}
-	 * @param string $colonna Nome del campo, mi serve per conoscerne il tipo
-	 * @param mixed $valore Valore in formato db
-	 * @return mixed
-	 */
-	final public static function db_2_ascii($colonna, $valore)
-	{
-		switch($colonna[0]) {
-		case 'd':
-		case 'h':
-		case 'r':
-		case 'b':
-		case 'i':
-		case 'f':
-		case 'c':
-			return call_user_func(array(self::$driver, 'db_2_utente'), $colonna, $valore);
-		case 't':
-		case 's':
-		case 'e':
-			$_res = call_user_func(array(self::$driver, 'db_2_utente'), $colonna, $valore);
-			return html_entity_decode($_res, ENT_QUOTES);
-		default:
-			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
-		}
-	}
-
 	/**
 	 * Esecuzione di una stored procedure
 	 * @param string $procedure Il nome della stored procedure
@@ -458,24 +389,86 @@ abstract class DB_DRIVER
 abstract class DB_SQL
 {
 	/**
-	 * Nome della classe del driver
-	 * @var string
-	 */
-	protected static $driver = 'DB_DRIVER';
-
-	/**
-	 * Nome della classe dell'sql
+	 * Nome della classe sql - serve per le chiamate parametriche a metodi della stessa classe quando viene estesa
 	 * @var string
 	 */
 	protected static $sql = 'DB_SQL';
 
 	/**
-	 * Imposta il nome della classe del driver
-	 * @param string $driver
+	 * Imposta il nome della classe sql
+	 * @param string $sql
 	 */
-	final public static function set_driver($driver)
+	final public static function set_sql($sql)
 	{
-		self::$driver = $driver;
+		self::$sql = $sql;
+	}
+
+	/**
+	 * Prende un valore in formato database e lo trasforma nel formato utente (quello visualizzato a video). I formati conosciuti sono: d (data), h (ora), r (timestamp), b (booleano), i (intero), f (float), s (stringa uppercase), t (stringa), e (codifica reversibile), c (codifica hash irreversibile)
+	 * @param string $colonna Nome del campo, mi serve per conoscerne il tipo
+	 * @param mixed $valore Valore in formato db
+	 * @return mixed
+	 */
+	abstract public static static function db_2_utente($colonna, $valore);
+	/**
+	 * Prende un valore in formato utente (quello visualizzato a video) lo trasforma nel formato database
+	 * @param string $colonna Nome del campo, mi serve per conoscerne il tipo
+	 * @param mixed $valore Valore in formato utente
+	 * @return mixed
+	 */
+	abstract public static static function utente_2_db($colonna, $valore);
+
+	/**
+	 * Questa serve nel caso in cui i dati non debbano arrivare a video, ma debbano subire manipolazioni intermedie; vengono restituite totalmente in chiaro. Vedere {@link GESTORE::valore_fwk}
+	 * @param string $colonna Nome del campo, mi serve per conoscerne il tipo
+	 * @param mixed $valore Valore in formato db
+	 * @return mixed
+	 */
+	final public static function db_2_fwk($colonna, $valore)
+	{
+		switch($colonna[0]) {
+		case 'd':
+		case 'h':
+		case 'r':
+		case 'b':
+		case 'i':
+		case 'f':
+		case 'c':
+			return call_user_func(array(self::$sql, 'db_2_utente'), $colonna, $valore);
+		case 't':
+		case 's':
+		case 'e':
+			$_res = call_user_func(array(self::$sql, 'db_2_utente'), $colonna, $valore);
+			return utf8_encode(html_entity_decode($_res, ENT_QUOTES));
+		default:
+			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
+		}
+	}
+	/**
+	 * Questa serve nel caso in cui i dati debbano arrivare a video ma non in HTML vengono restituite totalmente in chiaro. Vedere {@link GESTORE::valore_ascii}
+	 * @param string $colonna Nome del campo, mi serve per conoscerne il tipo
+	 * @param mixed $valore Valore in formato db
+	 * @return mixed
+	 */
+	final public static function db_2_ascii($colonna, $valore)
+	{
+		switch($colonna[0]) {
+		case 'd':
+		case 'h':
+		case 'r':
+		case 'b':
+		case 'i':
+		case 'f':
+		case 'c':
+			return call_user_func(array(self::$sql, 'db_2_utente'), $colonna, $valore);
+		case 't':
+		case 's':
+		case 'e':
+			$_res = call_user_func(array(self::$sql, 'db_2_utente'), $colonna, $valore);
+			return html_entity_decode($_res, ENT_QUOTES);
+		default:
+			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
+		}
 	}
 
 	/**
@@ -517,7 +510,7 @@ abstract class DB_SQL
 	 */
 	final protected static function cond($colonna, $valore, $operatore)
 	{
-		$valore_db = call_user_func(array(self::$driver, 'utente_2_db'), $colonna, $valore);
+		$valore_db = call_user_func(array(self::$sql, 'utente_2_db'), $colonna, $valore);
 
 		if ($valore_db === 'NULL' && $operatore == '=') {
 			$operatore = ' IS ';
@@ -705,7 +698,7 @@ abstract class DB_SQL
 	{
 		$valori_db = array();
 		foreach($valori as $valore) {
-			array_push($valori_db, call_user_func(array(self::$driver, 'utente_2_db'), $colonna, $valore));
+			array_push($valori_db, call_user_func(array(self::$sql, 'utente_2_db'), $colonna, $valore));
 		}
 		switch(count($valori_db)) {
 		case 0:
@@ -727,7 +720,7 @@ abstract class DB_SQL
 	{
 		$valori_db = array();
 		foreach($valori as $valore) {
-			array_push($valori_db, call_user_func(array(self::$driver, 'utente_2_db'), $colonna, $valore));
+			array_push($valori_db, call_user_func(array(self::$sql, 'utente_2_db'), $colonna, $valore));
 		}
 		if (count($valori_db) == 0) {
 			return '(1 = 1)';
@@ -745,8 +738,8 @@ abstract class DB_SQL
 	 */ 
 	final public static function between($colonna, $valore_inizio, $valore_fine)
 	{
-		$valore_inizio = call_user_func(array(self::$driver, 'utente_2_db'), $colonna, $valore_inizio);
-		$valore_fine   = call_user_func(array(self::$driver, 'utente_2_db'), $colonna, $valore_fine);
+		$valore_inizio = call_user_func(array(self::$sql, 'utente_2_db'), $colonna, $valore_inizio);
+		$valore_fine   = call_user_func(array(self::$sql, 'utente_2_db'), $colonna, $valore_fine);
 		if ($valore_inizio == 'NULL' || $valore_fine == 'NULL') {
 			throw new DbException(__CLASS__.'::'.__METHOD__, 'Confronto non valido con valore NULL (BETWEEN)');
 		}
@@ -828,12 +821,12 @@ abstract class DB_SQL
 		$_valori = array();
 		if (is_null($colonne_filtro)) {
 			$_colonne  = array_keys($valori);
-			$_valori   = array_map(array(self::$driver, 'utente_2_db'), $_colonne, array_values($valori));
+			$_valori   = array_map(array(self::$sql, 'utente_2_db'), $_colonne, array_values($valori));
 		} else {
 			foreach($valori as $colonna => $valore) {
 				if (in_array($colonna, $colonne_filtro)) {
 					array_push($_colonne, $colonna);
-					array_push($_valori, call_user_func(array(self::$driver, 'utente_2_db'), $colonna, $valore));
+					array_push($_valori, call_user_func(array(self::$sql, 'utente_2_db'), $colonna, $valore));
 				}
 			}
 		}
@@ -858,12 +851,12 @@ abstract class DB_SQL
 		
 		if (is_null($colonne_filtro)) {
 			foreach($valori as $colonna => $valore) {
-				array_push($_campi_valori, $colonna.' = '.call_user_func(array(self::$driver, 'utente_2_db'), $colonna, $valore)); 
+				array_push($_campi_valori, $colonna.' = '.call_user_func(array(self::$sql, 'utente_2_db'), $colonna, $valore)); 
 			}
 		} else {
 			foreach($valori as $colonna => $valore) {
 				if (in_array($colonna, $colonne_filtro)) {
-					array_push($_campi_valori, $colonna.' = '.call_user_func(array(self::$driver, 'utente_2_db'), $colonna, $valore)); 
+					array_push($_campi_valori, $colonna.' = '.call_user_func(array(self::$sql, 'utente_2_db'), $colonna, $valore)); 
 				}
 			}
 		}	
@@ -1023,7 +1016,7 @@ class DB_CLASS_FACTORY
 		if (!array_key_exists($_db_type, self::$sqls)) {
 			if (class_exists($_class = 'DB_SQL_'.$_db_type)) {
 				self::$sqls[$_db_type] = new $_class;
-				self::$sqls[$_db_type] -> set_driver('DB_DRIVER_'.$_db_type);
+				self::$sqls[$_db_type] -> set_sql('DB_SQL_'.$_db_type);
 				#self::$sqls[$_db_type] -> set_sql('DB_SQL_'.$_db_type);
 			} else {
 				throw new FatalException("Driver sql per il dbms '$_db_type' non implementato.");

@@ -1,5 +1,7 @@
 <?php
 
+require_once("funzioni_data.inc");
+
 /**
  * Generazione SQL per FIREBIRD / INTERBASE
  * @package db
@@ -7,6 +9,82 @@
  */
 class DB_SQL_FBIRD extends DB_SQL
 {
+	public static static function db_2_utente($colonna, $valore)
+	{
+		switch($colonna[0]) {
+		case "d":
+			$obj = new DATE('FBIRD');
+			return $obj->db_2_user($valore);
+		case "h":
+			$obj = new TIME('FBIRD');
+			return $obj->db_2_user($valore);
+		case "r":
+			$obj = new TIMESTAMP('FBIRD');
+			return $obj->db_2_user($valore);
+		case "b":
+			return ($valore == 0) ? FALSE : TRUE;
+		case "i":
+			return $valore;
+		case "f":
+			if (strpos($valore, '.') !== FALSE) {
+				$valore = preg_replace('/[0]+$/', '', $valore);
+				if (substr($valore, -1) == '.') $valore = substr($valore, 0, -1);
+			}
+			return $valore;
+		case "s":
+			return rtrim(strtoupper($valore));
+		case "t":
+			return rtrim($valore);
+		case "e":
+			$cry = new CRYPTER("Chiave in chiaro da cambiare come si desidera");
+			$value = $cry->decrypt($valore);
+			unset($cry);
+			
+			return $value;
+		case "c":
+			return $valore;
+		default:
+			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
+		}
+	}
+
+
+	public static static function utente_2_db($colonna, $valore)
+	{
+		if ($valore === "" || is_null($valore)) return "NULL";
+
+		switch($colonna[0]) {
+		case "e":
+			$cry = new CRYPTER("Chiave in chiaro da cambiare come si desidera");
+			$value = $cry->encrypt($valore);
+			unset($cry);
+
+			return qt($value);
+		case "c":
+			return qt(CRYPTER::hash($valore));
+		case "s":
+			return qt(utf8_decode(htmlentities(strtoupper(stripslashes($valore)), ENT_QUOTES, 'UTF-8')));
+		case "t":
+			return qt(utf8_decode(htmlentities(stripslashes($valore), ENT_QUOTES, 'UTF-8')));
+		case "i":
+		case "f":
+			return $valore;
+		case "d":
+			$obj = new DATE('FBIRD');
+			return qt($obj->user_2_db($valore));
+		case "h":
+			$obj = new TIME('FBIRD');
+			return qt($obj->user_2_db($valore));
+		case "r":
+			$obj = new TIMESTAMP('FBIRD');
+			return qt($obj->user_2_db($valore));
+		case "b":
+			return qt(empty($valore) ? '0' : '1');
+		default:
+			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
+		}
+	}
+
 	/**
 	 * Ritorna la query di selezione in base ai parametri specificati
 	 * @param string $tabella Il nome della tabella di cui caricare l'identit�
@@ -67,7 +145,7 @@ class DB_SQL_FBIRD extends DB_SQL
 			$pos = strlen($colonna) + 3;
 			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
 		}
-		$conv = ($tipo == 'text' ? "SUBSTRING($colonna FROM 1 FOR 32767)" : "UPPER($colonna)");
+		$conv = ($tipo == 'text' ? "UPPER(SUBSTRING($colonna FROM 1 FOR 32767))" : "UPPER($colonna)");
 		return strtr($cond, array($colonna => $conv));
 	}
 
@@ -85,7 +163,7 @@ class DB_SQL_FBIRD extends DB_SQL
 			$cond = self::cond($colonna, "%$valore%", 'LIKE');
 			$pos = strlen($colonna) + 6;
 			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
-			$conv = ($tipo == 'text' ? "SUBSTRING($colonna FROM 1 FOR 32767)" : "UPPER($colonna)");
+			$conv = ($tipo == 'text' ? "UPPER(SUBSTRING($colonna FROM 1 FOR 32767))" : "UPPER($colonna)");
 			return strtr($cond, array('?' => '_', '*' => '%', $colonna => $conv));
 		default:
 			return self::equ($colonna, $valore);
@@ -106,7 +184,7 @@ class DB_SQL_FBIRD extends DB_SQL
 			$cond = self::cond($colonna, "$valore%", 'LIKE');
 			$pos = strlen($colonna) + 6;
 			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
-			$conv = ($tipo == 'text' ? "SUBSTRING($colonna FROM 1 FOR 32767)" : "UPPER($colonna)");
+			$conv = ($tipo == 'text' ? "UPPER(SUBSTRING($colonna FROM 1 FOR 32767))" : "UPPER($colonna)");
 			return strtr($cond, array('?' => '_', '*' => '%', $colonna => $conv));
 		default:
 			return self::equ($colonna, $valore);
@@ -127,7 +205,7 @@ class DB_SQL_FBIRD extends DB_SQL
 			$cond = self::cond($colonna, "%$valore", 'LIKE');
 			$pos = strlen($colonna) + 6;
 			$cond = substr($cond, 0, $pos).strtoupper(substr($cond, $pos));
-			$conv = ($tipo == 'text' ? "SUBSTRING($colonna FROM 1 FOR 32767)" : "UPPER($colonna)");
+			$conv = ($tipo == 'text' ? "UPPER(SUBSTRING($colonna FROM 1 FOR 32767))" : "UPPER($colonna)");
 			return strtr($cond, array('?' => '_', '*' => '%', $colonna => $conv));
 		default:
 			return self::equ($colonna, $valore);

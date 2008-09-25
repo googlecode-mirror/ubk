@@ -158,68 +158,6 @@ class DB_DRIVER_ODBC extends DB_DRIVER
 		return self::query("SELECT MAX(".DB_BASE::campo_id_tabella($tabella).") as i_numero FROM $tabella");
 	}
 
-
-	public static function db_2_utente($colonna, $valore)
-	{
-		switch($colonna[0]) {
-		case "d":
-			return empty($valore) ? "" : substr($valore, -2)."/".substr($valore, 4, 2)."/".substr($valore, 0, 4);
-		case "h":
-			// db: hh:mm:ss.sssss  -   utente : hh.mm; 
-			return empty($valore) ? "" : substr($valore, 0, 2).".".substr($valore, -2);
-		case "r":
-			// db: mm/gg/yyyy hh:mm:ss -   utente : gg/mm/yyyy hh.mm; 
-			return empty($valore) ? "" : 
-				substr($valore, 6, 2)."/".substr($valore, 4, 2)."/".substr($valore, 0, 4)." ".
-				substr($valore, 8, 2).".".substr($valore, 10, 2)
-			;
-		case "b":
-			return ($valore == 1) ? true : false;
-		case "i":
-			return $valore;
-		case "f":
-			return (float)$valore;
-		case "s":
-			return strtoupper($valore);
-		case "t":
-			return $valore;
-		default:
-			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
-		}
-	}
-
-
-	public static function utente_2_db($colonna, $valore)
-	{
-		if ($valore === "" || is_null($valore)) return "NULL";
-
-		switch($colonna[0]) {
-		case "s":
-			return qt(htmlentities(utf8_decode(strtoupper(stripslashes($valore))), ENT_QUOTES));
-		case "t":
-			 return qt(htmlentities(utf8_decode(stripslashes($valore)), ENT_QUOTES));
-		case "i":
-		case "f":
-			return $valore;
-		case "d":
-			// utente : gg/mm/yyyy; db: yyyy-mm-gg
-			return qt(substr($valore, -4).substr($valore, 3, 2).substr($valore, 0, 2));
-		case "h":
-			// utente : hh:mm; db: hh:mm:ss.ssss
-			return qt(substr($valore, 0 ,2).':'.substr($valore, -2).':00.0000');
-		case "r":
-			// utente: gg/mm/yyyy hh:mm; db:yyyy-mm-gg hh:mm:ss.ssss
-			return qt(
-					substr($valore, 6, 4).'-'.substr($valore, 3, 2).'-'.substr($valore, 0, 2).' '.
-					substr($valore, 11, 2).':'.substr($valore, 14, 2).':00.0000'
-					);
-		case "b":
-			return qt(empty($valore) ? 0 : 1);
-		default:
-			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
-		}
-	}
-
 	public static function exec_procedure($procedure, $params)
 	{
 	}

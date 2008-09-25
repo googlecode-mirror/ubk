@@ -8,9 +8,65 @@
 class DB_SQL_ODBC extends DB_SQL
 {
 
+	public static function db_2_utente($colonna, $valore)
+	{
+		switch($colonna[0]) {
+		case "d":
+			$obj = new DATE('ODBC');
+			return $obj->db_2_user($valore);
+		case "h":
+			$obj = new TIME('ODBC');
+			return $obj->db_2_user($valore);
+		case "r":
+			$obj = new TIMESTAMP('ODBC');
+			return $obj->db_2_user($valore);
+		case "b":
+			return ($valore == 1) ? true : false;
+		case "i":
+			return $valore;
+		case "f":
+			return (float)$valore;
+		case "s":
+			return strtoupper($valore);
+		case "t":
+			return $valore;
+		default:
+			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
+		}
+	}
+
+
+	public static function utente_2_db($colonna, $valore)
+	{
+		if ($valore === "" || is_null($valore)) return "NULL";
+
+		switch($colonna[0]) {
+		case "s":
+			return qt(htmlentities(utf8_decode(strtoupper(stripslashes($valore))), ENT_QUOTES));
+		case "t":
+			 return qt(htmlentities(utf8_decode(stripslashes($valore)), ENT_QUOTES));
+		case "i":
+		case "f":
+			return $valore;
+		case "d":
+			$obj = new DATE('ODBC');
+			return qt($obj->user_2_db($valore));
+		case "h":
+			$obj = new TIME('ODBC');
+			return qt($obj->user_2_db($valore));
+		case "r":
+			$obj = new TIMESTAMP('ODBC');
+			return qt($obj->user_2_db($valore));
+		case "b":
+			return qt(empty($valore) ? 0 : 1);
+		default:
+			throw new CodeException("Formato colonna sconosciuto o non supportato: $colonna");
+		}
+	}
+
 	/**
 	 * Ritorna la query di selezione in base ai parametri specificati
-	 * @param string $tabella Il nome della tabella di cui caricare l'identità
+	 * @param string $tabella Il nome della tabella di cui caricare l'identitï¿½
 	 * @param string $colonne La stringa con in nomi di colonna separati da virgole (come da SQL)
 	 * @param string $condizione Il contenuto dell WHERE
 	 * @param string $ordine Il contenuto della ORDER BY

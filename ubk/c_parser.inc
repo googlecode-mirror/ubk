@@ -507,9 +507,11 @@ class PARSER
 								"colonna ".xml_get_current_column_number($_parser).BR.
 								"in file '$filename'".
 								BR."[PARSER.parsifica]";
+			xml_parser_free($_parser);
 			return $null;
 		}
-			
+		xml_parser_free($_parser);
+
 		if (constant_true('LOG_STATS')) {
 			$_end = get_microtime();
 			self::$time['PARSE'] += ($_end - $_start);
