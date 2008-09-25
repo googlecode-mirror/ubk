@@ -18,7 +18,7 @@ class LINK_GENERICO extends TAG
 	 */
 	function js_onclick(&$parametri)
 	{
-		$js_onclick = $this->attributo("JS-ONCLICK");
+		$js_onclick = trim($this->attributo("JS-ONCLICK"));
 		if (strlen($js_onclick) > 0) {
 			$nodo      =& $this->figlio_richiesto("AZIONE");
 			$usa_id    = cbool($nodo->attributo("USA-ID", "FALSE"));
@@ -41,6 +41,7 @@ class LINK_GENERICO extends TAG
 			} else {
 				$js_onclick = str_replace("@id", "-1", $js_onclick);
 			}
+			if (substr(trim($js_onclick), -1) != ";") $js_onclick .= ";";
 		}
 
 		return $js_onclick;
@@ -243,7 +244,6 @@ class LINK_GENERICO extends TAG
 			$js_id      = $this->attributo("JS-ID");
 			$js_onclick = $this->js_onclick($parametri);
 			$alt        = $this->attributo("ALT");
-			if (substr(trim($js_onclick), -1) != ";") $js_onclick .= ";";
 
 			$contenuto =& $this->figlio_richiesto("CONTENUTO");
 
@@ -251,15 +251,15 @@ class LINK_GENERICO extends TAG
 				$form =  array_get("FORM", $parametri);
 				$form = "document.forms['$form']";
 
-				echo "<A href=\"#\" onclick=\"$js_onclick $form.target='$target';$form.action='$location';$form.submit();\" id=\"$js_id\" class=\"$classe_css\">";
+				echo "<a href=\"#\" onclick=\"$js_onclick $form.target='$target';$form.action='$location';$form.submit();\" id=\"$js_id\" class=\"$classe_css\">";
 				$contenuto->stampa_html($parametri);
-				echo "</A>";
+				echo "</a>";
 			} else {
 				$pop_up =& $this->figlio("POP-UP");
 				if (is_null($pop_up)) {
-					echo "<A onclick=\"$js_onclick\" title=\"$alt\" target=\"$target\" href=\"$location\" id=\"$js_id\" class=\"$classe_css\">";
+					echo "<a onclick=\"$js_onclick\" title=\"$alt\" target=\"$target\" href=\"$location\" id=\"$js_id\" class=\"$classe_css\">";
 					$contenuto->stampa_html($parametri);
-					echo "</A>";
+					echo "</a>";
 				} else {
 					$par_open = array("toolbar=no");
 					if ($pop_up->attributo_esiste("TOP"))    array_push($par_open, "top=".$pop_up->attributo("TOP"));
@@ -278,9 +278,9 @@ class LINK_GENERICO extends TAG
 					if ($pop_up->attributo_esiste("STATUSBAR"))  
 						array_push($par_open, "status=".(cbool($pop_up->attributo("STATUSBAR")) ? "yes" : "no"));
 
-					echo "<A href=\"#\" title=\"$alt\" onclick=\"$js_onclick o=window.open('$location','$target', '".implode(",", $par_open)."'); o.focus(); $resize\" id=\"$js_id\" class=\"$classe_css\">";
+					echo "<a href=\"#\" title=\"$alt\" onclick=\"$js_onclick o=window.open('$location','$target', '".implode(",", $par_open)."'); o.focus(); $resize\" id=\"$js_id\" class=\"$classe_css\">";
 					$contenuto->stampa_html($parametri);
-					echo "</A>";
+					echo "</a>";
 				}
 			}
 		}
@@ -627,10 +627,10 @@ class LINK_ORDINA extends TAG
 		$location = "$gateway?AZIONE=$azione&amp;CAMPO=$campo&amp;DIREZIONE=$direzione&amp;TABELLA=$tabella&amp;CAMPO-ID=$campo_id&amp;MODE=$mode&amp;FILE=$file&amp;PAGE=$page&amp;PAGE-SIZE=$page_size";
 		$location = url_codifica($location);
 		
-		echo "<A class=\"$classe_css\" title=\"Ordina\" href=\"$location\">";
+		echo "<a class=\"$classe_css\" title=\"Ordina\" href=\"$location\">";
 
 		$contenuto->stampa_html($parametri);
-		echo "</A>";
+		echo "</a>";
 	}
 	
 }
@@ -697,9 +697,9 @@ class LINK_PRECEDENTE extends LINK_SPOSTAMENTO
 
 			$contenuto =& $this->figlio("CONTENUTO");
 
-			echo "<A target=\"$target\" href=\"$location\" id=\"$js_id\" class=\"$classe_css\">";
+			echo "<a target=\"$target\" href=\"$location\" id=\"$js_id\" class=\"$classe_css\">";
 			$contenuto->stampa_html($parametri);
-			echo "</A>";
+			echo "</a>";
 		}
 	}
 
@@ -760,9 +760,9 @@ class LINK_SUCCESSIVO extends LINK_SPOSTAMENTO
 
 			$contenuto =& $this->figlio("CONTENUTO");
 
-			echo "<A target=\"$target\" href=\"$location\" id=\"$js_id\" class=\"$classe_css\">";
+			echo "<a target=\"$target\" href=\"$location\" id=\"$js_id\" class=\"$classe_css\">";
 			$contenuto->stampa_html($parametri);
-			echo "</A>";
+			echo "</a>";
 		}
 	}
 	

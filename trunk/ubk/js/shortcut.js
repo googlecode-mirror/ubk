@@ -182,7 +182,9 @@ var CShortcut = Class.create({
 
 	removeAll: function() {
 		for(var s in this.all) {
-			Event.stopObserving(this.all[s].element, this.all[s].event, this.all[s].observer);
+			try {
+				Event.stopObserving(this.all[s].element, this.all[s].event, this.all[s].observer);
+			} catch(e) {}
 			delete(this.all[s]);
 		}
 		this.all = {};

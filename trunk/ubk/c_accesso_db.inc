@@ -65,7 +65,7 @@ class DB_BASE
 	protected $meta = NULL;
 	/**
 	 * Classe di generazione sql
-	 * @var string
+	 * @var DB_SQL
 	 */
 	protected $sql = NULL;
 	/**
@@ -580,7 +580,7 @@ class DB_BASE
 
 		for($i = 0; $i < count($_params); $i ++) {
 
-			array_push($_fmtd_values, $this->driver->utente_2_db($_procedure_info['params'][$i], $_params[$i]));
+			array_push($_fmtd_values, $this->sql->utente_2_db($_procedure_info['params'][$i], $_params[$i]));
 
 		}
 
@@ -787,7 +787,7 @@ class RECORDSET extends DB_BASE
 		} elseif (is_null($formato)) {
 			return $this->rs[$this->index][$campo];
 		} else {
-			return call_user_func(array($this->driver, $formato), $campo, $this->rs[$this->index][$campo]);
+			return call_user_func(array($this->sql, $formato), $campo, $this->rs[$this->index][$campo]);
 		}
 	}
 

@@ -553,6 +553,7 @@ class AZIONI_FORM
 	/**
 	 * Esecuzione dell'azione presente in $parametri["AZIONE"] - viene richiamato il metodo con il nome corrispondente, parsificato il file $parametri["FILE"] e trasformato con gli stessi parametri
 	 * @param GESTORE &$rs
+	 * @param bool $check_url Se FALSE, disabilita il check degli URL
 	 */
 	public function esegui(&$rs, $check_url = TRUE)
 	{
@@ -689,6 +690,11 @@ class AZIONI_FORM_AJAX extends AZIONI_FORM
 		die('+OK');
 	}
 
+	/**
+	 * Rispetto alla versione di AZIONI_FORM, non tiene in considerazione alcun tipo di reazione, poiche' queste vengono comandate dal framework javascript
+	 * @param GESTORE &$rs
+	 * @param bool $check_url Se FALSE, disabilita il check degli URL
+	 */
 	public function esegui(&$rs, $check_url = TRUE)
 	{
 		if ($check_url && !url_valida())

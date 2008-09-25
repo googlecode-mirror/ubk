@@ -65,6 +65,7 @@ class WHEN extends TAG
 			// se ho un test
 			if (!is_null($_figlio) && $_figlio->nome == "TEST") {
 				// se e' vero, dopo deve esserci un THEN
+// 				log_value(xml_2_php($_figlio->contenuto));
 				if (eval(xml_2_php($_figlio->contenuto))) {
 					$_then =& $this->figli[++ $i];
 					if ($_then->nome != "THEN") {
@@ -239,6 +240,7 @@ class SEZIONE extends CONTENITORE
 	public function stampa_html(&$parametri)
 	{
 		$fail = cbool($this->attributo("FALLISCI", "TRUE"));
+		$onfail = $this->attributo_originale("ON-FAIL");
 
 		$vecchi_diritti = array_get_default('DIRITTI', $parametri, array());
 		if ($d = $this->attributo("DIRITTI")) {
@@ -328,8 +330,9 @@ class SEZIONE extends CONTENITORE
 
 			// errore: impossibile accedere
 			if ($fail) {
-				throw new AppException("Diritti insufficienti per vedere la sezione '$sezione' in con diritto '$diritto'.");
+				throw new AppException(lang('UNAUTHORIZED', $sezione, $diritto));
 			} else {
+				if (!is_null($onfail)) eval(xml_2_php($onfail));
 				$parametri['DIRITTI'] = $vecchi_diritti;
 			}
 		}
@@ -450,7 +453,7 @@ abstract class HTML_TAG extends HTML
 	public function stampa_html(&$parametri)
 	{
 		$this->attributi['TAG'] = $this->nome;
-		if (in_array($this->nome, array('INPUT', 'A', 'TEXTAREA', 'SELECT', 'IMG')))
+		if (in_array($this->nome, array('INPUT', 'TEXTAREA', 'SELECT')))
 			$this->attributi['TABINDEX'] = CAMPO_ACCESSO::get_static_tabindex($this->attributo('TABINDEX'));
 		parent::stampa_html($parametri);
 	}
@@ -516,12 +519,60 @@ class SNIPPET extends CONTENITORE
 	}
 
 	/**
-	 * Rimuove dalla cache lo snippet specificato
+	 * Rimuove dalla cache lo snippet specificato, facendo scalare la cache
 	 * @param string $name il nome dello snippet da rimuovere
 	 */
 	public static function unload($name)
 	{
-		unset(self::$loadeds[$name]);
+		// quando arrivo al fondo non e' + settata
+		if (isset(self::$loadeds[$name])) {
+			// riduco di uno
+			$remove = array_shift(self::$loadeds[$name]);
+			if (!is_null($remove)) unset($remove);
+			if (!count(self::$loadeds[$name])) unset(self::$loadeds[$name]);
+			return TRUE;
+		}
+		return FALSE;
+	}
+
+	/**
+	 * Salva nel prossimo livello di cache gli snippet caricati
+	 * @param string $name il nome dello snippet da rimuovere
+	 */
+	public static function reserve($name)
+	{
+		if (isset(self::$loadeds[$name])) {
+			array_unshift(self::$loadeds[$name], FALSE);
+			return TRUE;
+		}
+		return FALSE;
+	}
+
+	/**
+	 * Push dello snippet
+	 * @param string $name il nome dello snippet da rimuovere
+	 */
+	public static function push($name, &$snippet)
+	{
+		if (isset(self::$loadeds[$name])) {
+			array_unshift(self::$loadeds[$name], $snippet);
+		} else {
+			self::$loadeds[$name] = array($snippet);
+		}
+		return TRUE;
+	}
+
+	/**
+	 * Rimuove il primo livello della cache e lo ritorna
+	 * @param string $name il nome dello snippet da rimuovere
+	 */
+	public static function pop($name)
+	{
+		if (isset(self::$loadeds[$name])) {
+			return array_shift(self::$loadeds[$name]);
+		} else {
+			return FALSE;
+		}
 	}
 
 	/**
@@ -537,7 +588,7 @@ class SNIPPET extends CONTENITORE
 	{
 		if ($n = $this->attributo('NOME')) {
 
-			self::$loadeds[$n] = $this;
+			self::push($n, $this);
 
 		} elseif ($n = $this->attributo('CALL')) {
 			$ns = explode('|', $n);
@@ -545,6 +596,11 @@ class SNIPPET extends CONTENITORE
 			foreach($ns as $nn) {
 
 				if (isset(self::$loadeds[$nn])) {
+
+					$snippet =& self::$loadeds[$nn][0];
+					// FALSE e' un segnaposto
+					if ($snippet === FALSE)
+						throw new CodeException("Snippet $n non definito.");
 
 					// backup parametri
 					$pars = array();
@@ -558,7 +614,7 @@ class SNIPPET extends CONTENITORE
 						}
 
 					// stampa
-					self::$loadeds[$nn]->stampa_contenuto($parametri);
+					$snippet->stampa_contenuto($parametri);
 
 					// ripristino parametri
 					foreach ($pars as $par_name){
@@ -590,7 +646,9 @@ class SNIPPET extends CONTENITORE
 			$ns = explode('|', $n);
 			foreach($ns as $nn) {
 				if (isset(self::$loadeds[$nn])) {
-					return self::$loadeds[$nn]->figli_profondita($nome);
+					$snippet =& self::$loadeds[$nn][0];
+					if ($snippet !== FALSE)
+						return self::$loadeds[$nn][0]->figli_profondita($nome);
 				}
 			}
 			return array();

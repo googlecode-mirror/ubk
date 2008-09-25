@@ -286,8 +286,7 @@ function xml_amp($stringa)
  */
 function xml_carica($stringa)
 {
-	return preg_replace("/\n|\r|\t|(?s)<!--\.*-->?/","",$stringa);
-//	return preg_replace("/(?s)<!--\.*-->?/","",$valore);
+	return preg_replace("#\n|\r|\t|<!--.*?-->|/\*.*?\*/#si","",$stringa);
 }
 
 /**
@@ -481,7 +480,7 @@ function array_flatten($a)
 	$res = array();
 	foreach($a as $key => $value) {
 		if (is_array($value))
-			  $res[$key] = array_merge($res, array_flatten($value));
+			  $res = array_merge($res, array_flatten($value));
 		  else
 			  $res[$key] = $value;
 	}
@@ -521,6 +520,8 @@ function array_map_rec($func, $arr)
  * Esegue le trasformazioni XSLT indicate in PHDIR/xsl/transform.xsl (se questo file esiste) sul testo XML passato.
  * @param string $xml testo XML da trasformare
  * @param bool $strip dice se rimuovere o meno header xml e namespaces
+ * @param string $xsl nome del file XSL da usare al posto dello standard
+ * @param array $params parametri da passare all'ambiente di trasformazione XSL
  * @return string
  */
 function xsl_transform($xml, $strip = false, $xsl = NULL, $params = NULL)
@@ -670,6 +671,17 @@ function xsl_transform_file($xml, $xsl, $params = NULL)
  * *********************************************************************************************/
 
 /**
+ * Converte bytes nell'um + grande umanamente leggibile
+ */
+function filesize_pretty($bytes)
+{
+	$s = array('Bytes', 'kB', 'MB', 'GB', 'TB', 'PB');
+	$e = floor(log($bytes)/log(1024));
+
+	return sprintf('%d '.$s[$e], ($bytes / pow(1024, floor($e))));
+}
+
+/**
  * Esegue una copia del file o della directory specificata
  * @param string $old_name Il file o directory sorgente
  * @param string $new_name Il file o directory destinazione
@@ -788,8 +800,9 @@ directory
  * @param string $nome Il percorso completo del file da creare
  * @return array
  */
-function dir_2_array($nome, $filtro = "*")
+function dir_2_array($nome, $filtro = "*", $livelli = -1)
 {
+	if ($livelli == 0) return;
 	$_curdir = getcwd();
 	$_result = array();
 
@@ -799,7 +812,7 @@ function dir_2_array($nome, $filtro = "*")
 		foreach($files as $file) {
 			if ($file != "." && $file != "..") {
 				if (is_dir($file)) {
-					$_result[$file] = dir_2_array($file);
+					$_result[$file] = dir_2_array($file, $filtro, $livelli - 1);
 				} else {
 					$_result[$file] = $file;
 				}

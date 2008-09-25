@@ -35,6 +35,8 @@ class FORM extends CONTENITORE
 
 		$nome_form  = $this->attributo("NAME", "ubkf_".$parametri["FORM-N"]);
 		$campi_rich = explode("|", $this->attributo("CAMPI-RICHIESTI", ""));
+		if (!is_null($tabindex = $this->attributo('TABINDEX')))
+			TAGINDEX::set_tabindex($tabindex);
 
 		$this->attributi["NAME"] = $nome_form;
 		$this->attributi["METHOD"] = "POST";
@@ -55,6 +57,7 @@ class FORM extends CONTENITORE
 		unset($atts['CAMPI-RICHIESTI']);
 		unset($atts['CAMPI-CONSIGLIATI']);
 		unset($atts['NUMERO']);
+		unset($atts['TABINDEX']);
 		echo "<form".xml_att_crea($atts).">";
 		unset($atts);
 		// informazione sui campi CHECKBOX
@@ -191,12 +194,11 @@ class FORM extends CONTENITORE
 	
 }
 
-
 /**
- * Questa classe non e' relazionata ad alcun tag; serve per mettere a disposizione dei suoi figli (i campi) un metodo comune di individuazione della modalita' corretta (e consentita in base ai diritti) di visualizzazione.
+ * Questa classe non e' relazionata ad alcun tag; serve per mettere a disposizione dei suoi figli (i campi) metodi comuni per la gestione della tabulazione
  * @package tag
  */
-abstract class CAMPO_ACCESSO extends TAG
+abstract class TAGINDEX extends TAG
 {
 	/** 
 	 * Contatore che viene incrementato per garantire l'ordine dei campi
@@ -210,12 +212,25 @@ abstract class CAMPO_ACCESSO extends TAG
 		return self::$tabindex;
 	}
 
-	public function get_tabindex()
+	public static function set_tabindex($tabindex)
 	{
-		self::$tabindex = max(self::$tabindex + 1, $this->attributo('TABINDEX', 0));
-		return self::$tabindex;
+		self::$tabindex = $tabindex;
 	}
 
+	public function get_tabindex()
+	{
+		$tabindex = $this->attributo('TABINDEX', self::$tabindex + 1);
+
+		return self::get_static_tabindex($tabindex);
+	}
+}
+
+/**
+ * Questa classe non e' relazionata ad alcun tag; serve per mettere a disposizione dei suoi figli (i campi) un metodo comune di individuazione della modalita' corretta (e consentita in base ai diritti) di visualizzazione.
+ * @package tag
+ */
+abstract class CAMPO_ACCESSO extends TAGINDEX
+{
 	public function valore_id($modalita, &$rs)
 	{
 		switch($modalita) {
@@ -465,7 +480,7 @@ class CAMPO extends CAMPO_ACCESSO
 			switch($campo[0]) {
 			case "d":
 				$century   = $this->attributo("SECOLO", 20);
-				$js_onblur = "if (!Fld.Check.date(this, '$century')) { return false;}".$js_onblur;
+				$js_onblur = "if (!Fld.Check.date".trim(lang('DATE_TYPE'))."(this, '$century')) { return false;}".$js_onblur;
 				break;
 			case "h":
 				$js_onblur = "if (!Fld.Check.hour(this)) { return false;}".$js_onblur;
@@ -518,7 +533,7 @@ class CAMPO extends CAMPO_ACCESSO
 			case "TEXTAREA":
 				$tabindex = $this->get_tabindex();
 				$size = explode(",",$size);
-				echo "<textarea tabindex=\"$tabindex\" onkeyup=\"$js_onchange\" onblur=\"if (this.value.length > $maxsize) { Ubk.alert('Massimo $maxsize caratteri !'); this.focus(); return false; } $js_onblur\" onfocus=\"$js_onfocus\" class=\"$classe_css\" id=\"$js_id\" name=\"$nome\" rows=\"$size[0]\" cols=\"$size[1]\" style=\"text-align: $align\" $bloccato>$valore_default</textarea>".$star;
+				echo "<textarea tabindex=\"$tabindex\" onkeyup=\"$js_onchange\" onblur=\"if (this.value.length > $maxsize) { Ubk.error(Locale.string('ERR-LENGTH') + $maxsize); this.focus(); return false; } $js_onblur\" onfocus=\"$js_onfocus\" class=\"$classe_css\" id=\"$js_id\" name=\"$nome\" rows=\"$size[0]\" cols=\"$size[1]\" style=\"text-align: $align\" $bloccato>$valore_default</textarea>".$star;
 				break;
 			}
 

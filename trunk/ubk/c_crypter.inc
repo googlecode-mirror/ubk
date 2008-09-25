@@ -61,6 +61,8 @@ class CRYPTER
 	 */
 	public function encrypt($string)
 	{
+		if (!$string) return $string;
+
 		mcrypt_generic_init($this->td, $this->key, $this->iv);
 		$result = bin2hex(mcrypt_generic($this->td, $string));
 		mcrypt_generic_deinit($this->td);
@@ -75,6 +77,8 @@ class CRYPTER
 	 */
 	public function decrypt($string)
 	{
+		if (!$string) return $string;
+
 		mcrypt_generic_init($this->td, $this->key, $this->iv);
 		$result = rtrim(mdecrypt_generic($this->td, hex2bin($string)));
 		mcrypt_generic_deinit($this->td);

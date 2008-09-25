@@ -1,3 +1,55 @@
+/*
+
+# istanziare sempre
+var Check = new CUbkCheck();
+var Fld = new CUbkFieldValidate();
+var Ubk = new CUbk();
+
+# opzionale
+var History = new CUbkHistory();
+
+
+*/
+
+
+/**
+ * CORE: chiamate del framework
+ */
+var Locale = {
+	string: function(id)
+	{
+		var s = '';
+		var sa = [];
+		
+		if (historyStorage.hasKey('s'+id)) {
+			s = historyStorage.get('s'+id);
+		} else {
+			var onComplete = function(request) {
+				s = request.responseText;
+				historyStorage.put('s'+id, s);
+				if (historyStorage.hasKey('strings')) {
+					sa = historyStorage.get('strings');
+				}
+				sa.push('s'+id);
+				historyStorage.put('strings', sa);
+			};
+			Ubk.follow(null, 'general.php', 'AZIONE=get_lang&ID='+id, false, false, onComplete);
+		}
+
+		return s;
+	},
+	clear: function()
+	{
+		if (historyStorage.hasKey('strings')) {
+			var sa = historyStorage.get('strings');
+			sa.each(function(s) {
+				historyStorage.remove(s);
+			});
+			historyStorage.remove('strings');
+		}
+	}
+};
+
 /**
  * CORE: chiamate del framework
  */
@@ -8,12 +60,17 @@ var CUbk = Class.create({
 
 		Ajax.Responders.register({
 			onFailure: this.failure.bind(this)
+			,onException: this.exception.bind(this)
 		});
+
+		Event.observe(document, 'dom:loaded', this.setup.bindAsEventListener(this));
 	},
 
+	setup: function() {},
+ 
 	tryThis: function(f) {
 
-		if (f == undefined || f == null) f = Prototype.K.curry(0);
+		if (f == undefined || f == null) return; //f = Prototype.K.curry(0);
 		Try.these(f);
 	},
 
@@ -28,11 +85,32 @@ var CUbk = Class.create({
 		}
 	},
 
-	// fallimento chiamata AJAX
+	isOpenPage: function(event)
+	{
+		event = Element.extend(event);
+		return ((event.isLeftClick() && event.ctrlKey) || event.isMiddleClick());
+	},
+
+	openPage: function(event, url)
+	{
+		if (this.isOpenPage(event)) {
+			window.open(url, '', '');
+			window.focus();
+			return true;
+		} else {
+			return false;
+		}
+	},
+	// fallimento ed eccezione chiamata AJAX
 	failure: function(request)
 	{
 		this.working(false);
 		this.error(request.responseText);
+	},
+	exception: function(request, e)
+	{
+		this.working(false);
+		this.alert('<pre style="font-size: 7pt">'+[e.name, e.message].join(': ') + "\n" + e.stack + '</pre>');
 	},
 
 	isFailure: function(request)
@@ -53,7 +131,7 @@ var CUbk = Class.create({
 
 		if ((ko = request.responseText.indexOf('+KO')) != -1) {
 
-			if (target) this.hide(target);
+			if (target && $(target)) this.hide(target);
 			this.error(request.responseText.substr(ko + 3));
 		
 		} else if (request.responseText.indexOf('+OK') == 0) {	// ok e oks ..
@@ -66,8 +144,8 @@ var CUbk = Class.create({
 
 		} else {
 
-			if (target) Element.update(target, request.responseText);
-			if (target) this.show(target);
+			if (target && $(target)) Element.update(target, request.responseText);
+			if (target && $(target)) this.show(target);
 		}
 	},
 
@@ -77,7 +155,7 @@ var CUbk = Class.create({
 		if ((ko = request.responseText.indexOf('+KO')) != -1) {
 
 			this.working(false);
-			if (target) this.hide(target);
+			if (target && $(target)) this.hide(target);
 			this.error(request.responseText.substr(ko + 3));
 		
 		} else if (request.responseText.indexOf('+OK') == 0) {	// ok e oks ..
@@ -93,9 +171,9 @@ var CUbk = Class.create({
 		} else {
 			
 			this.working(false);
-			if (target) Element.update(target, request.responseText);
+			if (target && $(target)) Element.update(target, request.responseText);
 			if (onComplete) onComplete(request, target);
-			if (target) this.show(target);
+			if (target && $(target)) this.show(target);
 		}
 	},
 
@@ -137,16 +215,26 @@ var CUbk = Class.create({
 	{
 		var oForm = document.forms[form];
 
-		var onsubmit = null;
+		var sbmit = null;
 
 		if (oForm.onsubmit) {
-			var body = 'onsubmit = ' + oForm.onsubmit.toString().replace(/#id/g, id);
-			eval(body);
+			sbmit = function() {
+				var o = { ROWID: id };
+				var res;
+// 				eval(oForm.onsubmit.toString().replace(/#id/g, id));
+				try {
+					res = oForm.onsubmit.call(o);
+				} catch (e) {
+					this.exception(null, e);
+					res = false;
+				}
+				return res;
+			};
 		} else {
-			onsubmit = function() { return true; };
+			sbmit = function() { return true; };
 		}
 
-		if (onsubmit.call()) {
+		if (sbmit.call()) {
 
 			this.working(true, 
 				{ 
@@ -201,7 +289,7 @@ var CUbk = Class.create({
 			if (options.target && options.pars.indexOf('&TARGET=') == -1)
 				options.pars += '&TARGET=' + options.target;
 
-			if (this.historyManager) this.historyManager.add(options.url+'?'+options.pars, options);
+			if (options.type == 'get' && this.historyManager) this.historyManager.add(options.url+'?'+options.pars, options);
 
 			options.request.call(this, options);
 		}
@@ -220,7 +308,7 @@ var CUbk = Class.create({
 	error: function(message, onOk)
 	{
 		alert(message);
-		this.tryThis(onCancel);
+		this.tryThis(onOk);
 	},
 	
 	alert: function(message)
@@ -248,27 +336,27 @@ var CUbk = Class.create({
 // per le CHECKBOX-IMG
 var CUbkCheck = Class.create({
 
-	imageToggle: function (chk, lock)
+	imageToggle: function (input, lock)
 	{
-		var src = chk.nextSibling.src;
+		var src = input.nextSibling.src;
 		var name = src.substr(0, src.lastIndexOf('.') - (lock ? 3 : 2));
 		var ext = src.substr(src.lastIndexOf('.'));
-		if (chk.checked) {
+		if (input.checked) {
 			src = name + (lock ? 'SIR' : 'SI') + ext;
 		} else {
 			src = name + (lock ? 'NOR' : 'NO') + ext;
 		}
-		chk.nextSibling.src = src;
+		input.nextSibling.src = src;
 	},
 	
 	checkToggle: function(img, lock)
 	{
 		if (lock) return;
 	
-		chk = img.previousSibling;
-		chk.checked = !chk.checked;
-		if (chk.onclick)
-			chk.onclick.call(chk);
+		var input = img.previousSibling;
+		input.checked = !input.checked;
+		if (input.onclick)
+			input.onclick.call(input);
 	},
 
 	setChecked: function(input, state)
@@ -293,6 +381,7 @@ var CUbkHistory = Class.create({
 	initialize: function() {
 		// se sto tornando indietro, non devo storicizzare
 		this.backing = false;
+		this.started = false;
 		// link con Ubk
 		Ubk.historyManager = this;
 		// init dhtmlHistory
@@ -303,8 +392,13 @@ var CUbkHistory = Class.create({
 			, fromJSON: function(s) {
 					return s.evalJSON();
 			}
+			, baseTitle: $$('head title').reduce().textContent + ' - @@@'
 		});
 
+		Event.observe(document, 'dom:loaded', (function() {
+			dhtmlHistory.initialize(this.show.bind(this));
+// 			dhtmlHistory.addListener(this.show.bind(this));
+		}).bind(this));
 	},
 
 	// mi dice se la chiamata e' alla root o e' un refresh
@@ -318,12 +412,15 @@ var CUbkHistory = Class.create({
 	// o la pagina richiesta tramite virtu-link
 	start: function(firstHistoryCall)
 	{
-		dhtmlHistory.addListener(this.show.bind(this));
+		if (this.started) return;
 		// se questa e' una chiamata alla root, non un refresh,
 		// carico quanto devo caricare
 		if (this.isRoot()) {
 			Ubk.tryThis(firstHistoryCall);
+		} else {
+			if (!Prototype.Browser.Gecko) Ubk.tryThis(firstHistoryCall);
 		}
+		this.started = true;
 	},
 	
 	// mi dice se il target object puo' essere considerato per
@@ -350,6 +447,9 @@ var CUbkHistory = Class.create({
 			dhtmlHistory.add(location, options);
 		}
 	},
+	defaultShow: function()
+	{
+	},
 	// handler per il caricamento della location dato back, fore, refresh
 	show: function(location, options)
 	{
@@ -357,8 +457,15 @@ var CUbkHistory = Class.create({
 		// se ho opzioni, e' una mia chiamata fatta durante una working
 		// la rieseguo, tutti i parametri sono nelle opzioni
 		if (options) {
-			options.afterFinish = options.request = (options.type == 'get' ? Ubk.getRequest : Ubk.postRequest).bind(Ubk);
-			Ubk.working(true, options);
+			if (options.type == 'get') {
+				options.afterFinish = options.request = Ubk.getRequest.bind(Ubk);
+				Ubk.working(true, options);
+			// i post li salto
+			} else {
+				history.back();
+			}
+		} else {
+			this.defaultShow();
 		}
 		// altrimenti sono tornato alla root, non faccio nulla
 		this.backing = false;

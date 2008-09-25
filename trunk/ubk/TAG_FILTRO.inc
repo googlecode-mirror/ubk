@@ -120,6 +120,26 @@ class CHECKBOX_FILTRO extends CHECKBOX
 	
 }
 
+class CHECKBOX_IMG_FILTRO extends CHECKBOX_IMG
+{
+	function stampa_html(&$parametri)
+	{
+		$campo = $this->attributo_richiesto("NOME");
+		$op    = $this->attributo("OP","equ");
+		if (!function_exists($op)) {
+			throw new CodeException("Operatore non supportato: $op");
+		}
+		$this->attributi["MODE"] = "W";
+		$this->attributi["JS-NAME"] = "filtro[$op|$campo]";
+
+		$this->attributi["JS-ID"] = $this->attributo("JS-ID","filtro[$op|$campo]");
+		$this->attributi["VALORE-DEFAULT"] = filtro_def(array_get("FILE", $parametri), $campo, $op, $this->attributo("VALORE-DEFAULT"));
+
+		parent::stampa_html($parametri);
+	}
+	
+}
+
 /**
  * Combo / Radio group. Sempre in modalita' W e con valore di default automatico (resettato in {@link db::AZIONI_FORM::mostra}). 
  * @package tag

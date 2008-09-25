@@ -41,8 +41,178 @@ class CACHE
 
 		$this->page_cache = constant_true('CACHE_XML');
 		$this->page_dir = path(PHDIR, 'system/cache/xml');
+
+		$this->lang_src_dir = path(PHDIR, 'system/lang');
+		$this->lang_dir = path(PHDIR, 'system/cache/lang');
 	}
 
+
+	/**
+	 * Cache in memoria delle stringhe di localizzazione
+	 * @var array
+	 */
+	private $lang_data = array();
+
+	public function lang_js()
+	{
+		if (!isset($_SESSION['lang']))
+			throw new CodeException("Richiesta localizzazione ma lingua non impostata.");
+
+		$args = func_get_args();
+		if (!count($args)) {
+			trigger_error('Lang chiamata senza parametri', E_USER_WARNING);
+			return '';
+		}
+
+		$id = array_shift($args);
+
+		$source = path($this->lang_src_dir, $_SESSION['lang'].'.xml');
+		$cache  = path($this->lang_dir, $_SESSION['lang'].'.xml.obj');
+
+		if (!file_exists($cache) || filemtime($source) > filemtime($cache)) {
+
+			$d = new DOMDocument();
+			if (!$d -> load($source))
+				throw new CodeException("File di localizzazione $source non valido (XML).");
+
+			$xpath = new DOMXPath($d);
+			$root = $d->documentElement;
+
+			$this->lang_data['LC_TIME'] = $root->getAttribute('lc-time');
+			$this->lang_data['DATE_TYPE'] = $root->getAttribute('date-type');
+
+			$nodes = $xpath->query("//application/string[@id='$id']");
+			if ($nodes.length == 0)
+				throw new CodeException(lang('LANG-STRING-MISSING', $id));
+
+			$string = $nodes->item(0)->textContent;
+		} else {
+			$strings = unserialize(file_get_contents($cache));
+			$string  = $strings[$id];
+		}
+
+		if (count($args)) {
+			array_unshift($args, $string);
+			$string = call_user_func_array('sprintf', $args);
+		}
+
+		return $string;
+	}
+
+	/**
+	 * Carica la cache delle stringhe
+	 * @param bool $force
+	 */
+	public function lang_load($force)
+	{
+		if (!isset($_SESSION['lang']))
+			throw new CodeException("Richiesta localizzazione ma lingua non impostata.");
+
+		// se voglio un refresh o non ho caricato ancora nulla
+		if ($force || !isset($_SESSION['lang_data'])) {
+
+			$source = path($this->lang_src_dir, $_SESSION['lang'].'.xml');
+			$cache  = path($this->lang_dir, $_SESSION['lang'].'.xml.obj');
+
+			if (!file_exists($source))
+				throw new CodeException("File di localizzazione $source non trovato.");
+
+			// se non esiste il file di cache oppure il file source è + recente, carico il source
+			if ($force || !file_exists($cache) || filemtime($source) > filemtime($cache)) {
+				$this->lang_data = array();
+
+				$d = new DOMDocument();
+				if (!$d -> load($source))
+					throw new CodeException("File di localizzazione $source non valido (XML).");
+
+				$xpath = new DOMXPath($d);
+				$root = $d->documentElement;
+
+				$this->lang_data['LC_TIME'] = $root->getAttribute('lc-time');
+				$this->lang_data['DATE_TYPE'] = $root->getAttribute('date-type');
+
+				$nodes = $xpath->query('//application/string|//system/string'); //$root->getElementsByTagName('string');
+				for($i = 0; $i < $nodes->length; $i ++) {
+					$key = $nodes->item($i)->getAttribute('id');
+					$val = $nodes->item($i)->textContent;
+
+					$this->lang_data[$key] = $val;
+				}
+
+				$dbmss = array('FBIRD' => 'firebird', 'MYSQL' => 'mysql', 'MSSQL' => 'mssql', 'ODBC' => 'odbc');
+				foreach($dbmss as $ubk => $dbms) {
+					$this->lang_data[$ubk] = array();
+					$nodes = $xpath->query("//{$dbms}/string");
+					for($i = 0; $i < $nodes->length; $i ++) {
+						$key = $nodes->item($i)->getAttribute('id');
+						$val = $nodes->item($i)->textContent;
+						$val = html_entity_decode($val, ENT_QUOTES, 'UTF-8');
+	
+						$this->lang_data[$ubk][$key] = $val;
+					}
+				}
+				// scrivo la cache
+				scrivi_file($cache, serialize($this->lang_data));
+			// altrimenti carico la cache
+			} else {
+				$this->lang_data = unserialize(file_get_contents($cache));
+			}
+
+			$_SESSION['lang_data'] = $this->lang_data;
+		}
+		if (!isset($this->lang_data))
+			$this->lang_data = $_SESSION['lang_data'];
+	}
+
+	/**
+	 * Ritorna la stringa indicata
+	 * @param string $id
+	 * @param mixed ... Parametri per stringhe parametriche (sprintf)
+	 * @return string
+	 */
+	public function lang()
+	{
+		$args = func_get_args();
+		if (!count($args)) {
+			trigger_error('Lang chiamata senza parametri', E_USER_WARNING);
+			return '';
+		}
+
+		$id = array_shift($args);
+
+		if (!isset($this->lang_data[$id]))
+			$this->lang_load(TRUE);
+		if (!isset($this->lang_data[$id]))
+			throw new CodeException(lang('LANG-STRING-MISSING', $id));
+
+		$string = $this->lang_data[$id];
+
+		if (count($args)) {
+			array_unshift($args, $string);
+			$string = call_user_func_array('sprintf', $args);
+		}
+
+		return ' '.$string.' ';
+	}
+
+	/**
+	 * Ritorna la stringa indicata
+	 * @param string $db Database per cui si vuole ottenere la stringa (FBIRD, MYSQL, MSSQL, ODBC, ...)
+	 * @param string $id Stringa voluta
+	 * @return string
+	 */
+	public function lang_database($db, $id)
+	{
+		if (!isset($this->lang_data[$db]) || !isset($this->lang_data[$db][$id]))
+			$this->lang_load(TRUE);
+
+		if (!isset($this->lang_data[$db]))
+			throw new CodeException(lang('LANG-DBMS-MISSING', $db));
+		if (!isset($this->lang_data[$db][$id]))
+			throw new CodeException(lang('LANG-DBMS-STRING-MISSING', $db, $id));
+
+		return $this->lang_data[$db][$id];
+	}
 
 	/**
 	 * Array associativo con il codice trasformato di immagini con rollover (gfx:img)
@@ -609,7 +779,6 @@ class CACHE
 
 /**
  * Ritorna il gestore della cache, assicurandosi che non vi siano istanze multiple
- *  
  * @package general
  */
 class CACHE_CLASS_FACTORY
@@ -627,6 +796,49 @@ class CACHE_CLASS_FACTORY
 
 		return self::$instance;
 	}
+}
+
+/**
+ * Shortcut globale per CACHE::lang
+ */
+function lang()
+{
+	static $cache;
+	if (!isset($cache)) $cache = CACHE_CLASS_FACTORY::get();
+	$args  = func_get_args();
+
+	return call_user_func_array(array($cache, 'lang'), $args);
+}
+
+/**
+ * Shortcut globale per CACHE::lang_database
+ */
+function lang_database()
+{
+	static $cache;
+	if (!isset($cache)) $cache = CACHE_CLASS_FACTORY::get();
+	$args  = func_get_args();
+
+	return call_user_func_array(array($cache, 'lang_database'), $args);
+}
+
+/**
+ * Shortcut globale per CACHE::lang_load
+ */
+function lang_load($force)
+{
+	static $cache;
+	if (!isset($cache)) $cache = CACHE_CLASS_FACTORY::get();
+
+	return call_user_func(array($cache, 'lang_load'), $force);
+}
+
+function lang_js()
+{
+	$cache = CACHE_CLASS_FACTORY::get();
+	$args  = func_get_args();
+
+	return call_user_func_array(array($cache, 'lang_js'), $args);
 }
 
 ?>

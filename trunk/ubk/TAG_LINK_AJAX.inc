@@ -5,6 +5,15 @@
  * @package tag
  */
 
+function ajax_link_open($url)
+{
+  return "if (Ubk.openPage(event, '$url')) { Event.stop(event); return false; }";
+}
+function ajax_link_stop()
+{
+  return "if (Ubk.isOpenPage(event)) { Event.stop(event); return false; }";
+}
+
 /**
  * Genera le funzioni di controllo per l'obbligatorieta' dei dati, nonche' un campo nascosto con l'elenco delle checkbox, necessario a capire quali checkbox sono state de-spuntate (cfr. {@link prendi_riga}). 
  * @package tag
@@ -44,7 +53,7 @@ class AJAX_FORM extends CONTENITORE
 						) {
 						if (!in_array($nome_campo, $tmp) && $nome_campo == $campo->nome()) {
 							array_push($tmp, $nome_campo);
-							$nome_campo_js = $campo->attributo_esiste("JS-ID") ? $campo->attributo('JS-ID') : $nome_campo."[#id]";
+							$nome_campo_js = $campo->attributo_esiste("JS-ID") ? $campo->attributo('JS-ID') : $nome_campo."['+this.ROWID+']";
 							$check[qt($nome_campo_js)] = qt($desc);
 						}
 					}
@@ -90,7 +99,7 @@ class AJAX_FORM extends CONTENITORE
 					// oppure è richiesto
 					// allora check
 					if (in_array($nome_campo, $this->campi_rich) || !$rs->nullable[$nome_campo] || cbool($campo->attributo("RICHIESTO","FALSE"))) {
-						$nome_campo_js = $campo->attributo_esiste("JS-ID") ? $campo->attributo('JS-ID') : $nome_campo."[#id]";
+						$nome_campo_js = $campo->attributo_esiste("JS-ID") ? $campo->attributo('JS-ID') : $nome_campo."['+this.ROWID+']";
 						$check[] = qt($nome_campo_js);
 					}
 				}
@@ -113,6 +122,9 @@ class AJAX_FORM extends CONTENITORE
 		
 		$nome_form  = $this->attributo("NAME", "ubkf_".$this->attributo('NUMERO', $numero_form));
 
+// 		if (!is_null($tabindex = $this->attributo('TABINDEX')))
+// 			CAMPO_ACCESSO::set_tabindex($tabindex);
+
 		$this->attributi["NAME"] = $nome_form;
 		$this->attributi["METHOD"] = "post";
 		$this->attributi["ENCTYPE"] = "multipart/form-data";
@@ -133,6 +145,7 @@ class AJAX_FORM extends CONTENITORE
 		unset($atts['CAMPI-CONSIGLIATI']);
 		unset($atts['NUMERO']);
 		unset($atts['CHECKBOXES']);
+		unset($atts['TABINDEX']);
 		// informazione sui campi CHECKBOX
 		// devo sapere quali check ci sono sulla pagina, cosi' quando le posto sceccate (?) posso
 		// sapere che c'erano e scrivere 0 sul db
@@ -212,7 +225,7 @@ class LINK_AJAX_GENERICO extends TAG
 	 */
 	protected function js_onclick(&$nodo, &$parametri)
 	{
-		$js_onclick = $nodo->attributo("JS-ONCLICK");
+		$js_onclick = trim($nodo->attributo("JS-ONCLICK"));
 		if (strlen($js_onclick) > 0) {
 			$usa_id    = cbool($nodo->attributo("USA-ID", "FALSE"));
 			$post      = cbool($nodo->attributo_richiesto("POST"));
@@ -532,12 +545,18 @@ class LINK_AJAX_GENERICO extends TAG
 			$js_id      = $this->attributo("JS-ID");
 			$alt        = $this->attributo("ALT");
 			$datasrc    = $this->attributo("DATASRC");
-			$tabindex   = CAMPO_ACCESSO::get_static_tabindex($this->attributo('TABINDEX'));
+// 			$tabindex   = CAMPO_ACCESSO::get_static_tabindex($this->attributo('TABINDEX'));
 
 			$contenuto =& $this->figlio("CONTENUTO");
 
-
-			echo "<a tabindex=\"$tabindex\" href=\"javascript:$ajax\" datasrc=\"$datasrc\" id=\"$js_id\" class=\"$classe_css\" title=\"$alt\">";
+// tabindex=\"$tabindex\" 
+			echo "<a href=\"javascript:$ajax\"";
+			if ($datasrc) {
+				echo ' onmousedown='.dQt(ajax_link_open($datasrc));
+				echo ' onmouseup='.dQt(ajax_link_stop());
+				echo ' onclick='.dQt(ajax_link_stop());
+			}
+			echo " id=\"$js_id\" class=\"$classe_css\" title=\"$alt\">";
 			if ($contenuto) $contenuto->stampa_html($parametri);
 			echo "</a>";
 		}
@@ -593,7 +612,7 @@ class LINK_AJAX_ELIMINA extends LINK_AJAX_CONFERMA
 			$nodo_azione -> attributi["USA-ID"] = "true";
 			$nodo_azione -> attributi["POST"] = "false";
 
-			$this->aggiorna_js_onclick("Ubk.confirm('Proseguire con l\'eliminazione ?',function(){@ajax});");
+			$this->aggiorna_js_onclick("Ubk.confirm(Locale.string('CONF-DELETE'),function(){@ajax});");
 
 			array_unshift($this -> figli, $nodo_azione);
 
@@ -633,7 +652,7 @@ class LINK_AJAX_AGGIORNA extends LINK_AJAX_CONFERMA
 			$nodo_azione -> attributi["USA-ID"] = "true";
 			$nodo_azione -> attributi["POST"] = "true";
 
-			$this->aggiorna_js_onclick("Ubk.confirm('Proseguire con l\'aggiornamento ?',function(){@ajax});");
+			$this->aggiorna_js_onclick("Ubk.confirm(Locale.string('CONF-UPDATE'),function(){@ajax});");
 
 			array_unshift($this -> figli, $nodo_azione);
 
@@ -671,7 +690,7 @@ class LINK_AJAX_AGGIORNA_TUTTO extends LINK_AJAX_CONFERMA
 
 			$nodo_azione -> attributi["USA-ID"] = "false";
 
-			$this->aggiorna_js_onclick("Ubk.confirm('Proseguire con l\'aggiornamento pagina ?',function(){@ajax});");
+			$this->aggiorna_js_onclick("Ubk.confirm(Locale.string('CONF-UPDATE-ALL'),function(){@ajax});");
 
 			array_unshift($this -> figli, $nodo_azione);
 
@@ -708,7 +727,7 @@ class LINK_AJAX_CREA extends LINK_AJAX_CONFERMA
 			$nodo_azione -> attributi["USA-ID"] = "false";
 			$this -> attributi["JS-ID"] = "link_crea_".($parametri['FORM-N']);
 
-			$this->aggiorna_js_onclick("Ubk.confirm('Proseguire con la creazione ?',function(){@ajax});");
+			$this->aggiorna_js_onclick("Ubk.confirm(Locale.string('CONF-CREATE'),function(){@ajax});");
 
 			array_unshift($this -> figli, $nodo_azione);
 
@@ -1006,17 +1025,19 @@ class PAGINATORE_AJAX extends TAG
 		$async   = strtolower($this->attributo('ASYNC', 'TRUE'));
 		$tabella    = $this->attributo("TABELLA", $rs->tabella);
 		$campo_id   = $this->attributo("CAMPO-ID", $rs->campo_id);
-		$ordine     = array_get_default("ORDINE", $parametri, '');
-		$no_blocks = cbool($this->parametro('HIDE-BLOCKS', 'FALSE'));
-		$load = strtoupper($this->parametro('ESEGUI-CARICA', 'TRUE'));
+		$ordine     = $this->attributo('ORDINE', array_get_default("ORDINE", $parametri, ''));
+		$no_blocks = cbool($this->attributo('HIDE-BLOCKS', 'FALSE'));
+		$load = strtoupper($this->attributo('ESEGUI-CARICA', 'TRUE'));
 		
 		// forza una mostra riga e stampa anche il link alla pagina corrente
 		$force = cbool($this->parametro('FORCE-GO', 'FALSE'));
 		if ($force) $azione = 'mostra_riga';
-		if ($rs->eof) {
+		if($this->attributo('VALORE-ID')) {
+			$id = $this->attributo('VALORE-ID');
+		} elseif ($rs->eof) {
 			$id = -1;
 		} else {
-			$id = $this->parametro('VALORE-ID', $rs->valore($campo_id));
+			$id = $rs->valore($campo_id);
 		}
 
 		$base_pars = "TARGET=$target&amp;FILE=$file&amp;AZIONE=$azione&amp;TABELLA=$tabella&amp;CAMPO-ID=$campo_id&amp;ID=$id&amp;ORDINE=$ordine&amp;MODE=$mode&amp;PAGE-SIZE=$dim_pagina&amp;ESEGUI-CARICA=$load&amp;PAGE=";
