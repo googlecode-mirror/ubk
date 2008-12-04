@@ -6,7 +6,7 @@ This tag lets you include external files in another, as many times as you need, 
 
 Once the file is first loaded, the object structure representing it is cached, so next calls will be faster.
 
-Also, inclusion parameters are stacked (valid for just the very evaluation of the included file.
+Also, inclusion parameters are stacked (they remain valid for just the very evaluation of the call).
 
 The tag has only one mandatory parameter, the file name to be included; all other parameters are pushed (and popped) in the evaluation environment.
 
