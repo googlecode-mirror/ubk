@@ -171,8 +171,7 @@ class DB_DRIVER_FBIRD extends DB_DRIVER
 
 			$campo = trim(strtolower($_riga["t_column"]));
 
-			array_push($_info['fields'], $campo);
-
+			$_info['fields'][] = $campo;
 			$_info['type'][$campo]     = $_riga["t_data_type"];
 			$_info['null'][$campo]     = $_riga["b_nullable"];
 			$_info['length'][$campo]   = $_riga["i_length"];
@@ -216,8 +215,8 @@ class DB_DRIVER_FBIRD extends DB_DRIVER
 		while ($_riga = self::fetch_assoc($_res_rs)) {
 
 			$param = trim(strtolower($_riga["t_parameter"]));
-			array_push($_info['params'], $param);
 
+			$_info['params'][] = $param;
 			$_info['type'][$param]     = $_riga["t_data_type"];
 			$_info['length'][$param]   = $_riga["i_length"];
 			

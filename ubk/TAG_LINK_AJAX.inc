@@ -13,6 +13,10 @@ function ajax_link_stop()
 {
   return "if (Ubk.isOpenPage(event)) { Event.stop(event); return false; }";
 }
+function ajax_link_handler($url)
+{
+  return 'onmousedown='.dQt(ajax_link_open($url)).' onclick='.dQt(ajax_link_stop()).' onmouseup='.dQt(ajax_link_stop());
+}
 
 /**
  * Genera le funzioni di controllo per l'obbligatorieta' dei dati, nonche' un campo nascosto con l'elenco delle checkbox, necessario a capire quali checkbox sono state de-spuntate (cfr. {@link prendi_riga}). 
@@ -996,10 +1000,13 @@ class PAGINATORE_AJAX extends TAG
 		$extra           = $this->attributo('EXTRA-GET', '');
 		$last_page       = ($dim_pagina == 0) ? 0 : ceil($rs->count_reale / $dim_pagina) - 1;
 
-		// non deve apparire  null se c'e' solo un'unica pagina
+		// non deve apparire nulla se c'e' solo un'unica pagina
 		if ($last_page == 0) {
 			return;	
 		}
+
+		$js_stop = 'onmousedown='.dQt(ajax_link_stop()).' onmouseup='.dQt(ajax_link_stop()).' onclick='.dQt(ajax_link_stop());
+
 
 		// size
 		$size = $this->attributo('SIZE', 10);
@@ -1011,7 +1018,7 @@ class PAGINATORE_AJAX extends TAG
 		$file       = $this->attributo("FILE", $parametri["FILE"]);
 		$mode       = $this->attributo("MODE", $parametri["MODE"]);
 		$classe_css = $this->attributo("CLASS", array_get_default("CLASS", $parametri));
-		$js_id      = $this->attributo("JS-ID");
+// 		$js_id      = $this->attributo("JS-ID");
 		$azione = $this->attributo('AZIONE', 'filtra');
 		
 		$show    = strtolower($this->attributo('REPLACE', 'TRUE'));
@@ -1052,14 +1059,14 @@ class PAGINATORE_AJAX extends TAG
 				$pars  = $base_pars . 0 ;
 				$etich = 1; 
 				$click = "Ubk.follow($target, '$gateway', '$pars', $show, $async);";
-				array_push($pags, "<a href=\"javascript:$click\" id=\"$js_id\" class=\"$classe_css first\">", $etich, '</a>');
+				array_push($pags, "<a href=\"javascript:$click\" $js_stop class=\"$classe_css first\">", $etich, '</a>');
 			}
 			if (!$no_blocks) {
 				$pars  = $base_pars . (max($blocco_attuale, 1) - 1) ;
 				$etich = ($blocco_attuale - ($size - 1)) .'-'. $blocco_attuale; 
 				$click = "Ubk.follow($target, '$gateway', '$pars', $show, $async);";
 					
-				array_push($pags, "<a href=\"javascript:$click\" id=\"$js_id\" class=\"$classe_css jump\">", $etich, '</a>');
+				array_push($pags, "<a href=\"javascript:$click\" $js_stop class=\"$classe_css jump\">", $etich, '</a>');
 			}
 		}
 		
@@ -1069,7 +1076,7 @@ class PAGINATORE_AJAX extends TAG
 			if ($force || $pag != ($pagina_corrente + 1)){
 				$pars  = $base_pars .($pag-1);
 				$click = "Ubk.follow($target, '$gateway', '$pars', $show, $async);";
-				array_push($pags, "<a href=\"javascript:$click\" id=\"$js_id\" class=\"$classe_css\">$pag</a>");
+				array_push($pags, "<a href=\"javascript:$click\" $js_stop class=\"$classe_css\">$pag</a>");
 			} else {
 				array_push($pags,"<b>$pag</b>");
 			}
@@ -1088,14 +1095,14 @@ class PAGINATORE_AJAX extends TAG
 					// altrimenti devo poi mandare l'ultima pagina
 				}
 				$click = "Ubk.follow($target, '$gateway', '$pars', $show, $async);";
-				array_push($pags, "<a href=\"javascript:$click\" id=\"$js_id\" class=\"$classe_css jump\">", $etich, '</a>');
+				array_push($pags, "<a href=\"javascript:$click\" $js_stop class=\"$classe_css jump\">", $etich, '</a>');
 			}
 			// qua
 			if ($no_blocks || $blocco_attuale + (2 * $size) < $last_page + 1) {
 				$etich = $last_page + 1;
 				$pars  = $base_pars . $last_page;
 				$click = "Ubk.follow($target, '$gateway', '$pars', $show, $async);";
-				array_push($pags, "<a href=\"javascript:$click\" id=\"$js_id\" class=\"$classe_css last\">", $etich, '</a>');
+				array_push($pags, "<a href=\"javascript:$click\" $js_stop class=\"$classe_css last\">", $etich, '</a>');
 			}
 		}
 

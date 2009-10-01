@@ -1,6 +1,6 @@
 <html xmlns:ubk="http://dev.mele.eu/ubk/" xmlns:gfx="http://dev.mele.eu/ubk/TAG_XSL.xsd">
 	<head>
-		<title>Errore</title>
+		<title>%lang('ERR')</title>
 		<style>
 			TABLE {
 				height: 100%;
@@ -19,7 +19,7 @@
 			<td>
 				<ubk:var>$parametri['ERRORE']</ubk:var>
 				<br/>
-				<a href="javascript:history.go(-1)">Torna indietro</a>
+				<a href="javascript:history.go(-1)" title="%lang('ERR-BACK')"><ubk:lang id="ERR-BACK"/></a>
 			</td>
 		</table>
 	</body>

@@ -9,7 +9,7 @@ require_once("funzioni_data.inc");
  */
 class DB_SQL_FBIRD extends DB_SQL
 {
-	public static static function db_2_utente($colonna, $valore)
+	public static function db_2_utente($colonna, $valore)
 	{
 		switch($colonna[0]) {
 		case "d":
@@ -49,7 +49,7 @@ class DB_SQL_FBIRD extends DB_SQL
 	}
 
 
-	public static static function utente_2_db($colonna, $valore)
+	public static function utente_2_db($colonna, $valore)
 	{
 		if ($valore === "" || is_null($valore)) return "NULL";
 

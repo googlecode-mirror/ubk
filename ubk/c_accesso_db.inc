@@ -21,26 +21,12 @@ require_once('funzioni_bwc.inc');
  */
 require_once('c_db.inc');
 
-if (isset($GLOBALS['DRIVERS']['FBIRD'])) {
-	require_once('c_db_META_FBIRD.inc');
-	require_once('c_db_DRIVER_FBIRD.inc');
-	require_once('c_db_SQL_FBIRD.inc');
+foreach($GLOBALS['DRIVERS'] as $driver) {
+	require_once("c_db_META_{$driver}.inc");
+	require_once("c_db_DRIVER_{$driver}.inc");
+	require_once("c_db_SQL_{$driver}.inc");
 }
-if (isset($GLOBALS['DRIVERS']['MYSQL'])) {
-	require_once('c_db_META_MYSQL.inc');
-	require_once('c_db_DRIVER_MYSQL.inc');
-	require_once('c_db_SQL_MYSQL.inc');
-}
-if (isset($GLOBALS['DRIVERS']['MSSQL'])) {
-	require_once('c_db_META_MSSQL.inc');
-	require_once('c_db_DRIVER_MSSQL.inc');
-	require_once('c_db_SQL_MSSQL.inc');
-}
-if (isset($GLOBALS['DRIVERS']['ODBC'])) {
-	require_once('c_db_META_ODBC.inc');
-	require_once('c_db_DRIVER_ODBC.inc');
-	require_once('c_db_SQL_ODBC.inc');
-}
+
 /** 
  * Inclusione funzioni di gestione cache
  */
@@ -397,7 +383,7 @@ class DB_BASE
 		
 		$this->chiudi_connessione();
 
-		return (bool)$_result;
+		return call_user_func(array($this->sql, "db_2_utente"), "b_exists", $_result);
 	}
 
 	/**
@@ -1230,7 +1216,7 @@ class GESTORE extends RECORDSET
 	{
 		$valori = array();
 		foreach($campi as $campo) {
-			$valori[$campo][$id] = $this->valore_fwk($campo);
+			$valori[$campo] = array($id => $this->valore_fwk($campo));
 		}
 		return $valori;
 	}
