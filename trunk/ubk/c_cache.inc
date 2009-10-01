@@ -139,10 +139,25 @@ class CACHE
 					$this->lang_data[$key] = $val;
 				}
 
-				$dbmss = array('FBIRD' => 'firebird', 'MYSQL' => 'mysql', 'MSSQL' => 'mssql', 'ODBC' => 'odbc');
+				$dbmss = array(
+					'FBIRD' => 'firebird'
+					, 'MYSQL' => 'mysql'
+					, 'MSSQL' => 'mssql'
+					, 'ODBC' => 'odbc'
+					, 'POSTGRES' => 'postgres'
+				);
+
 				foreach($dbmss as $ubk => $dbms) {
 					$this->lang_data[$ubk] = array();
-					$nodes = $xpath->query("//{$dbms}/string");
+					$nodes = $xpath->query("//datetime/default/string");
+					for($i = 0; $i < $nodes->length; $i ++) {
+						$key = $nodes->item($i)->getAttribute('id');
+						$val = $nodes->item($i)->textContent;
+						$val = html_entity_decode($val, ENT_QUOTES, 'UTF-8');
+	
+						$this->lang_data[$ubk][$key] = $val;
+					}
+					$nodes = $xpath->query("//datetime/{$dbms}/string");
 					for($i = 0; $i < $nodes->length; $i ++) {
 						$key = $nodes->item($i)->getAttribute('id');
 						$val = $nodes->item($i)->textContent;

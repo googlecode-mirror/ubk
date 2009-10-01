@@ -224,6 +224,11 @@ class RIGHE_RICORSIVE extends CONTENITORE
 	 */
 	protected $child_display;
 	/**
+	 * div clear al fondo dei vari liv
+	 * @var bool
+	 */
+	protected $clear;
+	/**
 	 * array associativo id-padre => numero figli
 	 * @var array
 	 */
@@ -306,6 +311,8 @@ class RIGHE_RICORSIVE extends CONTENITORE
 				$rs->move($pos);
 				$this->parametri['RIGHE-RICORSIVE-LIVELLO'] --;
 			}
+			if ($this->clear)
+				echo '<div class="clear"></div>';
 			echo '</'.$this->tag.'>';
 		}
 
@@ -326,6 +333,7 @@ class RIGHE_RICORSIVE extends CONTENITORE
 		$this->tag     = $this->attributo('TAG', 'div');
 		$this->pad_mtd = $this->attributo('METODO-IND', 'padding-left');
 		$this->child_display = $this->attributo('CHILD-DISPLAY', 'block');
+		$this->clear = cbool($this->attributo('CLEAR', 'FALSE'));
 		if ($si = $this->attributo('START-IND', 0))
 			$this->padding += $si;
 

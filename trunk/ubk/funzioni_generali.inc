@@ -373,7 +373,7 @@ function leggi_ini($file, $crittato = false)
 			} else {
 				$GLOBALS[$_sect_name] = $_vals;
 			}
-			$GLOBALS['DRIVERS'][array_get_default('DB_TYPE', $GLOBALS[$_sect_name])] = TRUE;
+			$GLOBALS['DRIVERS'][] = array_get('DB_TYPE', $GLOBALS[$_sect_name]);
 		} else {
 			$_all_defines = array_merge($_all_defines, $_vals);
 		}
@@ -388,6 +388,7 @@ function leggi_ini($file, $crittato = false)
 	if ($crittato) {
 		unset($cry);
 	}
+
 }
 
 /**

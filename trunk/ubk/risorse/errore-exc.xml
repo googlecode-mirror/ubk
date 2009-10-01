@@ -1,6 +1,6 @@
 <html xmlns:ubk="http://dev.mele.eu/ubk/" xmlns:gfx="http://dev.mele.eu/ubk/TAG_XSL.xsd">
 	<head>
-		<title>Errore</title>
+		<title>%lang('ERR')</title>
 	</head>
 	<body>
 		<ubk:if test="$this->parametri['ERRORE'] instanceof DbException">

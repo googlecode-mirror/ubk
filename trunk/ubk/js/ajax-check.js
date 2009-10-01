@@ -42,7 +42,7 @@ var CUbkFieldCheck = Class.create({
 
 		var is_mail = new RegExp("^[\\w\\-\\.]*[\\w\\.]\\@[\\w\\.]*[\\w\\-\\.]+[\\w\\-]+[\\w]\\.+[\\w]+$");
 		if (!is_mail.test(obj.value)) {
-			Ubk.error(Locale.string('CHK-MAIL'));
+			Ubk.error(Locale.string('CHK-EMAIL'));
 			obj.focus(); 
 			return false;
 		} else {
