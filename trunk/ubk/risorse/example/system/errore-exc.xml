@@ -1,0 +1,49 @@
+		<ubk:if test="$this->parametri['EXC'] instanceof AppException || $this->parametri['EXC'] instanceof DbException"
+	xmlns:ubk="http://dev.mele.eu/ubk/" 
+	xmlns:gfx="http://dev.mele.eu/ubk/TAG_XSL.xsd" 
+	>
+			<ubk:then>
+				<table style="height: 100%; width: 100%">
+					<td style="vertical-align: middle; text-align: center; letter-spacing: 1px; font-weight: bold; font-size: 12pt; line-height: 16pt; color: #FF3300">
+						<ubk:var>$this->parametri['EXC']->getMessage()</ubk:var><br/>
+						<a href="javascript:history.go(-1)">Torna indietro</a>
+					</td>
+				</table>
+			</ubk:then>
+			<ubk:else>
+				<table class="ko">
+					<td class="ko">
+						<ubk:var>get_class($this->parametri['EXC'])</ubk:var>:<br/>
+						<ubk:var>$this->parametri['EXC']->getMessage()</ubk:var><br/>
+						<ubk:if test="$this->parametri['EXC'] instanceof DbException">
+							<ubk:then>
+								<div style="float: left; width: 33%; height: 400; overflow: auto;">
+									<h1>SQL stack</h1>
+									<ubk:iter array="LAST_SQL">
+										<ubk:var>$parametri['ITER-CURRENT']</ubk:var><br/>
+									</ubk:iter>
+								</div>
+								<div style="float: left; width: 33%; height: 400; overflow: auto;">
+									<h1>Trace</h1>
+									<ubk:var>nl2br($this->parametri['EXC']->getTraceAsString())</ubk:var>
+								</div>
+								<div style="float: left; width: 33%; height: 400; overflow: auto;">
+									<h1>Complete trace</h1>
+									<ubk:php>array_stampa($this->parametri['EXC']->getTrace());</ubk:php>
+								</div>
+							</ubk:then>
+							<ubk:else>
+								<div style="float: left; width: 50%; height: 400; overflow: auto;">
+									<h1>Trace</h1>
+									<ubk:var>nl2br($this->parametri['EXC']->getTraceAsString())</ubk:var>
+								</div>
+								<div style="float: left; width: 50%; height: 400; overflow: auto;">
+									<h1>Complete trace</h1>
+									<ubk:php>array_stampa($this->parametri['EXC']->getTrace());</ubk:php>
+								</div>
+							</ubk:else>
+						</ubk:if>
+					</td>
+				</table>
+			</ubk:else>
+		</ubk:if>

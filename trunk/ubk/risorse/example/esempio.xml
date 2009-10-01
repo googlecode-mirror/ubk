@@ -1,0 +1,98 @@
+<html
+	xmlns:ubk="http://dev.mele.eu/ubk/" 
+	xmlns:gfx="http://dev.mele.eu/ubk/TAG_XSL.xsd" 
+	>
+
+	<head>
+		<title>enigma test</title>
+		<script src="ubk/js/prototype.1.6.0.js"/>
+		<script src="ubk/js/ajax.js"/>
+		<script src="ubk/js/ajax-check.js"/>
+		<script>
+			var Ubk = new CUbk();
+		</script>
+		<style>
+			table {
+				border: 1px ridge gray;
+				border-collapse: separate;
+				border-spacing: 2px;
+			}
+			table th, table td {
+				border: 1px ridge gray;
+				padding: 5px;
+			}
+			a {
+				margin-right: 5px;
+			}
+		</style>
+	</head>
+	<body id="body">
+		
+		<ubk:snippet nome="links-crea">
+			<ubk:link-ajax-crea>
+				<ubk:reazione nome="mostra"/>
+				<ubk:contenuto>aggiungi</ubk:contenuto>
+			</ubk:link-ajax-crea>
+		</ubk:snippet>
+		
+		<ubk:snippet nome="links-modifica">
+			<ubk:link-ajax-aggiorna>
+				<ubk:contenuto>aggiorna</ubk:contenuto>
+			</ubk:link-ajax-aggiorna>
+			<ubk:link-ajax-elimina>
+				<ubk:reazione nome="mostra"/>
+				<ubk:contenuto>elimina</ubk:contenuto>
+			</ubk:link-ajax-elimina>
+		</ubk:snippet>
+		
+		<ubk:snippet nome="riga">
+			<tr>
+				<td>
+					<ubk:campo nome="t_testo" size="50"/>
+				</td>
+				<td>
+					<ubk:campo nome="s_corto" size="DB"/>
+				</td>
+				<td>
+					<ubk:snippet call="$this->parametro('LINKS')"/>
+				</td>
+			</tr>
+		</ubk:snippet>
+
+		<ubk:snippet nome="rigaedata">
+			<tr>
+				<td>
+					<ubk:campo nome="t_testo" size="50"/>
+				</td>
+				<td>
+					<ubk:campo nome="s_corto" size="DB"/>
+				</td>
+				<td>
+					<ubk:snippet call="$this->parametro('LINKS')"/>
+				</td>
+			</tr>
+		</ubk:snippet>
+		
+		<ubk:ajax-form>
+	
+			<table>
+				<thead>
+					<th>testo</th>
+					<th>corto</th>
+					<th>azioni</th>
+				</thead>
+				<tbody>
+					<ubk:usa mode="W" target="body">
+						<ubk:snippet call="riga" links="links-crea"/>
+					</ubk:usa>
+					<ubk:usa mode="RW" target="body">
+						<ubk:righe>
+							<ubk:snippet call="rigaedata" links="links-modifica"/>
+						</ubk:righe>
+					</ubk:usa>
+				</tbody>
+			</table>
+			
+		</ubk:ajax-form>
+	</body>
+</html>
